@@ -219,3 +219,51 @@ def test_rate_limit_returns_429(tmp_db):
         statuses = [client.post("/api/intakes", json=payload).status_code for _ in range(6)]
     assert statuses[:5] == [201] * 5
     assert statuses[5] == 429
+
+
+# --- Admin export -------------------------------------------------------
+
+
+def test_admin_export_disabled_without_token(tmp_db):
+    monkeypatch = pytest.MonkeyPatch()
+    monkeypatch.delenv("ADMIN_TOKEN", raising=False)
+    try:
+        with TestClient(m.app) as client:
+            assert client.get("/admin/intakes.csv").status_code == 401
+            assert (
+                client.get(
+                    "/admin/intakes.csv",
+                    headers={"Authorization": "Bearer wrong-token"},
+                ).status_code
+                == 401
+            )
+    finally:
+        monkeypatch.undo()
+
+
+def test_admin_export_with_token(tmp_db):
+    monkeypatch = pytest.MonkeyPatch()
+    monkeypatch.setenv("ADMIN_TOKEN", "secret-token")
+    try:
+        with TestClient(m.app) as client:
+            client.post(
+                "/api/intakes",
+                json={
+                    "name": "张三",
+                    "email": "z@test.com",
+                    "matter": "国际贸易争议",
+                    "summary": "客户拖欠尾款",
+                    "country": "美国",
+                },
+            )
+            resp = client.get(
+                "/admin/intakes.csv",
+                headers={"Authorization": "Bearer secret-token"},
+            )
+            assert resp.status_code == 200
+            assert resp.headers["content-type"].startswith("text/csv")
+            assert "张三" in resp.text
+            assert "country_or_region" in resp.text
+            assert "美国" in resp.text
+    finally:
+        monkeypatch.undo()

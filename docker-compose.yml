@@ -1,0 +1,18 @@
+services:
+  web:
+    build: .
+    image: shenyuan-law-firm:latest
+    ports:
+      - "8000:8000"
+    environment:
+      APP_ENV: production
+      # Bearer token for GET /admin/intakes.csv. Set a strong value in the
+      # .env file next to this compose file (or in 1Panel's app settings).
+      # Empty/unset = admin export disabled.
+      ADMIN_TOKEN: ${ADMIN_TOKEN:-}
+    volumes:
+      - intake-data:/app/data
+    restart: unless-stopped
+
+volumes:
+  intake-data:

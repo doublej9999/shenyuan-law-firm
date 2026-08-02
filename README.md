@@ -47,6 +47,20 @@ POST /api/intakes
 `POST /api/intakes` 有按 IP 的速率限制（默认每个 IP 每分钟 5 次），防止垃圾流量刷库。
 部署在反向代理（Nginx / Caddy）后面时，限流依据 `X-Forwarded-For` 取真实客户端 IP。
 
+## 查看咨询记录（管理导出）
+
+```text
+GET /admin/intakes.csv
+```
+
+返回全部咨询记录（最新在前）的 CSV，带 UTF-8 BOM（Excel 直接打开不乱码）。
+需要 `Authorization: Bearer <ADMIN_TOKEN>` 请求头；`ADMIN_TOKEN` 未设置时该接口
+默认禁用（返回 401）。建议设置一个足够强的随机值，例如：
+
+```bash
+python -c "import secrets; print(secrets.token_urlsafe(32))"
+```
+
 ## 测试
 
 ```powershell
@@ -62,3 +76,20 @@ pytest
   `uvicorn app.main:app --proxy-headers`
 - 若使用多 worker，SQLite 仍是单文件写入瓶颈，WAL + busy_timeout 已缓解锁冲突。
 - 咨询数据包含个人隐私，请定期备份 `data/` 目录，并确保该目录不可被 Web 静态访问。
+- 设置 `APP_ENV=production` 会关闭 `/docs`、`/redoc` 和 `/openapi.json`（避免泄露接口 schema）。
+
+## Docker / 1Panel 部署
+
+```bash
+docker compose up -d --build
+```
+
+容器内以非 root 用户运行，数据保存在命名卷 `intake-data`。在 compose 文件同目录的
+`.env` 中配置：
+
+```text
+ADMIN_TOKEN=这里填随机令牌
+```
+
+1Panel 中可直接作为“Docker Compose 应用”导入 `docker-compose.yml`，然后在应用环境
+变量里填 `ADMIN_TOKEN`。
