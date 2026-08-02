@@ -1,7 +1,10 @@
 from __future__ import annotations
 
+import csv
+import io
 import logging
-import re
+import os
+import secrets
 import sqlite3
 from contextlib import asynccontextmanager, contextmanager
 from datetime import datetime, timezone
@@ -9,8 +12,8 @@ from pathlib import Path
 from typing import Annotated, Iterator
 
 from fastapi import FastAPI, HTTPException, Request
-from fastapi.responses import FileResponse, JSONResponse
-from pydantic import BaseModel, Field, field_validator
+from fastapi.responses import FileResponse, JSONResponse, Response
+from pydantic import BaseModel, EmailStr, Field, field_validator
 from slowapi import Limiter
 from slowapi.errors import RateLimitExceeded
 
@@ -103,7 +106,16 @@ async def lifespan(app: FastAPI):
     yield
 
 
-app = FastAPI(title="Profound Law Firm", version="0.1.0", lifespan=lifespan)
+_production = os.environ.get("APP_ENV") == "production"
+app = FastAPI(
+    title="Profound Law Firm",
+    version="0.1.0",
+    lifespan=lifespan,
+    # Interactive docs expose the API schema; hide them in production.
+    docs_url=None if _production else "/docs",
+    redoc_url=None if _production else "/redoc",
+    openapi_url=None if _production else "/openapi.json",
+)
 
 
 def _client_ip(request: Request) -> str:
@@ -128,7 +140,7 @@ def _rate_limit_handler(request: Request, exc: RateLimitExceeded) -> JSONRespons
 
 class IntakeCreate(BaseModel):
     name: Annotated[str, Field(min_length=1, max_length=80)]
-    email: Annotated[str, Field(min_length=3, max_length=254)]
+    email: Annotated[EmailStr, Field(min_length=3, max_length=254)]
     matter: Annotated[str, Field(min_length=1, max_length=80)]
     summary: Annotated[str, Field(min_length=1, max_length=2000)]
     phone: Annotated[str | None, Field(max_length=60)] = None
@@ -141,13 +153,6 @@ class IntakeCreate(BaseModel):
         if value is None:
             return None
         return str(value).strip()
-
-    @field_validator("email")
-    @classmethod
-    def validate_email(cls, value: str) -> str:
-        if not re.match(r"^[^@\s]+@[^@\s]+\.[^@\s]+$", value):
-            raise ValueError("Invalid email address")
-        return value
 
     @field_validator("phone", "country")
     @classmethod
@@ -169,6 +174,57 @@ def read_index() -> FileResponse:
 @app.get("/api/health")
 def health() -> dict[str, str]:
     return {"status": "ok"}
+
+
+def _admin_token() -> str:
+    """Bearer token for the admin export. Read per-request so tests can
+    override it via the environment; empty means the endpoint is disabled."""
+    return os.environ.get("ADMIN_TOKEN", "")
+
+
+def _is_authorized(request: Request) -> bool:
+    token = _admin_token()
+    if not token:
+        return False
+    provided = request.headers.get("authorization", "")
+    if provided.startswith("Bearer "):
+        provided = provided[len("Bearer ") :].strip()
+    return secrets.compare_digest(provided, token)
+
+
+@app.get("/admin/intakes.csv", include_in_schema=False)
+@limiter.limit("10/minute")
+def export_intakes(request: Request) -> Response:
+    """Export all intakes as CSV. Protected by the ADMIN_TOKEN bearer token."""
+    if not _is_authorized(request):
+        raise HTTPException(status_code=401, detail="Unauthorized")
+
+    with db_connection() as connection:
+        rows = connection.execute(
+            """
+            SELECT id, created_at, name, email, phone, country_or_region,
+                   matter, summary, language
+            FROM intakes
+            ORDER BY id DESC
+            """
+        ).fetchall()
+
+    buffer = io.StringIO()
+    writer = csv.writer(buffer)
+    writer.writerow(
+        [
+            "id", "created_at", "name", "email", "phone",
+            "country_or_region", "matter", "summary", "language",
+        ]
+    )
+    writer.writerows(rows)
+    # UTF-8 BOM so Excel opens the Chinese content correctly.
+    content = "\ufeff" + buffer.getvalue()
+    return Response(
+        content=content,
+        media_type="text/csv; charset=utf-8",
+        headers={"Content-Disposition": 'attachment; filename="intakes.csv"'},
+    )
 
 
 @app.post("/api/intakes", response_model=IntakeCreated, status_code=201)
