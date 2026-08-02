@@ -70,6 +70,16 @@ pytest
 
 覆盖 schema 迁移（全新库 / 旧库三种状态）、字段校验、API 增删查和限流。
 
+## 依赖锁定
+
+`requirements.txt` 声明版本范围，`requirements.lock` 是 `pip-compile` 生成的精确
+锁定版本，Docker 构建即使用它保证可复现。修改依赖后重新生成：
+
+```bash
+pip install pip-tools
+pip-compile requirements.txt -o requirements.lock --strip-extras --no-annotate
+```
+
 ## 部署提示
 
 - 生产环境建议单 worker + `--proxy-headers`（配合反向代理获取真实 IP）：
@@ -85,7 +95,7 @@ docker compose up -d --build
 ```
 
 容器内以非 root 用户运行，数据保存在命名卷 `intake-data`。在 compose 文件同目录的
-`.env` 中配置：
+`.env` 中配置（参考 `.env.example`）：
 
 ```text
 ADMIN_TOKEN=这里填随机令牌
