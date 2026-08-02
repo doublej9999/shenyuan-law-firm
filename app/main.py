@@ -191,6 +191,17 @@ def init_db() -> None:
             )
             """
         )
+        connection.execute(
+            """
+            CREATE TABLE IF NOT EXISTS audit_log (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                ts TEXT NOT NULL,
+                ip TEXT,
+                action TEXT NOT NULL,
+                detail TEXT
+            )
+            """
+        )
         migrate_schema(connection)
 
 
@@ -240,6 +251,18 @@ def migrate_schema(connection: sqlite3.Connection) -> None:
         CREATE TABLE IF NOT EXISTS page_views (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             viewed_at TEXT NOT NULL
+        )
+        """
+    )
+    # v6: admin/ops audit trail.
+    connection.execute(
+        """
+        CREATE TABLE IF NOT EXISTS audit_log (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            ts TEXT NOT NULL,
+            ip TEXT,
+            action TEXT NOT NULL,
+            detail TEXT
         )
         """
     )
@@ -300,6 +323,24 @@ def _is_authorized(request: Request) -> bool:
     if provided.startswith("Bearer "):
         provided = provided[len("Bearer ") :].strip()
     return secrets.compare_digest(provided, token)
+
+
+def log_audit(ip: str, action: str, detail: str) -> None:
+    """Append an entry to the audit trail. Best-effort: never raises."""
+    try:
+        with db_connection() as connection:
+            connection.execute(
+                "INSERT INTO audit_log (ts, ip, action, detail) VALUES (?, ?, ?, ?)",
+                (datetime.now(timezone.utc).isoformat(), ip, action, detail),
+            )
+    except sqlite3.Error:
+        logger.exception("Failed to write audit log (%s %s)", action, detail)
+
+
+def _require_admin(request: Request) -> None:
+    if not _is_authorized(request):
+        log_audit(_client_ip(request), "auth_failed", request.url.path)
+        raise HTTPException(status_code=401, detail="Unauthorized")
 
 
 def _notify_webhook_url() -> str:
@@ -570,8 +611,7 @@ def admin_list_intakes(
     q: str | None = None,
     limit: int = 100,
 ) -> list[dict]:
-    if not _is_authorized(request):
-        raise HTTPException(status_code=401, detail="Unauthorized")
+    _require_admin(request)
     if limit < 1 or limit > 500:
         limit = 100
 
@@ -602,8 +642,7 @@ def admin_list_intakes(
 @limiter.limit(ADMIN_RATE_LIMIT)
 def admin_stats(request: Request) -> dict:
     """Conversion analytics: intakes vs homepage views (lightweight)."""
-    if not _is_authorized(request):
-        raise HTTPException(status_code=401, detail="Unauthorized")
+    _require_admin(request)
 
     now = datetime.now(timezone.utc)
     today_start = now.replace(hour=0, minute=0, second=0, microsecond=0).isoformat()
@@ -655,8 +694,7 @@ def admin_stats(request: Request) -> dict:
 def admin_update_intake(
     intake_id: int, payload: AdminIntakeUpdate, request: Request
 ) -> dict:
-    if not _is_authorized(request):
-        raise HTTPException(status_code=401, detail="Unauthorized")
+    _require_admin(request)
 
     updates, params = [], []
     if payload.status is not None:
@@ -679,12 +717,7 @@ def admin_update_intake(
     if row is None:
         raise HTTPException(status_code=404, detail="Intake not found")
 
-    logger.info(
-        "Admin updated intake %d (%s) from %s",
-        intake_id,
-        ", ".join(updates),
-        _client_ip(request),
-    )
+    log_audit(_client_ip(request), "update", f"intake {intake_id}: {', '.join(updates)}")
     return dict(row)
 
 
@@ -694,8 +727,7 @@ def export_intakes(
     request: Request, status: str | None = None, q: str | None = None
 ) -> Response:
     """Export all intakes as CSV. Protected by the ADMIN_TOKEN bearer token."""
-    if not _is_authorized(request):
-        raise HTTPException(status_code=401, detail="Unauthorized")
+    _require_admin(request)
 
     where, params = [], []
     if status:
@@ -719,6 +751,11 @@ def export_intakes(
 
     with db_connection() as connection:
         rows = connection.execute(sql, params).fetchall()
+    log_audit(
+        _client_ip(request),
+        "export",
+        f"intakes.csv rows={len(rows)} status={status or '-'} q={q or '-'}",
+    )
 
     buffer = io.StringIO()
     writer = csv.writer(buffer)
@@ -884,8 +921,7 @@ def upload_intake_file(
 @app.get("/admin/api/intakes/{intake_id}/files", include_in_schema=False)
 @limiter.limit(ADMIN_RATE_LIMIT)
 def admin_list_files(intake_id: int, request: Request) -> list[dict]:
-    if not _is_authorized(request):
-        raise HTTPException(status_code=401, detail="Unauthorized")
+    _require_admin(request)
     with db_connection() as connection:
         rows = connection.execute(
             """
@@ -901,8 +937,7 @@ def admin_list_files(intake_id: int, request: Request) -> list[dict]:
 @app.get("/admin/api/intakes/{intake_id}/files/{file_id}/download", include_in_schema=False)
 @limiter.limit(ADMIN_RATE_LIMIT)
 def admin_download_file(intake_id: int, file_id: int, request: Request) -> FileResponse:
-    if not _is_authorized(request):
-        raise HTTPException(status_code=401, detail="Unauthorized")
+    _require_admin(request)
     with db_connection() as connection:
         row = connection.execute(
             "SELECT * FROM files WHERE id = ? AND intake_id = ?", (file_id, intake_id)

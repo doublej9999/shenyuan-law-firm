@@ -636,3 +636,84 @@ def test_stats_numbers(tmp_db):
             assert stats["by_matter"][0]["matter"] == "国际贸易争议"
     finally:
         monkeypatch.undo()
+
+
+# --- Audit trail & ops scripts ----------------------------------------
+
+
+def audit_rows(db):
+    conn = sqlite3.connect(db)
+    conn.row_factory = sqlite3.Row
+    rows = [dict(r) for r in conn.execute("SELECT * FROM audit_log ORDER BY id")]
+    conn.close()
+    return rows
+
+
+def test_audit_logged_on_failed_auth(tmp_db):
+    with TestClient(m.app) as client:
+        client.get("/admin/api/intakes")
+        client.get("/admin/intakes.csv", headers={"Authorization": "Bearer wrong"})
+    rows = audit_rows(tmp_db)
+    assert len(rows) == 2
+    assert all(r["action"] == "auth_failed" for r in rows)
+
+
+def test_audit_logged_on_update_and_export(tmp_db):
+    monkeypatch = pytest.MonkeyPatch()
+    monkeypatch.setenv("ADMIN_TOKEN", "secret-token")
+    try:
+        with TestClient(m.app) as client:
+            headers = {"Authorization": "Bearer secret-token"}
+            client.post("/api/intakes", json=VALID_PAYLOAD)
+            client.patch("/admin/api/intakes/1", headers=headers, json={"status": "closed"})
+            client.get("/admin/intakes.csv", headers=headers)
+        rows = audit_rows(tmp_db)
+        actions = [r["action"] for r in rows]
+        assert "update" in actions
+        assert "export" in actions
+        update = next(r for r in rows if r["action"] == "update")
+        assert "intake 1" in update["detail"]
+        assert "status" in update["detail"]
+    finally:
+        monkeypatch.undo()
+
+
+def test_prune_dry_run_and_execute(tmp_db, monkeypatch, capsys):
+    m.init_db()
+    # Insert one old and one recent intake directly.
+    conn = sqlite3.connect(tmp_db)
+    conn.execute(
+        "INSERT INTO intakes (name,email,matter,summary,created_at,consent_at,status)"
+        " VALUES ('旧线索','old@x.com','贸易','s','2020-01-01T00:00:00+00:00','2020-01-01T00:00:00+00:00','new')"
+    )
+    conn.execute(
+        "INSERT INTO intakes (name,email,matter,summary,created_at,consent_at,status)"
+        " VALUES ('新线索','new@x.com','贸易','s','2026-08-01T00:00:00+00:00','2026-08-01T00:00:00+00:00','new')"
+    )
+    conn.commit()
+    conn.close()
+
+    from scripts import prune_intakes
+
+    # Dry run: previews, deletes nothing.
+    monkeypatch.setattr("sys.argv", ["prune", "--older-than", "365", "--dry-run"])
+    assert prune_intakes.main() == 0
+    assert "[dry-run]" in capsys.readouterr().out
+    conn = sqlite3.connect(tmp_db)
+    assert conn.execute("SELECT COUNT(*) FROM intakes").fetchone()[0] == 2
+    conn.close()
+
+    # Without --yes: refuses.
+    monkeypatch.setattr("sys.argv", ["prune", "--older-than", "365"])
+    assert prune_intakes.main() == 1
+
+    # Execute: deletes only the old one, records an audit row.
+    monkeypatch.setattr("sys.argv", ["prune", "--older-than", "365", "--yes"])
+    assert prune_intakes.main() == 0
+    conn = sqlite3.connect(tmp_db)
+    conn.row_factory = sqlite3.Row
+    remaining = [dict(r) for r in conn.execute("SELECT name FROM intakes")]
+    conn.close()
+    assert remaining == [{"name": "新线索"}]
+    rows = audit_rows(tmp_db)
+    assert any(r["action"] == "prune" for r in rows)

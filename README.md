@@ -158,3 +158,29 @@ NOTIFY_WEBHOOK_URL=企业微信机器人Webhook地址（可选）
 
 1Panel 中可直接作为“Docker Compose 应用”导入 `docker-compose.yml`，然后在应用环境
 变量里填 `ADMIN_TOKEN` 和 `NOTIFY_WEBHOOK_URL`。
+
+## 运维脚本（备份 / 清理 / 告警）
+
+```text
+scripts/backup.sh          # SQLite + 上传文件备份，保留最近 BACKUP_KEEP（默认14）份
+scripts/prune_intakes.py   # 删除超过 N 天的旧线索（含上传文件），需 --older-than + --yes
+scripts/watchdog.sh        # 磁盘/数据库体积告警，超过阈值推送到 webhook
+```
+
+建议 crontab 配置（按需修改路径）：
+
+```cron
+0 3 * * *  /path/to/shenyuan-law-firm/scripts/backup.sh
+0 4 1 * *  /path/to/.venv/bin/python /path/to/shenyuan-law-firm/scripts/prune_intakes.py --older-than 365 --yes
+*/15 * * * * /path/to/shenyuan-law-firm/scripts/watchdog.sh
+```
+
+清理是破坏性操作：先 `--dry-run` 预览，再 `--yes` 执行；每次删除都会写入审计日志。
+备份目录 `backups/` 已加入 `.gitignore`。
+
+## 数据保留与审计
+
+- 所有后台敏感操作（导出、状态/备注修改、鉴权失败、清理删除）都会写入 `audit_log`
+  表：时间、来源 IP、动作、详情。建议定期检查，尤其是 `auth_failed` 条目。
+- 咨询数据包含个人隐私，请按业务需要设置保留期（用 `prune_intakes.py` 执行清理），
+  并在 README/隐私说明中写明保留政策。
