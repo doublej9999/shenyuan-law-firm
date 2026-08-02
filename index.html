@@ -525,10 +525,10 @@
               <label for="matter" data-zh="事项类型" data-en="Matter type">事项类型</label>
               <select id="matter" name="matter" required>
                 <option value="" data-zh="请选择" data-en="Select one">请选择</option>
-                <option value="国际贸易争议" data-zh="国际贸易争议" data-en="International trade dispute">国际贸易争议</option>
-                <option value="诉讼与债务追收" data-zh="诉讼与债务追收" data-en="Litigation & debt recovery">诉讼与债务追收</option>
-                <option value="继承与家族资产纠纷" data-zh="继承与家族资产纠纷" data-en="Inheritance & family assets">继承与家族资产纠纷</option>
-                <option value="不确定，希望先沟通" data-zh="不确定，希望先沟通" data-en="Not sure yet">不确定，希望先沟通</option>
+                <option value="国际贸易争议" data-matter-key="trade" data-zh="国际贸易争议" data-en="International trade dispute">国际贸易争议</option>
+                <option value="诉讼与债务追收" data-matter-key="recovery" data-zh="诉讼与债务追收" data-en="Litigation & debt recovery">诉讼与债务追收</option>
+                <option value="继承与家族资产纠纷" data-matter-key="legacy" data-zh="继承与家族资产纠纷" data-en="Inheritance & family assets">继承与家族资产纠纷</option>
+                <option value="不确定，希望先沟通" data-matter-key="unsure" data-zh="不确定，希望先沟通" data-en="Not sure yet">不确定，希望先沟通</option>
               </select>
             </div>
             <div class="field">
@@ -754,11 +754,7 @@
 
       function getMatterKey() {
         var option = matterSelect.options[matterSelect.selectedIndex];
-        var label = option ? option.getAttribute("data-zh") || "" : "";
-        if (label.indexOf("国际贸易") !== -1) return "trade";
-        if (label.indexOf("诉讼") !== -1 || label.indexOf("债务") !== -1) return "recovery";
-        if (label.indexOf("继承") !== -1 || label.indexOf("家族") !== -1) return "legacy";
-        return "unsure";
+        return (option && option.dataset.matterKey) || "unsure";
       }
 
       function renderMaterialList() {
