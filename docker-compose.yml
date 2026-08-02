@@ -19,6 +19,8 @@ services:
       SMTP_USER: ${SMTP_USER:-}
       SMTP_PASSWORD: ${SMTP_PASSWORD:-}
       SMTP_FROM: ${SMTP_FROM:-}
+      # Public base URL for canonical/OG/sitemap links.
+      SITE_URL: ${SITE_URL:-https://your-domain.example.com}
     volumes:
       - intake-data:/app/data
     restart: unless-stopped

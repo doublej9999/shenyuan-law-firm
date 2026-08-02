@@ -4,7 +4,27 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="Profound Law Firm 深远(国际)律师事务所为海外华人提供跨境商事、债务追收、继承与家族资产纠纷的双语法律咨询服务。">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Profound Law Firm">
+  <meta property="og:title" content="Profound Law Firm | 深远(国际)律师事务所">
+  <meta property="og:description" content="面向海外华人的跨境商事、债务追收、继承与家族资产纠纷双语法律咨询服务。">
+  <meta property="og:url" content="{{SITE_URL}}/">
+  <meta property="og:image" content="https://images.unsplash.com/photo-1526304640581-d334cdbbf45e?auto=format&fit=crop&w=1200&q=80">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="canonical" href="{{SITE_URL}}/">
   <title>Profound Law Firm | 深远(国际)律师事务所</title>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "LegalService",
+    "name": "Profound Law Firm 深远(国际)律师事务所",
+    "url": "{{SITE_URL}}/",
+    "image": "https://images.unsplash.com/photo-1526304640581-d334cdbbf45e?auto=format&fit=crop&w=1200&q=80",
+    "description": "面向海外华人的双语法律咨询服务：跨境商事、债务追收、继承与家族资产纠纷。",
+    "knowsLanguage": ["zh", "en"],
+    "areaServed": "Worldwide"
+  }
+  </script>
   <style>
     :root {
       --ink: #172433;
@@ -413,6 +433,18 @@
     .quote p { margin-top: 22px; font-size: 21px; line-height: 1.45; }
     .quote small { display: block; margin-top: 24px; color: rgba(255,255,255,.76); font-size: 12px; }
 
+    .knowledge-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+    .knowledge-card {
+      padding: 26px;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+    }
+    .knowledge-card .k-tag { color: var(--orange); font-size: 12px; font-weight: 800; letter-spacing: .08em; }
+    .knowledge-card h3 { margin-top: 14px; font-size: 18px; }
+    .knowledge-card p { margin-top: 10px; color: var(--muted); font-size: 13px; }
+    .knowledge-card .soon { display: inline-block; margin-top: 14px; padding: 3px 10px; color: var(--teal-deep); background: #deefea; border-radius: 12px; font-size: 12px; font-weight: 700; }
+
     .faq-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px 48px; }
     details { padding: 18px 0; border-top: 1px solid var(--line); }
     details:last-child, details:nth-last-child(2) { border-bottom: 1px solid var(--line); }
@@ -459,6 +491,7 @@
       .field.full { grid-column: auto; }
       .service-grid { gap: 12px; }
       .service-card { padding: 24px; }
+      .knowledge-grid { grid-template-columns: 1fr; }
       .faq-grid { grid-template-columns: 1fr; gap: 0; }
       details:last-child, details:nth-last-child(2) { border-bottom: 0; }
       .footer-row { align-items: flex-start; flex-direction: column; }
@@ -630,7 +663,7 @@
               <li data-zh="代理、经销、跨境合同" data-en="Agency, distribution, cross-border contracts">代理、经销、跨境合同</li>
               <li data-zh="海关、物流、质量争议" data-en="Customs, logistics, quality issues">海关、物流、质量争议</li>
             </ul>
-            <a class="service-link" href="#intake" data-zh="描述贸易问题 →" data-en="Describe a trade issue →">描述贸易问题 →</a>
+            <a class="service-link" href="/services/trade" data-zh="了解贸易争议服务 →" data-en="Trade dispute services →">了解贸易争议服务 →</a>
           </article>
           <article class="service-card">
             <div class="service-number">02 / RECOVERY</div>
@@ -642,7 +675,7 @@
               <li data-zh="判决、仲裁裁决执行" data-en="Judgment and award enforcement">判决、仲裁裁决执行</li>
               <li data-zh="商业欺诈和合作纠纷" data-en="Commercial fraud and partner disputes">商业欺诈和合作纠纷</li>
             </ul>
-            <a class="service-link" href="#intake" data-zh="描述追收问题 →" data-en="Describe a recovery issue →">描述追收问题 →</a>
+            <a class="service-link" href="/services/recovery" data-zh="了解追收服务 →" data-en="Recovery services →">了解追收服务 →</a>
           </article>
           <article class="service-card">
             <div class="service-number">03 / LEGACY</div>
@@ -654,7 +687,7 @@
               <li data-zh="遗嘱、遗产分割" data-en="Wills and estate division">遗嘱、遗产分割</li>
               <li data-zh="家族成员失联或争议" data-en="Missing or disputed family members">家族成员失联或争议</li>
             </ul>
-            <a class="service-link" href="#intake" data-zh="描述继承问题 →" data-en="Describe a legacy issue →">描述继承问题 →</a>
+            <a class="service-link" href="/services/legacy" data-zh="了解继承服务 →" data-en="Legacy services →">了解继承服务 →</a>
           </article>
         </div>
       </div>
@@ -713,6 +746,36 @@
           <p data-zh="我不知道这算不算一个能打的案子，但我知道不能再等了。" data-en="I do not know if this is a case worth pursuing. I do know I cannot wait any longer.">我不知道这算不算一个能打的案子，但我知道不能再等了。</p>
           <small data-zh="这类真实的第一句话，值得一个清楚、稳妥的下一步。" data-en="A real first sentence deserves a clear and measured next step.">这类真实的第一句话，值得一个清楚、稳妥的下一步。</small>
         </aside>
+      </div>
+    </section>
+
+    <section class="section knowledge-section" id="knowledge">
+      <div class="wrap">
+        <div class="section-head">
+          <div class="eyebrow" data-zh="知识与案例" data-en="Knowledge & cases">知识与案例</div>
+          <h2 data-zh="专业内容，持续更新中。" data-en="Professional content, coming soon.">专业内容，持续更新中。</h2>
+          <p data-zh="我们将陆续发布跨境法律实务解读、脱敏案例分析（已隐去身份信息）与常见问题指南，帮助您理解跨境事项的处理思路。" data-en="We are publishing practical guides on cross-border matters, anonymized case analyses, and FAQs to help you understand how such matters are handled.">我们将陆续发布跨境法律实务解读、脱敏案例分析（已隐去身份信息）与常见问题指南，帮助您理解跨境事项的处理思路。</p>
+        </div>
+        <div class="knowledge-grid">
+          <article class="knowledge-card">
+            <div class="k-tag">PRACTICE</div>
+            <h3 data-zh="跨境法律实务解读" data-en="Practice guides">跨境法律实务解读</h3>
+            <p data-zh="关于欠款追收、合同履行、继承程序的实务要点。" data-en="Practical notes on debt recovery, contract performance, and inheritance procedure.">关于欠款追收、合同履行、继承程序的实务要点。</p>
+            <span class="soon" data-zh="内容整理中" data-en="Coming soon">内容整理中</span>
+          </article>
+          <article class="knowledge-card">
+            <div class="k-tag">CASES</div>
+            <h3 data-zh="脱敏案例分析" data-en="Anonymized cases">脱敏案例分析</h3>
+            <p data-zh="经客户同意并隐去身份信息后的处理思路复盘。" data-en="Anonymized walkthroughs of how matters were assessed and handled.">经客户同意并隐去身份信息后的处理思路复盘。</p>
+            <span class="soon" data-zh="内容整理中" data-en="Coming soon">内容整理中</span>
+          </article>
+          <article class="knowledge-card">
+            <div class="k-tag">GUIDES</div>
+            <h3 data-zh="常见问题指南" data-en="FAQ guides">常见问题指南</h3>
+            <p data-zh="证据准备、时效判断、跨境沟通的实用清单。" data-en="Checklists for evidence, deadlines, and cross-border communication.">证据准备、时效判断、跨境沟通的实用清单。</p>
+            <span class="soon" data-zh="内容整理中" data-en="Coming soon">内容整理中</span>
+          </article>
+        </div>
       </div>
     </section>
 

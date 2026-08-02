@@ -564,3 +564,75 @@ def test_admin_export_filters(tmp_db):
             assert "张三" not in empty_csv  # only the header line remains
     finally:
         monkeypatch.undo()
+
+
+# --- SEO & landing pages ----------------------------------------------
+
+
+def test_index_injects_site_url(tmp_db):
+    with TestClient(m.app) as client:
+        resp = client.get("/")
+        assert resp.status_code == 200
+        assert "{{SITE_URL}}" not in resp.text
+        assert 'content="http://localhost:8000/"' in resp.text  # og:url default
+        assert "LegalService" in resp.text  # JSON-LD
+
+
+def test_index_records_page_view(tmp_db):
+    with TestClient(m.app) as client:
+        client.get("/")
+        client.get("/")
+        conn = sqlite3.connect(tmp_db)
+        count = conn.execute("SELECT COUNT(*) FROM page_views").fetchone()[0]
+        conn.close()
+        assert count == 2
+
+
+def test_sitemap_lists_pages(tmp_db):
+    with TestClient(m.app) as client:
+        resp = client.get("/sitemap.xml")
+        assert resp.status_code == 200
+        assert "application/xml" in resp.headers["content-type"]
+        assert "http://localhost:8000/" in resp.text
+        for slug in ("trade", "recovery", "legacy"):
+            assert f"/services/{slug}" in resp.text
+
+
+def test_service_pages(tmp_db):
+    with TestClient(m.app) as client:
+        for slug in ("trade", "recovery", "legacy"):
+            resp = client.get(f"/services/{slug}")
+            assert resp.status_code == 200
+            assert "建议准备的材料" in resp.text
+        assert client.get("/services/bogus").status_code == 404
+
+
+# --- Conversion stats --------------------------------------------------
+
+
+def test_stats_requires_token(tmp_db):
+    with TestClient(m.app) as client:
+        assert client.get("/admin/api/stats").status_code == 401
+
+
+def test_stats_numbers(tmp_db):
+    monkeypatch = pytest.MonkeyPatch()
+    monkeypatch.setenv("ADMIN_TOKEN", "secret-token")
+    try:
+        with TestClient(m.app) as client:
+            client.get("/")
+            client.get("/")
+            client.post("/api/intakes", json=VALID_PAYLOAD)
+            stats = client.get(
+                "/admin/api/stats",
+                headers={"Authorization": "Bearer secret-token"},
+            ).json()
+            assert stats["intakes_total"] == 1
+            assert stats["intakes_today"] == 1
+            assert stats["views_total"] == 2
+            assert stats["views_today"] == 2
+            assert stats["conversion_today_pct"] == 50.0
+            assert stats["by_status"]["new"] == 1
+            assert stats["by_matter"][0]["matter"] == "国际贸易争议"
+    finally:
+        monkeypatch.undo()

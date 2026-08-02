@@ -91,6 +91,16 @@ PATCH /admin/api/intakes/{id}  # 更新状态 / 备注，body: {"status": "...",
 `Authorization: Bearer <ADMIN_TOKEN>` 请求头；`ADMIN_TOKEN` 未设置时整个后台禁用。
 后台页面本身只是登录壳，数据接口全部带 token 鉴权。
 
+## SEO 与转化分析
+
+- **SEO**:首页含 Open Graph 标签、Twitter Card、canonical 和 LocalBusiness
+  结构化数据（JSON-LD）；`GET /sitemap.xml` 自动生成站点地图。生产环境务必设置
+  `SITE_URL`（如 `https://你的域名`），这些标签和地图里的链接都基于它生成。
+- **独立服务落地页**:`/services/trade`、`/services/recovery`、`/services/legacy`
+  三个页面，含各自的服务情形与材料清单，适合投放广告时直接链接。
+- **转化分析**:后台首页显示累计/今日线索、今日访问量与转化率，由 `GET /admin/api/stats`
+  提供；首页每次访问记一条匿名计数（仅时间戳，不采集任何个人信息）。
+
 ## 查看咨询记录（管理导出）
 
 ```text

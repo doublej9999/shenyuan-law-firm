@@ -29,6 +29,9 @@ DB_PATH = ROOT_DIR / "data" / "lawyers.sqlite3"
 FILES_DIR = DB_PATH.parent / "files"
 SCHEMA_VERSION = 3
 
+# Public base URL used for canonical/OG/sitemap links. Override in prod.
+SITE_URL = os.environ.get("SITE_URL", "http://localhost:8000").rstrip("/")
+
 # Per-IP limit for the public intake form. Prevents spam bots from flooding
 # the SQLite database. Humans rarely submit more than a few times a minute.
 INTAKE_RATE_LIMIT = "5/minute"
@@ -78,6 +81,40 @@ STATUS_LABELS = {
     "contacted": "已联系",
     "in_progress": "处理中",
     "closed": "已结案",
+}
+
+# Content for the three service landing pages.
+SERVICES = {
+    "trade": {
+        "slug": "trade",
+        "number": "01 / TRADE",
+        "zh_title": "国际贸易争议",
+        "en_title": "International trade disputes",
+        "zh_intro": "处理交易履行、货款、代理与跨境合同之间的纠纷，从欠款事实与证据入手，判断协商、追收或诉讼路径。",
+        "en_intro": "Disputes over performance, payment, agencies, distribution, and cross-border contracts.",
+        "items_zh": ["拖欠货款 / 供应商违约", "代理、经销、跨境合同", "海关、物流、质量争议"],
+        "materials_zh": MATERIALS_BY_MATTER["trade"],
+    },
+    "recovery": {
+        "slug": "recovery",
+        "number": "02 / RECOVERY",
+        "zh_title": "诉讼与债务追收",
+        "en_title": "Litigation & debt recovery",
+        "zh_intro": "从欠款事实与资产线索出发，判断追收、诉讼或执行路径，覆盖中国境内与海外资产。",
+        "en_intro": "Assess recovery, litigation, and enforcement options from the facts and asset trail.",
+        "items_zh": ["海外客户欠款", "中国境内资产调查", "判决、仲裁裁决执行", "商业欺诈和合作纠纷"],
+        "materials_zh": MATERIALS_BY_MATTER["recovery"],
+    },
+    "legacy": {
+        "slug": "legacy",
+        "number": "03 / LEGACY",
+        "zh_title": "继承与家族资产纠纷",
+        "en_title": "Inheritance & family assets",
+        "zh_intro": "协助梳理大陆与海外多地的继承、房产、股权与家族争议，明确材料、法域与处理顺序。",
+        "en_intro": "Navigate multi-jurisdiction inheritance, property, equity, and family conflicts.",
+        "items_zh": ["中国大陆与海外多地继承", "房产、股权、存款继承", "遗嘱、遗产分割", "家族成员失联或争议"],
+        "materials_zh": MATERIALS_BY_MATTER["legacy"],
+    },
 }
 
 
@@ -146,6 +183,14 @@ def init_db() -> None:
             )
             """
         )
+        connection.execute(
+            """
+            CREATE TABLE IF NOT EXISTS page_views (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                viewed_at TEXT NOT NULL
+            )
+            """
+        )
         migrate_schema(connection)
 
 
@@ -186,6 +231,15 @@ def migrate_schema(connection: sqlite3.Connection) -> None:
             size INTEGER NOT NULL,
             content_type TEXT,
             uploaded_at TEXT NOT NULL
+        )
+        """
+    )
+    # v5: lightweight conversion analytics (page views).
+    connection.execute(
+        """
+        CREATE TABLE IF NOT EXISTS page_views (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            viewed_at TEXT NOT NULL
         )
         """
     )
@@ -385,9 +439,115 @@ class IntakeCreated(BaseModel):
     created_at: str
 
 
+def _record_page_view() -> None:
+    """Count a homepage visit for conversion analytics. Best-effort only."""
+    try:
+        with db_connection() as connection:
+            connection.execute(
+                "INSERT INTO page_views (viewed_at) VALUES (?)",
+                (datetime.now(timezone.utc).isoformat(),),
+            )
+    except sqlite3.Error:
+        logger.exception("Failed to record page view")
+
+
+def _render_service_page(svc: dict) -> str:
+    items = "".join(f"<li>{i}</li>" for i in svc["items_zh"])
+    materials = "".join(f"<li>{i}</li>" for i in svc["materials_zh"])
+    url = f"{SITE_URL}/services/{svc['slug']}"
+    return f"""<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="index, follow">
+  <meta name="description" content="{svc['en_intro']}">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="{svc['zh_title']} | Profound Law Firm">
+  <meta property="og:description" content="{svc['zh_intro']}">
+  <meta property="og:url" content="{url}">
+  <link rel="canonical" href="{url}">
+  <title>{svc['zh_title']} | Profound Law Firm 深远(国际)律师事务所</title>
+  <style>
+    :root {{ --ink:#172433; --muted:#627180; --paper:#f6f3ed; --surface:#fffdf9; --line:#d9d9d2; --teal:#0d6c6b; --teal-deep:#084d50; --orange:#d76e39; }}
+    * {{ box-sizing:border-box; }}
+    body {{ margin:0; color:var(--ink); background:var(--paper); font-family:"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif; line-height:1.65; }}
+    .top {{ background:var(--teal-deep); color:#f5f2ec; }}
+    .top .wrap {{ display:flex; justify-content:space-between; align-items:center; min-height:64px; }}
+    .top a {{ color:#fff; text-decoration:none; font-size:13px; }}
+    .wrap {{ width:min(calc(100% - 40px), 960px); margin:0 auto; }}
+    .hero {{ padding:72px 0 40px; }}
+    .number {{ color:var(--orange); font-size:13px; font-weight:800; letter-spacing:.08em; }}
+    h1 {{ margin:14px 0 10px; font-size:clamp(30px,4vw,46px); letter-spacing:-.025em; line-height:1.1; }}
+    .en {{ color:var(--muted); font-size:15px; }}
+    .intro {{ margin-top:18px; font-size:16px; max-width:680px; }}
+    .cols {{ display:grid; grid-template-columns:1fr 1fr; gap:18px; margin:36px 0; }}
+    .card {{ background:var(--surface); border:1px solid var(--line); border-radius:10px; padding:24px; }}
+    .card h2 {{ margin:0 0 12px; font-size:17px; }}
+    ul {{ margin:0; padding:0; list-style:none; display:grid; gap:8px; }}
+    li {{ position:relative; padding-left:16px; }}
+    li::before {{ content:""; position:absolute; left:0; top:9px; width:5px; height:5px; background:var(--teal); border-radius:50%; }}
+    .cta {{ text-align:center; padding:10px 0 64px; }}
+    .button {{ display:inline-block; padding:14px 26px; background:var(--orange); color:#fff; border-radius:8px; text-decoration:none; font-weight:700; }}
+    .button:hover {{ background:#c85d2e; }}
+    footer {{ background:#15232d; color:rgba(255,255,255,.72); font-size:12px; padding:20px 0; text-align:center; }}
+    @media (max-width:640px) {{ .cols {{ grid-template-columns:1fr; }} }}
+  </style>
+</head>
+<body>
+  <div class="top"><div class="wrap">
+    <strong>PROFOUND LAW FIRM</strong>
+    <a href="/">← 返回首页</a>
+  </div></div>
+  <div class="wrap hero">
+    <div class="number">{svc['number']}</div>
+    <h1>{svc['zh_title']}</h1>
+    <div class="en">{svc['en_title']}</div>
+    <p class="intro">{svc['zh_intro']}</p>
+  </div>
+  <div class="wrap cols">
+    <div class="card"><h2>常见情形</h2><ul>{items}</ul></div>
+    <div class="card"><h2>建议准备的材料</h2><ul>{materials}</ul></div>
+  </div>
+  <div class="wrap cta">
+    <a class="button" href="/#intake">提交案件信息，获取下一步建议 →</a>
+  </div>
+  <footer>© 2026 Profound Law Firm · 深远(国际)律师事务所</footer>
+</body>
+</html>"""
+
+
 @app.get("/")
-def read_index() -> FileResponse:
-    return FileResponse(ROOT_DIR / "index.html")
+def read_index() -> Response:
+    _record_page_view()
+    html = (ROOT_DIR / "index.html").read_text(encoding="utf-8")
+    return Response(
+        content=html.replace("{{SITE_URL}}", SITE_URL),
+        media_type="text/html; charset=utf-8",
+    )
+
+
+@app.get("/sitemap.xml", include_in_schema=False)
+def sitemap() -> Response:
+    urls = [f"{SITE_URL}/"] + [f"{SITE_URL}/services/{slug}" for slug in SERVICES]
+    xml = (
+        '<?xml version="1.0" encoding="UTF-8"?>\n'
+        '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+        + "".join(f"  <url><loc>{u}</loc></url>\n" for u in urls)
+        + "</urlset>"
+    )
+    return Response(content=xml, media_type="application/xml")
+
+
+@app.get("/services/{slug}", include_in_schema=False)
+def service_page(slug: str) -> Response:
+    svc = SERVICES.get(slug)
+    if svc is None:
+        raise HTTPException(status_code=404, detail="Not found")
+    return Response(
+        content=_render_service_page(svc),
+        media_type="text/html; charset=utf-8",
+    )
 
 
 @app.get("/api/health")
@@ -436,6 +596,58 @@ def admin_list_intakes(
     with db_connection() as connection:
         rows = connection.execute(sql, params).fetchall()
     return [dict(row) for row in rows]
+
+
+@app.get("/admin/api/stats", include_in_schema=False)
+@limiter.limit(ADMIN_RATE_LIMIT)
+def admin_stats(request: Request) -> dict:
+    """Conversion analytics: intakes vs homepage views (lightweight)."""
+    if not _is_authorized(request):
+        raise HTTPException(status_code=401, detail="Unauthorized")
+
+    now = datetime.now(timezone.utc)
+    today_start = now.replace(hour=0, minute=0, second=0, microsecond=0).isoformat()
+    week_ago = (now - timedelta(days=7)).isoformat()
+
+    with db_connection() as connection:
+        intakes_total = connection.execute("SELECT COUNT(*) FROM intakes").fetchone()[0]
+        intakes_today = connection.execute(
+            "SELECT COUNT(*) FROM intakes WHERE created_at >= ?", (today_start,)
+        ).fetchone()[0]
+        intakes_week = connection.execute(
+            "SELECT COUNT(*) FROM intakes WHERE created_at >= ?", (week_ago,)
+        ).fetchone()[0]
+        views_total = connection.execute("SELECT COUNT(*) FROM page_views").fetchone()[0]
+        views_today = connection.execute(
+            "SELECT COUNT(*) FROM page_views WHERE viewed_at >= ?", (today_start,)
+        ).fetchone()[0]
+        by_status = {
+            row["status"]: row["c"]
+            for row in connection.execute(
+                "SELECT status, COUNT(*) c FROM intakes GROUP BY status"
+            )
+        }
+        by_matter = [
+            dict(row)
+            for row in connection.execute(
+                """
+                SELECT matter, COUNT(*) c FROM intakes
+                GROUP BY matter ORDER BY c DESC LIMIT 8
+                """
+            )
+        ]
+
+    conversion = round(intakes_today / views_today * 100, 2) if views_today else 0.0
+    return {
+        "intakes_total": intakes_total,
+        "intakes_today": intakes_today,
+        "intakes_week": intakes_week,
+        "views_total": views_total,
+        "views_today": views_today,
+        "conversion_today_pct": conversion,
+        "by_status": by_status,
+        "by_matter": by_matter,
+    }
 
 
 @app.patch("/admin/api/intakes/{intake_id}", include_in_schema=False)
