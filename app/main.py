@@ -2,10 +2,10 @@ from __future__ import annotations
 
 import re
 import sqlite3
-from contextlib import asynccontextmanager
+from contextlib import asynccontextmanager, contextmanager
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Annotated
+from typing import Annotated, Iterator
 
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import FileResponse
@@ -14,6 +14,7 @@ from pydantic import BaseModel, Field, field_validator
 
 ROOT_DIR = Path(__file__).resolve().parent.parent
 DB_PATH = ROOT_DIR / "data" / "lawyers.sqlite3"
+SCHEMA_VERSION = 2
 
 
 def get_connection() -> sqlite3.Connection:
@@ -22,9 +23,28 @@ def get_connection() -> sqlite3.Connection:
     return connection
 
 
+@contextmanager
+def db_connection() -> Iterator[sqlite3.Connection]:
+    """Yield a connection, committing on success and always closing it.
+
+    Unlike `with sqlite3.connect(...)` (which only commits/rolls back and
+    leaks the connection until it is garbage-collected), this explicitly
+    closes the underlying handle on every exit path.
+    """
+    connection = get_connection()
+    try:
+        yield connection
+        connection.commit()
+    except Exception:
+        connection.rollback()
+        raise
+    finally:
+        connection.close()
+
+
 def init_db() -> None:
     DB_PATH.parent.mkdir(parents=True, exist_ok=True)
-    with get_connection() as connection:
+    with db_connection() as connection:
         connection.execute(
             """
             CREATE TABLE IF NOT EXISTS intakes (
@@ -34,49 +54,34 @@ def init_db() -> None:
                 phone TEXT,
                 matter TEXT NOT NULL,
                 summary TEXT NOT NULL,
+                country_or_region TEXT,
                 language TEXT NOT NULL DEFAULT 'zh',
                 user_agent TEXT,
                 created_at TEXT NOT NULL
             )
             """
         )
-        migrate_intakes_schema(connection)
+        migrate_schema(connection)
 
 
-def migrate_intakes_schema(connection: sqlite3.Connection) -> None:
-    columns = [row["name"] for row in connection.execute("PRAGMA table_info(intakes)")]
-    if "country_or_region" not in columns:
+def migrate_schema(connection: sqlite3.Connection) -> None:
+    """Forward-only, non-destructive schema migrations.
+
+    Version tracking uses SQLite's PRAGMA user_version (0 = pre-migration).
+    Each step only adds columns/tables; existing rows are never dropped.
+    """
+    version = connection.execute("PRAGMA user_version").fetchone()[0]
+    if version >= SCHEMA_VERSION:
         return
 
-    connection.execute("ALTER TABLE intakes RENAME TO intakes_old")
-    connection.execute(
-        """
-        CREATE TABLE intakes (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT NOT NULL,
-            email TEXT NOT NULL,
-            phone TEXT,
-            matter TEXT NOT NULL,
-            summary TEXT NOT NULL,
-            language TEXT NOT NULL DEFAULT 'zh',
-            user_agent TEXT,
-            created_at TEXT NOT NULL
-        )
-        """
-    )
-    connection.execute(
-        """
-        INSERT INTO intakes (
-            id, name, email, phone, matter, summary,
-            language, user_agent, created_at
-        )
-        SELECT
-            id, name, email, phone, matter, summary,
-            language, user_agent, created_at
-        FROM intakes_old
-        """
-    )
-    connection.execute("DROP TABLE intakes_old")
+    columns = [row["name"] for row in connection.execute("PRAGMA table_info(intakes)")]
+    if "country_or_region" not in columns:
+        # v2: add the country/region field called for by design-sketch.md.
+        # The previous migration renamed + recreated the table, silently
+        # dropping this column and its data — ADD COLUMN preserves rows.
+        connection.execute("ALTER TABLE intakes ADD COLUMN country_or_region TEXT")
+
+    connection.execute(f"PRAGMA user_version = {SCHEMA_VERSION}")
 
 
 @asynccontextmanager
@@ -94,9 +99,10 @@ class IntakeCreate(BaseModel):
     matter: Annotated[str, Field(min_length=1, max_length=80)]
     summary: Annotated[str, Field(min_length=1, max_length=2000)]
     phone: Annotated[str | None, Field(max_length=60)] = None
+    country: Annotated[str | None, Field(max_length=80)] = None
     language: Annotated[str, Field(pattern="^(zh|en)$")] = "zh"
 
-    @field_validator("name", "email", "phone", "matter", "summary", mode="before")
+    @field_validator("name", "email", "phone", "country", "matter", "summary", mode="before")
     @classmethod
     def trim_text(cls, value: str | None) -> str | None:
         if value is None:
@@ -138,14 +144,14 @@ async def create_intake(payload: IntakeCreate, request: Request) -> IntakeCreate
     user_agent = request.headers.get("user-agent")
 
     try:
-        with get_connection() as connection:
+        with db_connection() as connection:
             cursor = connection.execute(
                 """
                 INSERT INTO intakes (
                     name, email, phone, matter, summary,
-                    language, user_agent, created_at
+                    country_or_region, language, user_agent, created_at
                 )
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """,
                 (
                     payload.name,
@@ -153,6 +159,7 @@ async def create_intake(payload: IntakeCreate, request: Request) -> IntakeCreate
                     payload.phone,
                     payload.matter,
                     payload.summary,
+                    payload.country,
                     payload.language,
                     user_agent,
                     created_at,

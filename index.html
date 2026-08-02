@@ -535,6 +535,10 @@
               <label for="phone" data-zh="联系电话" data-en="Phone">联系电话</label>
               <input id="phone" name="phone" type="tel" placeholder="可选">
             </div>
+            <div class="field">
+              <label for="country" data-zh="国家 / 地区" data-en="Country / Region">国家 / 地区</label>
+              <input id="country" name="country" placeholder="可选">
+            </div>
             <div class="field full">
               <label for="summary" data-zh="一句话描述问题" data-en="Briefly describe the issue">一句话描述问题</label>
               <textarea id="summary" name="summary" required placeholder="例如：海外客户已收货，但 4 个月未支付尾款。"></textarea>
@@ -780,6 +784,7 @@
           if (!field.dataset.enPlaceholder) {
             field.dataset.enPlaceholder = field.id === "name" ? "For example: Ms. Wang"
               : field.id === "phone" ? "Optional"
+              : field.id === "country" ? "Optional"
               : field.id === "email" ? "For receiving follow-up"
               : "For example: Goods delivered, but the final payment is four months overdue.";
           }
@@ -799,6 +804,7 @@
           name: formData.get("name"),
           email: formData.get("email"),
           phone: formData.get("phone") || null,
+          country: formData.get("country") || null,
           matter: formData.get("matter"),
           summary: formData.get("summary"),
           language: currentLang
