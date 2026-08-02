@@ -426,6 +426,13 @@ def test_admin_page_served(tmp_db):
         assert "管理后台" in resp.text
 
 
+def test_static_pages_exist_on_disk():
+    """FileResponse endpoints must point at files that actually exist —
+    regression guard for the Docker image missing admin.html."""
+    for name in ("index.html", "admin.html"):
+        assert (m.ROOT_DIR / name).is_file(), f"{name} missing from repo root"
+
+
 def test_admin_list_requires_token(tmp_db):
     with TestClient(m.app) as client:
         assert client.get("/admin/api/intakes").status_code == 401
