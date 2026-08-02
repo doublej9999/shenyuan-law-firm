@@ -1,4 +1,4 @@
-# Profound Law Firm
+# shenyuan-law-firm
 
 一个最小可运行的 FastAPI 项目，使用现有 `index.html` 作为前端，并把咨询表单保存到 SQLite。
 
