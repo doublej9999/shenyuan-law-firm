@@ -252,11 +252,144 @@ def test_health(tmp_db):
 
 
 def test_rate_limit_returns_429(tmp_db):
-    payload = dict(VALID_PAYLOAD, email="x@test.com", name="x", matter="m", summary="s")
     with TestClient(m.app) as client:
-        statuses = [client.post("/api/intakes", json=payload).status_code for _ in range(6)]
+        # Unique emails so the dedupe check never fires; the rate limiter is
+        # keyed by client IP, which stays the same.
+        statuses = [
+            client.post(
+                "/api/intakes",
+                json=dict(VALID_PAYLOAD, email=f"x{i}@test.com", name="x", matter="m", summary="s"),
+            ).status_code
+            for i in range(6)
+        ]
     assert statuses[:5] == [201] * 5
     assert statuses[5] == 429
+
+
+# --- Duplicate detection ----------------------------------------------
+
+
+def test_duplicate_email_rejected(tmp_db):
+    with TestClient(m.app) as client:
+        assert client.post("/api/intakes", json=VALID_PAYLOAD).status_code == 201
+        resp = client.post("/api/intakes", json=VALID_PAYLOAD)
+        assert resp.status_code == 409
+        assert "请勿重复提交" in resp.json()["detail"]
+
+
+def test_duplicate_phone_rejected(tmp_db):
+    with TestClient(m.app) as client:
+        p1 = dict(VALID_PAYLOAD, email="a1@test.com", phone="+1 555 0100")
+        p2 = dict(VALID_PAYLOAD, email="a2@test.com", phone="+1 555 0100")
+        assert client.post("/api/intakes", json=p1).status_code == 201
+        assert client.post("/api/intakes", json=p2).status_code == 409
+
+
+def test_same_email_after_window_allowed(tmp_db, monkeypatch):
+    monkeypatch.setenv("DEDUPE_WINDOW_HOURS", "0")
+    with TestClient(m.app) as client:
+        assert client.post("/api/intakes", json=VALID_PAYLOAD).status_code == 201
+        assert client.post("/api/intakes", json=VALID_PAYLOAD).status_code == 201
+
+
+# --- Auto-reply email --------------------------------------------------
+
+
+def test_intake_triggers_auto_reply(tmp_db, monkeypatch):
+    sent = {}
+    monkeypatch.setattr(m, "_send_auto_reply", lambda intake: sent.update(intake))
+    with TestClient(m.app) as client:
+        resp = client.post("/api/intakes", json=VALID_PAYLOAD)
+        assert resp.status_code == 201
+    assert sent.get("email") == "z@test.com"
+    assert sent.get("matter") == "国际贸易争议"
+
+
+def test_auto_reply_disabled_without_smtp(tmp_db):
+    monkeypatch = pytest.MonkeyPatch()
+    monkeypatch.delenv("SMTP_HOST", raising=False)
+    monkeypatch.delenv("SMTP_FROM", raising=False)
+    try:
+        m._send_auto_reply({"name": "x", "email": "x@test.com", "matter": "贸易", "summary": "s"})
+    finally:
+        monkeypatch.undo()
+
+
+# --- File uploads ------------------------------------------------------
+
+
+def _upload(client, intake_id, filename, content, token=None):
+    headers = {"Authorization": f"Bearer {token}"} if token else {}
+    return client.post(
+        f"/api/intakes/{intake_id}/files",
+        files={"file": (filename, content)},
+        headers=headers,
+    )
+
+
+def test_upload_valid_pdf(tmp_db):
+    with TestClient(m.app) as client:
+        intake_id = client.post("/api/intakes", json=VALID_PAYLOAD).json()["id"]
+        resp = _upload(client, intake_id, "contract.pdf", b"%PDF-1.4 fake pdf content")
+        assert resp.status_code == 200
+        assert resp.json()["original_name"] == "contract.pdf"
+        assert resp.json()["intake_id"] == intake_id
+
+        # File is listed for admins.
+        monkeypatch = pytest.MonkeyPatch()
+        monkeypatch.setenv("ADMIN_TOKEN", "secret-token")
+        try:
+            rows = client.get(
+                f"/admin/api/intakes/{intake_id}/files",
+                headers={"Authorization": "Bearer secret-token"},
+            ).json()
+            assert len(rows) == 1
+            assert rows[0]["original_name"] == "contract.pdf"
+        finally:
+            monkeypatch.undo()
+
+
+def test_upload_rejects_bad_extension(tmp_db):
+    with TestClient(m.app) as client:
+        intake_id = client.post("/api/intakes", json=VALID_PAYLOAD).json()["id"]
+        resp = _upload(client, intake_id, "evil.exe", b"MZ fake exe")
+        assert resp.status_code == 415
+
+
+def test_upload_rejects_magic_mismatch(tmp_db):
+    with TestClient(m.app) as client:
+        intake_id = client.post("/api/intakes", json=VALID_PAYLOAD).json()["id"]
+        resp = _upload(client, intake_id, "fake.pdf", b"not really a pdf")
+        assert resp.status_code == 415
+
+
+def test_upload_unknown_intake_404(tmp_db):
+    with TestClient(m.app) as client:
+        resp = _upload(client, 999, "a.pdf", b"%PDF-1.4 x")
+        assert resp.status_code == 404
+
+
+def test_admin_download_file(tmp_db):
+    monkeypatch = pytest.MonkeyPatch()
+    monkeypatch.setenv("ADMIN_TOKEN", "secret-token")
+    try:
+        with TestClient(m.app) as client:
+            intake_id = client.post("/api/intakes", json=VALID_PAYLOAD).json()["id"]
+            _upload(client, intake_id, "contract.pdf", b"%PDF-1.4 hello")
+            rows = client.get(
+                f"/admin/api/intakes/{intake_id}/files",
+                headers={"Authorization": "Bearer secret-token"},
+            ).json()
+            file_id = rows[0]["id"]
+            resp = client.get(
+                f"/admin/api/intakes/{intake_id}/files/{file_id}/download",
+                headers={"Authorization": "Bearer secret-token"},
+            )
+            assert resp.status_code == 200
+            assert resp.content == b"%PDF-1.4 hello"
+            assert "contract.pdf" in resp.headers["content-disposition"]
+    finally:
+        monkeypatch.undo()
 
 
 # --- Notifications -----------------------------------------------------
@@ -410,5 +543,24 @@ def test_admin_export_with_token(tmp_db):
             assert "country_or_region" in resp.text
             assert "status" in resp.text
             assert "美国" in resp.text
+    finally:
+        monkeypatch.undo()
+
+
+def test_admin_export_filters(tmp_db):
+    monkeypatch = pytest.MonkeyPatch()
+    monkeypatch.setenv("ADMIN_TOKEN", "secret-token")
+    try:
+        with TestClient(m.app) as client:
+            headers = {"Authorization": "Bearer secret-token"}
+            client.post("/api/intakes", json=VALID_PAYLOAD)
+            client.patch("/admin/api/intakes/1", headers=headers, json={"status": "closed"})
+
+            all_csv = client.get("/admin/intakes.csv", headers=headers).text
+            closed_csv = client.get("/admin/intakes.csv?status=closed", headers=headers).text
+            q_csv = client.get("/admin/intakes.csv?q=张三", headers=headers).text
+            empty_csv = client.get("/admin/intakes.csv?status=new", headers=headers).text
+            assert "张三" in all_csv and "张三" in closed_csv and "张三" in q_csv
+            assert "张三" not in empty_csv  # only the header line remains
     finally:
         monkeypatch.undo()

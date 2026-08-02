@@ -7,13 +7,16 @@ import logging
 import os
 import secrets
 import sqlite3
+import smtplib
 import urllib.request
+import uuid
 from contextlib import asynccontextmanager, contextmanager
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
+from email.message import EmailMessage
 from pathlib import Path
 from typing import Annotated, Iterator
 
-from fastapi import BackgroundTasks, FastAPI, HTTPException, Request
+from fastapi import BackgroundTasks, FastAPI, File, HTTPException, Request, UploadFile
 from fastapi.responses import FileResponse, JSONResponse, Response
 from pydantic import BaseModel, EmailStr, Field, field_validator
 from slowapi import Limiter
@@ -23,12 +26,50 @@ logger = logging.getLogger(__name__)
 
 ROOT_DIR = Path(__file__).resolve().parent.parent
 DB_PATH = ROOT_DIR / "data" / "lawyers.sqlite3"
+FILES_DIR = DB_PATH.parent / "files"
 SCHEMA_VERSION = 3
 
 # Per-IP limit for the public intake form. Prevents spam bots from flooding
 # the SQLite database. Humans rarely submit more than a few times a minute.
 INTAKE_RATE_LIMIT = "5/minute"
 ADMIN_RATE_LIMIT = "30/minute"
+
+MAX_UPLOAD_SIZE = 20 * 1024 * 1024  # 20 MB per file
+# Extension -> magic bytes used to verify content, not just the filename.
+ALLOWED_UPLOAD_TYPES = {
+    ".pdf": b"%PDF",
+    ".docx": b"PK",
+    ".doc": b"\xd0\xcf\x11\xe0",
+    ".xlsx": b"PK",
+    ".xls": b"\xd0\xcf\x11\xe0",
+    ".jpg": b"\xff\xd8",
+    ".jpeg": b"\xff\xd8",
+    ".png": b"\x89PNG",
+    ".zip": b"PK",
+}
+
+# Materials checklist per matter type, used in the auto-reply email.
+MATERIALS_BY_MATTER = {
+    "trade": ["合同、订单、发票、付款记录", "提单、物流、报关、质检文件", "与对方的邮件、微信、WhatsApp 记录", "对方公司名称、地址、联系人信息"],
+    "recovery": ["欠款金额和到期时间", "债务人公司或个人信息", "合同、账单、催款记录", "已有判决、仲裁裁决或资产线索"],
+    "legacy": ["亲属关系证明", "死亡证明、遗嘱或遗产文件", "房产、股权、存款等资产线索", "涉及国家或地区、家族成员联系方式"],
+    "unsure": ["简要时间线", "相关人员、公司或家族成员信息", "合同、沟通记录、资产线索或已有文件", "你希望解决的问题和理想结果"],
+}
+
+
+def _matter_key(matter: str) -> str:
+    if "国际贸易" in matter:
+        return "trade"
+    if "诉讼" in matter or "债务" in matter:
+        return "recovery"
+    if "继承" in matter or "家族" in matter:
+        return "legacy"
+    return "unsure"
+
+
+def _dedupe_window_hours() -> int:
+    """Reject resubmissions from the same email/phone within this window."""
+    return int(os.environ.get("DEDUPE_WINDOW_HOURS", "24"))
 
 # Lead status workflow: 新线索 -> 已联系 -> 处理中 -> 已结案
 VALID_STATUSES = ("new", "contacted", "in_progress", "closed")
@@ -71,6 +112,7 @@ def db_connection() -> Iterator[sqlite3.Connection]:
 
 def init_db() -> None:
     DB_PATH.parent.mkdir(parents=True, exist_ok=True)
+    FILES_DIR.mkdir(parents=True, exist_ok=True)
     with db_connection() as connection:
         connection.execute(
             """
@@ -88,6 +130,19 @@ def init_db() -> None:
                 status TEXT NOT NULL DEFAULT 'new',
                 note TEXT,
                 consent_at TEXT
+            )
+            """
+        )
+        connection.execute(
+            """
+            CREATE TABLE IF NOT EXISTS files (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                intake_id INTEGER NOT NULL,
+                original_name TEXT NOT NULL,
+                stored_name TEXT NOT NULL,
+                size INTEGER NOT NULL,
+                content_type TEXT,
+                uploaded_at TEXT NOT NULL
             )
             """
         )
@@ -119,6 +174,21 @@ def migrate_schema(connection: sqlite3.Connection) -> None:
     if "consent_at" not in columns:
         # v3: privacy consent timestamp (PIPL).
         connection.execute("ALTER TABLE intakes ADD COLUMN consent_at TEXT")
+
+    # v4: case materials uploads.
+    connection.execute(
+        """
+        CREATE TABLE IF NOT EXISTS files (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            intake_id INTEGER NOT NULL,
+            original_name TEXT NOT NULL,
+            stored_name TEXT NOT NULL,
+            size INTEGER NOT NULL,
+            content_type TEXT,
+            uploaded_at TEXT NOT NULL
+        )
+        """
+    )
 
     logger.info("Migrating intakes schema to version %d", SCHEMA_VERSION)
     connection.execute(f"PRAGMA user_version = {SCHEMA_VERSION}")
@@ -218,6 +288,57 @@ def _send_intake_notification(intake: dict) -> None:
             response.read()
     except Exception:
         logger.exception("Failed to send intake notification webhook")
+
+
+def _smtp_config() -> dict:
+    return {
+        "host": os.environ.get("SMTP_HOST", ""),
+        "port": int(os.environ.get("SMTP_PORT", "587")),
+        "user": os.environ.get("SMTP_USER", ""),
+        "password": os.environ.get("SMTP_PASSWORD", ""),
+        "from": os.environ.get("SMTP_FROM", ""),
+        "tls": os.environ.get("SMTP_USE_TLS", "1") == "1",
+    }
+
+
+def _send_auto_reply(intake: dict) -> None:
+    """Send a confirmation + materials-checklist email to the client.
+
+    Disabled unless SMTP_HOST and SMTP_FROM are configured. Failures are
+    logged, never surfaced to the request.
+    """
+    config = _smtp_config()
+    if not config["host"] or not config["from"]:
+        return
+
+    key = _matter_key(intake["matter"])
+    materials = "\n".join(f"- {item}" for item in MATERIALS_BY_MATTER[key])
+    body = (
+        f"您好，{intake['name']}，\n\n"
+        "我们已收到您的咨询信息，会尽快与您联系。\n"
+        "Dear client, we have received your inquiry and will get back to you shortly.\n\n"
+        "建议先准备以下材料 / Suggested documents to prepare:\n"
+        f"{materials}\n\n"
+        "紧急情况（财产转移、期限临近、证据灭失等）请直接通过微信注明“紧急”。\n"
+        "If the matter is urgent, please mark it as urgent on WeChat.\n\n"
+        "本邮件不构成委托关系或正式法律意见。\n"
+        "This email does not create an attorney-client relationship or formal legal advice."
+    )
+    message = EmailMessage()
+    message["From"] = config["from"]
+    message["To"] = intake["email"]
+    message["Subject"] = "已收到您的咨询信息 / We received your inquiry"
+    message.set_content(body)
+
+    try:
+        with smtplib.SMTP(config["host"], config["port"], timeout=10) as server:
+            if config["tls"]:
+                server.starttls()
+            if config["user"]:
+                server.login(config["user"], config["password"])
+            server.send_message(message)
+    except Exception:
+        logger.exception("Failed to send auto-reply to %s", intake["email"])
 
 
 class IntakeCreate(BaseModel):
@@ -357,20 +478,35 @@ def admin_update_intake(
 
 @app.get("/admin/intakes.csv", include_in_schema=False)
 @limiter.limit(ADMIN_RATE_LIMIT)
-def export_intakes(request: Request) -> Response:
+def export_intakes(
+    request: Request, status: str | None = None, q: str | None = None
+) -> Response:
     """Export all intakes as CSV. Protected by the ADMIN_TOKEN bearer token."""
     if not _is_authorized(request):
         raise HTTPException(status_code=401, detail="Unauthorized")
 
+    where, params = [], []
+    if status:
+        if status not in VALID_STATUSES:
+            raise HTTPException(status_code=422, detail="Invalid status")
+        where.append("status = ?")
+        params.append(status)
+    if q:
+        where.append(
+            "(name LIKE ? OR email LIKE ? OR phone LIKE ? OR matter LIKE ? OR summary LIKE ?)"
+        )
+        params.extend([f"%{q}%"] * 5)
+    sql = """
+        SELECT id, created_at, name, email, phone, country_or_region,
+               matter, summary, language, status, note, consent_at
+        FROM intakes
+    """
+    if where:
+        sql += " WHERE " + " AND ".join(where)
+    sql += " ORDER BY id DESC"
+
     with db_connection() as connection:
-        rows = connection.execute(
-            """
-            SELECT id, created_at, name, email, phone, country_or_region,
-                   matter, summary, language, status, note, consent_at
-            FROM intakes
-            ORDER BY id DESC
-            """
-        ).fetchall()
+        rows = connection.execute(sql, params).fetchall()
 
     buffer = io.StringIO()
     writer = csv.writer(buffer)
@@ -411,6 +547,24 @@ def create_intake(
 
     try:
         with db_connection() as connection:
+            # Duplicate detection: same email or phone within the window.
+            cutoff = (
+                datetime.now(timezone.utc) - timedelta(hours=_dedupe_window_hours())
+            ).isoformat()
+            duplicate = connection.execute(
+                """
+                SELECT id FROM intakes
+                WHERE created_at > ?
+                  AND (email = ? OR (phone IS NOT NULL AND ? IS NOT NULL AND phone = ?))
+                LIMIT 1
+                """,
+                (cutoff, payload.email, payload.phone, payload.phone),
+            ).fetchone()
+            if duplicate:
+                raise HTTPException(
+                    status_code=409,
+                    detail="已收到过您的信息，请勿重复提交 / We already received your submission",
+                )
             cursor = connection.execute(
                 """
                 INSERT INTO intakes (
@@ -449,5 +603,102 @@ def create_intake(
             "created_at": created_at,
         },
     )
+    background_tasks.add_task(
+        _send_auto_reply,
+        {
+            "name": payload.name,
+            "email": payload.email,
+            "matter": payload.matter,
+            "summary": payload.summary,
+        },
+    )
 
     return IntakeCreated(id=cursor.lastrowid, status="created", created_at=created_at)
+
+
+@app.post("/api/intakes/{intake_id}/files", include_in_schema=False)
+@limiter.limit("10/minute")
+def upload_intake_file(
+    intake_id: int, request: Request, file: UploadFile = File(...)
+) -> dict:
+    """Upload a case-material file for an intake (public, rate-limited).
+
+    Validates size and magic bytes, never trusts the extension alone.
+    Files are stored outside the web root under data/files/.
+    """
+    with db_connection() as connection:
+        intake = connection.execute(
+            "SELECT id FROM intakes WHERE id = ?", (intake_id,)
+        ).fetchone()
+    if intake is None:
+        raise HTTPException(status_code=404, detail="Intake not found")
+
+    original_name = (file.filename or "upload").rsplit("/", 1)[-1]
+    extension = Path(original_name).suffix.lower()
+    expected_magic = ALLOWED_UPLOAD_TYPES.get(extension)
+    if expected_magic is None:
+        raise HTTPException(status_code=415, detail="Unsupported file type")
+
+    content = file.file.read(MAX_UPLOAD_SIZE + 1)
+    if len(content) > MAX_UPLOAD_SIZE:
+        raise HTTPException(status_code=413, detail="File too large (max 20 MB)")
+    if not content.startswith(expected_magic):
+        raise HTTPException(status_code=415, detail="File content does not match its type")
+
+    stored_name = f"{uuid.uuid4().hex}{extension}"
+    target_dir = FILES_DIR / str(intake_id)
+    target_dir.mkdir(parents=True, exist_ok=True)
+    (target_dir / stored_name).write_bytes(content)
+
+    uploaded_at = datetime.now(timezone.utc).isoformat()
+    with db_connection() as connection:
+        cursor = connection.execute(
+            """
+            INSERT INTO files (intake_id, original_name, stored_name, size, content_type, uploaded_at)
+            VALUES (?, ?, ?, ?, ?, ?)
+            """,
+            (intake_id, original_name, stored_name, len(content), file.content_type, uploaded_at),
+        )
+    logger.info("File %s uploaded for intake %d", stored_name, intake_id)
+    return {
+        "id": cursor.lastrowid,
+        "intake_id": intake_id,
+        "original_name": original_name,
+        "size": len(content),
+        "uploaded_at": uploaded_at,
+    }
+
+
+@app.get("/admin/api/intakes/{intake_id}/files", include_in_schema=False)
+@limiter.limit(ADMIN_RATE_LIMIT)
+def admin_list_files(intake_id: int, request: Request) -> list[dict]:
+    if not _is_authorized(request):
+        raise HTTPException(status_code=401, detail="Unauthorized")
+    with db_connection() as connection:
+        rows = connection.execute(
+            """
+            SELECT id, original_name, size, content_type, uploaded_at
+            FROM files WHERE intake_id = ?
+            ORDER BY id
+            """,
+            (intake_id,),
+        ).fetchall()
+    return [dict(row) for row in rows]
+
+
+@app.get("/admin/api/intakes/{intake_id}/files/{file_id}/download", include_in_schema=False)
+@limiter.limit(ADMIN_RATE_LIMIT)
+def admin_download_file(intake_id: int, file_id: int, request: Request) -> FileResponse:
+    if not _is_authorized(request):
+        raise HTTPException(status_code=401, detail="Unauthorized")
+    with db_connection() as connection:
+        row = connection.execute(
+            "SELECT * FROM files WHERE id = ? AND intake_id = ?", (file_id, intake_id)
+        ).fetchone()
+    if row is None:
+        raise HTTPException(status_code=404, detail="File not found")
+    path = FILES_DIR / str(intake_id) / row["stored_name"]
+    if not path.is_file():
+        raise HTTPException(status_code=404, detail="File missing on disk")
+    logger.info("Admin downloaded file %d (intake %d) from %s", file_id, intake_id, _client_ip(request))
+    return FileResponse(path, filename=row["original_name"])

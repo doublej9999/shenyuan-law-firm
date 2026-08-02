@@ -49,6 +49,29 @@ POST /api/intakes
 部署在反向代理（Nginx / Caddy）后面时，限流依据 `X-Forwarded-For` 取真实客户端 IP。
 
 `POST /api/intakes` 必须携带 `"consent": true`（隐私同意），否则返回 422。
+同一邮箱或电话在 `DEDUPE_WINDOW_HOURS`（默认 24 小时）内重复提交会返回 409，
+前端会提示“请勿重复提交”。
+
+## 客户自动回复邮件
+
+配置 SMTP 环境变量（`SMTP_HOST` / `SMTP_PORT` / `SMTP_USER` / `SMTP_PASSWORD` /
+`SMTP_FROM`）后，提交成功会自动向客户发送中英双语确认邮件，附带按事项类型区分的
+材料清单。未配置 SMTP 时自动跳过；发送失败只记日志，不影响提交。
+
+## 补充材料上传
+
+```text
+POST /api/intakes/{id}/files
+```
+
+提交成功后可在弹窗中继续上传合同、单据、照片等材料（单个 ≤ 20MB，支持
+PDF / Word / Excel / 图片 / ZIP）。后端校验**魔数**（文件头字节）而非仅靠扩展名，
+存储路径在 `data/files/`（不在 Web 根目录）。后台可查看文件列表并下载：
+
+```text
+GET  /admin/api/intakes/{id}/files
+GET  /admin/api/intakes/{id}/files/{file_id}/download
+```
 
 ## 新咨询通知（webhook）
 
