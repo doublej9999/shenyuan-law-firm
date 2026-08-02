@@ -331,6 +331,12 @@
     }
     .modal-wechat strong { display: block; color: var(--teal-deep); font-size: 14px; }
     .modal-wechat p { margin-top: 5px; color: var(--muted); font-size: 12px; }
+    .modal-upload { margin-top: 14px; padding: 12px; background: #f7f2e9; border: 1px dashed var(--line); border-radius: 8px; }
+    .modal-upload strong { display: block; color: var(--teal-deep); font-size: 13px; }
+    .modal-upload p { margin-top: 5px; color: var(--muted); font-size: 12px; line-height: 1.5; }
+    .modal-upload input[type="file"] { display: block; margin-top: 8px; font-size: 12px; }
+    .modal-upload .button { width: auto; min-height: 36px; margin: 8px 0 0; padding: 0 14px; font-size: 13px; }
+    #uploadStatus { display: block; margin-top: 6px; font-size: 12px; font-weight: 700; }
     .success-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px; }
     .success-actions .button { width: auto; min-height: 40px; margin-top: 0; }
     .success-actions .button-outline { color: var(--teal-deep); border-color: rgba(13,108,107,.35); }
@@ -593,6 +599,13 @@
                 <p data-zh="建议发送“已提交 + 称呼 + 事项类型”，便于我们更快对应你的咨询信息。" data-en="Please send Submitted + your name + matter type so we can match your consultation information faster.">建议发送“已提交 + 称呼 + 事项类型”，便于我们更快对应你的咨询信息。</p>
               </div>
             </div>
+            <div class="modal-upload">
+              <strong data-zh="补充材料（可选）" data-en="Add documents (optional)">补充材料（可选）</strong>
+              <p data-zh="合同、单据、照片等。单个文件不超过 20MB，支持 PDF / Word / Excel / 图片 / ZIP。" data-en="Contracts, documents, photos. Up to 20MB each; PDF / Word / Excel / images / ZIP supported.">合同、单据、照片等。单个文件不超过 20MB，支持 PDF / Word / Excel / 图片 / ZIP。</p>
+              <input type="file" id="fileInput" multiple>
+              <button class="button button-primary" type="button" id="uploadBtn" data-zh="上传" data-en="Upload">上传</button>
+              <span id="uploadStatus"></span>
+            </div>
             <div class="success-actions">
               <button class="button button-primary" type="button" id="confirmModal" data-zh="我已了解" data-en="Got it">我已了解</button>
             </div>
@@ -753,8 +766,12 @@
       var closeModal = document.getElementById("closeModal");
       var confirmModal = document.getElementById("confirmModal");
       var pageToast = document.getElementById("pageToast");
+      var fileInput = document.getElementById("fileInput");
+      var uploadBtn = document.getElementById("uploadBtn");
+      var uploadStatus = document.getElementById("uploadStatus");
       var submitButton = form.querySelector("button[type='submit']");
       var toastTimer;
+      var lastIntakeId = null;
       var materialGuides = {
         trade: {
           zh: ["合同、订单、发票、付款记录", "提单、物流、报关、质检文件", "与对方的邮件、微信、WhatsApp 记录", "对方公司名称、地址、联系人信息"],
@@ -856,6 +873,8 @@
             } catch (parseError) {}
             throw new Error(errorText);
           }
+          var responseData = await response.json();
+          lastIntakeId = responseData.id;
           renderMaterialList();
           successMessage.classList.add("is-visible");
           closeModal.focus();
@@ -870,6 +889,34 @@
       function closeSuccessModal() {
         successMessage.classList.remove("is-visible");
       }
+
+      uploadBtn.addEventListener("click", async function () {
+        if (!lastIntakeId) return;
+        var files = fileInput.files;
+        if (!files.length) return;
+        uploadBtn.disabled = true;
+        uploadStatus.textContent = currentLang === "zh" ? "上传中…" : "Uploading…";
+        var ok = [], failed = [];
+        for (var i = 0; i < files.length; i++) {
+          var fd = new FormData();
+          fd.append("file", files[i]);
+          try {
+            var resp = await fetch("/api/intakes/" + lastIntakeId + "/files", { method: "POST", body: fd });
+            if (resp.ok) {
+              ok.push(files[i].name);
+            } else {
+              var detail = "";
+              try { detail = (await resp.json()).detail || ""; } catch (e) {}
+              failed.push(files[i].name + (detail ? "：" + detail : ""));
+            }
+          } catch (e) { failed.push(files[i].name); }
+        }
+        uploadStatus.style.color = failed.length ? "#b3261e" : "#2e7d32";
+        uploadStatus.textContent = ok.length + " " + (currentLang === "zh" ? "个文件上传成功" : "file(s) uploaded")
+          + (failed.length ? "；" + (currentLang === "zh" ? "失败" : "failed") + "：" + failed.join("、") : "");
+        fileInput.value = "";
+        uploadBtn.disabled = false;
+      });
 
       function showToast(message) {
         clearTimeout(toastTimer);
