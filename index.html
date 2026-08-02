@@ -247,6 +247,20 @@
     .field input:focus, .field select:focus, .field textarea:focus { border-color: var(--teal); box-shadow: 0 0 0 3px rgba(13,108,107,.12); }
     .intake-card .button { width: 100%; margin-top: 18px; }
     .form-note { margin-top: 10px; color: var(--muted); font-size: 11px; line-height: 1.5; }
+    .consent {
+      display: flex;
+      gap: 8px;
+      align-items: flex-start;
+      margin-top: 16px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.5;
+    }
+    .consent input { margin-top: 2px; flex: none; }
+    .privacy { margin-top: 6px; border-top: 0; font-size: 12px; color: var(--muted); }
+    .privacy summary { justify-content: flex-start; font-weight: 700; }
+    .privacy summary::after { margin-left: 6px; }
+    .privacy p { margin-top: 8px; max-width: none; line-height: 1.6; }
     .modal-backdrop {
       display: none;
       position: fixed;
@@ -544,6 +558,14 @@
               <textarea id="summary" name="summary" required placeholder="例如：海外客户已收货，但 4 个月未支付尾款。"></textarea>
             </div>
           </div>
+          <label class="consent" for="consent">
+            <input type="checkbox" id="consent" name="consent" required>
+            <span data-zh="我已阅读并同意《隐私说明》，同意提交以上信息用于咨询沟通。" data-en="I have read and agree to the Privacy Notice and consent to this information being used for consultation.">我已阅读并同意《隐私说明》，同意提交以上信息用于咨询沟通。</span>
+          </label>
+          <details class="privacy" id="privacy">
+            <summary data-zh="查看隐私说明" data-en="View privacy notice">查看隐私说明</summary>
+            <p data-zh="您提交的信息仅用于初步评估与后续沟通，我们不会对外披露。初步咨询不构成委托关系。请勿提交身份证号、银行账号、护照号码等敏感信息。" data-en="The information you submit is used solely for initial assessment and follow-up communication and will not be disclosed. An initial consultation does not create an attorney-client relationship. Please do not submit sensitive identifiers such as ID numbers, bank details, or passport numbers.">您提交的信息仅用于初步评估与后续沟通，我们不会对外披露。初步咨询不构成委托关系。请勿提交身份证号、银行账号、护照号码等敏感信息。</p>
+          </details>
           <button class="button button-primary" type="submit" data-zh="提交，获取下一步建议 →" data-en="Submit for next-step guidance →">提交，获取下一步建议 →</button>
           <p class="form-note" data-zh="提交不代表建立委托关系。请勿在此处填写身份证号、银行账号等敏感信息。" data-en="Submitting does not create an attorney-client relationship. Please do not include sensitive identifiers or bank details.">提交不代表建立委托关系。请勿在此处填写身份证号、银行账号等敏感信息。</p>
         </form>
@@ -803,7 +825,8 @@
           country: formData.get("country") || null,
           matter: formData.get("matter"),
           summary: formData.get("summary"),
-          language: currentLang
+          language: currentLang,
+          consent: document.getElementById("consent").checked
         };
       }
 

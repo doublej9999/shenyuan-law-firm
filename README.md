@@ -32,7 +32,8 @@ intakes
 ```
 
 字段：`name`、`email`、`phone`、`matter`、`summary`、`country_or_region`（国家/地区，可选）、
-`language`、`user_agent`、`created_at`。
+`language`、`user_agent`、`created_at`、`status`（线索状态）、`note`（跟进备注）、
+`consent_at`（隐私同意时间，提交时必须勾选同意）。
 
 数据库使用 WAL 模式并设置 busy_timeout，支持单写多读并发；schema 变更通过
 `PRAGMA user_version` 做版本化、非破坏性迁移（只加列，不删数据）。
@@ -47,15 +48,35 @@ POST /api/intakes
 `POST /api/intakes` 有按 IP 的速率限制（默认每个 IP 每分钟 5 次），防止垃圾流量刷库。
 部署在反向代理（Nginx / Caddy）后面时，限流依据 `X-Forwarded-For` 取真实客户端 IP。
 
+`POST /api/intakes` 必须携带 `"consent": true`（隐私同意），否则返回 422。
+
+## 新咨询通知（webhook）
+
+配置环境变量 `NOTIFY_WEBHOOK_URL` 后，每次新咨询提交成功会自动推送一条文本消息。
+默认格式兼容**企业微信群机器人**（群设置 → 添加群机器人 → 复制 Webhook 地址），
+也可用于钉钉/飞书等自定义接口。通知失败只记日志，不影响表单提交。
+
+## 管理后台
+
+```text
+GET  /admin                    # 后台页面（输入 ADMIN_TOKEN 登录）
+GET  /admin/api/intakes        # 线索列表，支持 ?status= 过滤、?q= 搜索、?limit=
+PATCH /admin/api/intakes/{id}  # 更新状态 / 备注，body: {"status": "...", "note": "..."}
+```
+
+线索状态流转：**新线索 → 已联系 → 处理中 → 已结案**。所有接口都需要
+`Authorization: Bearer <ADMIN_TOKEN>` 请求头；`ADMIN_TOKEN` 未设置时整个后台禁用。
+后台页面本身只是登录壳，数据接口全部带 token 鉴权。
+
 ## 查看咨询记录（管理导出）
 
 ```text
 GET /admin/intakes.csv
 ```
 
-返回全部咨询记录（最新在前）的 CSV，带 UTF-8 BOM（Excel 直接打开不乱码）。
-需要 `Authorization: Bearer <ADMIN_TOKEN>` 请求头；`ADMIN_TOKEN` 未设置时该接口
-默认禁用（返回 401）。建议设置一个足够强的随机值，例如：
+返回全部咨询记录（最新在前）的 CSV（含状态、备注、同意时间），带 UTF-8 BOM（Excel
+直接打开不乱码）。需要 `Authorization: Bearer <ADMIN_TOKEN>` 请求头；`ADMIN_TOKEN`
+未设置时该接口默认禁用（返回 401）。建议设置一个足够强的随机值，例如：
 
 ```bash
 python -c "import secrets; print(secrets.token_urlsafe(32))"
@@ -99,7 +120,8 @@ docker compose up -d --build
 
 ```text
 ADMIN_TOKEN=这里填随机令牌
+NOTIFY_WEBHOOK_URL=企业微信机器人Webhook地址（可选）
 ```
 
 1Panel 中可直接作为“Docker Compose 应用”导入 `docker-compose.yml`，然后在应用环境
-变量里填 `ADMIN_TOKEN`。
+变量里填 `ADMIN_TOKEN` 和 `NOTIFY_WEBHOOK_URL`。

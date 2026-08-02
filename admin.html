@@ -1,0 +1,253 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>咨询管理后台 | Profound Law Firm</title>
+  <style>
+    :root {
+      --ink: #172433; --muted: #627180; --paper: #f6f3ed; --surface: #fffdf9;
+      --line: #d9d9d2; --teal: #0d6c6b; --teal-deep: #084d50; --orange: #d76e39;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; color: var(--ink); background: var(--paper); font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif; font-size: 14px; line-height: 1.5; }
+    header { background: var(--teal-deep); color: #f5f2ec; padding: 14px 20px; display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+    header h1 { margin: 0; font-size: 17px; }
+    header .sub { font-size: 12px; opacity: .7; }
+    .wrap { max-width: 1280px; margin: 0 auto; padding: 18px 20px; }
+    .login-box { max-width: 360px; margin: 80px auto; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 24px; }
+    .login-box h2 { margin: 0 0 6px; font-size: 18px; }
+    .login-box p { margin: 0 0 14px; color: var(--muted); font-size: 13px; }
+    input[type="password"], input[type="search"], select, textarea {
+      width: 100%; padding: 8px 10px; border: 1px solid var(--line); border-radius: 6px; font: inherit; background: #fff; color: var(--ink);
+    }
+    input:focus, select:focus, textarea:focus { outline: none; border-color: var(--teal); box-shadow: 0 0 0 3px rgba(13,108,107,.12); }
+    button { font: inherit; font-weight: 700; cursor: pointer; border: 0; border-radius: 6px; padding: 8px 14px; }
+    .btn-primary { background: var(--orange); color: #fff; }
+    .btn-primary:hover { background: #c85d2e; }
+    .btn-ghost { background: transparent; color: var(--teal-deep); border: 1px solid var(--line); }
+    .toolbar { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 14px; }
+    .toolbar input[type="search"] { width: 240px; }
+    .toolbar select { width: 150px; }
+    .toolbar .spacer { flex: 1; }
+    .count { color: var(--muted); font-size: 13px; }
+    table { width: 100%; border-collapse: collapse; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+    th, td { text-align: left; padding: 9px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+    th { background: #f4eee4; font-size: 12px; color: var(--muted); white-space: nowrap; }
+    tr:last-child td { border-bottom: 0; }
+    td.id { color: var(--muted); font-size: 12px; }
+    td.time { color: var(--muted); font-size: 12px; white-space: nowrap; }
+    td.matter { font-weight: 700; }
+    .summary { max-width: 220px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 12px; font-weight: 700; }
+    .b-new { background: #f7e5d6; color: #6b341d; }
+    .b-contacted { background: #deefea; color: var(--teal-deep); }
+    .b-in_progress { background: #e3eaf6; color: #1f3a6e; }
+    .b-closed { background: #e5e5e0; color: #4a4a44; }
+    select.status { width: 100px; padding: 4px 6px; font-size: 13px; }
+    textarea.note { min-height: 44px; font-size: 13px; resize: vertical; }
+    .row-actions { margin-top: 6px; display: flex; gap: 6px; align-items: center; }
+    .row-actions .saved { color: #2e7d32; font-size: 12px; opacity: 0; transition: opacity .3s; }
+    .row-actions .saved.show { opacity: 1; }
+    .error { color: #b3261e; background: #fbe9e7; border: 1px solid #f5c6c0; border-radius: 6px; padding: 8px 12px; margin-bottom: 12px; }
+    .empty { padding: 30px; text-align: center; color: var(--muted); }
+    .hint { font-size: 12px; color: var(--muted); }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>咨询管理后台 <span class="sub">Profound Law Firm</span></h1>
+    <button class="btn-ghost" id="logoutBtn" hidden>退出登录</button>
+  </header>
+
+  <div class="wrap">
+    <div id="errorBox" class="error" hidden></div>
+
+    <div id="loginView" class="login-box">
+      <h2>登录</h2>
+      <p>输入管理令牌（部署时配置的 ADMIN_TOKEN）。</p>
+      <input type="password" id="tokenInput" placeholder="管理令牌" autocomplete="current-password">
+      <p style="margin-top:12px;"><button class="btn-primary" id="loginBtn" style="width:100%;">进入后台</button></p>
+      <p class="hint">令牌仅保存在本浏览器会话中，关闭页面即失效。</p>
+    </div>
+
+    <div id="panelView" hidden>
+      <div class="toolbar">
+        <input type="search" id="searchInput" placeholder="搜索姓名 / 邮箱 / 电话 / 事项 / 摘要">
+        <select id="statusFilter">
+          <option value="">全部状态</option>
+          <option value="new">新线索</option>
+          <option value="contacted">已联系</option>
+          <option value="in_progress">处理中</option>
+          <option value="closed">已结案</option>
+        </select>
+        <button class="btn-ghost" id="refreshBtn">刷新</button>
+        <span class="spacer"></span>
+        <span class="count" id="countLabel"></span>
+        <a class="btn-ghost" id="exportLink" href="#" style="text-decoration:none; display:inline-block;">导出 CSV</a>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th><th>提交时间</th><th>姓名</th><th>联系方式</th>
+            <th>国家 / 事项</th><th>问题描述</th><th>状态</th><th>备注</th>
+          </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      var tbody = document.getElementById("tbody");
+      var loginView = document.getElementById("loginView");
+      var panelView = document.getElementById("panelView");
+      var logoutBtn = document.getElementById("logoutBtn");
+      var errorBox = document.getElementById("errorBox");
+      var tokenInput = document.getElementById("tokenInput");
+      var loginBtn = document.getElementById("loginBtn");
+      var searchInput = document.getElementById("searchInput");
+      var statusFilter = document.getElementById("statusFilter");
+      var refreshBtn = document.getElementById("refreshBtn");
+      var countLabel = document.getElementById("countLabel");
+      var exportLink = document.getElementById("exportLink");
+      var state = { status: "", q: "" };
+
+      function token() { return sessionStorage.getItem("admin_token") || ""; }
+
+      function escapeHtml(s) {
+        return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
+          return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+        });
+      }
+
+      function truncate(s, n) { return s.length > n ? s.slice(0, n) + "…" : s; }
+
+      function showError(msg) {
+        errorBox.textContent = msg;
+        errorBox.hidden = false;
+        setTimeout(function () { errorBox.hidden = true; }, 5000);
+      }
+
+      function showLogin() {
+        loginView.hidden = false;
+        panelView.hidden = true;
+        logoutBtn.hidden = true;
+      }
+
+      function showPanel() {
+        loginView.hidden = true;
+        panelView.hidden = false;
+        logoutBtn.hidden = false;
+        exportLink.href = "/admin/intakes.csv?t=" + Date.now();
+      }
+
+      async function api(path, options) {
+        options = options || {};
+        options.headers = Object.assign({ "Authorization": "Bearer " + token() }, options.headers || {});
+        if (options.body) options.headers["Content-Type"] = "application/json";
+        var resp = await fetch(path, options);
+        if (resp.status === 401) {
+          sessionStorage.removeItem("admin_token");
+          showLogin();
+          throw new Error("登录已失效，请重新输入管理令牌");
+        }
+        if (!resp.ok) {
+          var detail = "";
+          try { detail = (await resp.json()).detail || resp.status; } catch (e) { detail = resp.status; }
+          throw new Error(detail);
+        }
+        return resp.json();
+      }
+
+      function statusBadge(status) {
+        var labels = { new: "新线索", contacted: "已联系", in_progress: "处理中", closed: "已结案" };
+        return '<span class="badge b-' + status + '">' + (labels[status] || status) + "</span>";
+      }
+
+      function rowElement(row) {
+        var tr = document.createElement("tr");
+        tr.innerHTML =
+          '<td class="id">' + row.id + "</td>" +
+          '<td class="time">' + escapeHtml(row.created_at) + "</td>" +
+          "<td>" + escapeHtml(row.name) + "</td>" +
+          "<td>" + escapeHtml(row.email) + "<br><span class='hint'>" + escapeHtml(row.phone || "") + "</span></td>" +
+          "<td><span class='matter'>" + escapeHtml(row.matter) + "</span><br><span class='hint'>" + escapeHtml(row.country_or_region || "") + "</span></td>" +
+          '<td class="summary" title="' + escapeHtml(row.summary) + '">' + escapeHtml(truncate(row.summary || "", 60)) + "</td>" +
+          "<td>" + statusBadge(row.status) + '<br><select class="status" data-id="' + row.id + '">' +
+            '<option value="new"' + (row.status === "new" ? " selected" : "") + ">新线索</option>" +
+            '<option value="contacted"' + (row.status === "contacted" ? " selected" : "") + ">已联系</option>" +
+            '<option value="in_progress"' + (row.status === "in_progress" ? " selected" : "") + ">处理中</option>" +
+            '<option value="closed"' + (row.status === "closed" ? " selected" : "") + ">已结案</option>" +
+          "</select></td>" +
+          '<td><textarea class="note" data-id="' + row.id + '" rows="2">' + escapeHtml(row.note || "") + "</textarea>" +
+            '<div class="row-actions"><button class="btn-ghost save-note" data-id="' + row.id + '">保存备注</button>' +
+            '<span class="saved" data-id="' + row.id + '">已保存</span></div></td>';
+
+        tr.querySelector("select.status").addEventListener("change", function () {
+          patch(row.id, { status: this.value });
+        });
+        tr.querySelector(".save-note").addEventListener("click", function () {
+          var note = tr.querySelector("textarea.note").value;
+          patch(row.id, { note: note }, true);
+        });
+        return tr;
+      }
+
+      function flashSaved(id) {
+        var el = document.querySelector('.saved[data-id="' + id + '"]');
+        if (el) { el.classList.add("show"); setTimeout(function () { el.classList.remove("show"); }, 1500); }
+      }
+
+      async function patch(id, body, showFlash) {
+        try {
+          await api("/admin/api/intakes/" + id, { method: "PATCH", body: JSON.stringify(body) });
+          if (showFlash) flashSaved(id);
+        } catch (e) { showError("更新失败：" + e.message); }
+      }
+
+      async function load() {
+        var params = new URLSearchParams();
+        if (state.status) params.set("status", state.status);
+        if (state.q) params.set("q", state.q);
+        try {
+          var rows = await api("/admin/api/intakes?" + params.toString());
+          tbody.innerHTML = "";
+          if (!rows.length) {
+            tbody.innerHTML = '<tr><td colspan="8" class="empty">暂无数据</td></tr>';
+            countLabel.textContent = "0 条";
+            return;
+          }
+          rows.forEach(function (row) { tbody.appendChild(rowElement(row)); });
+          countLabel.textContent = rows.length + " 条（最多显示 100，可用搜索缩小范围）";
+        } catch (e) { showError("加载失败：" + e.message); }
+      }
+
+      loginBtn.addEventListener("click", function () {
+        var t = tokenInput.value.trim();
+        if (!t) return;
+        sessionStorage.setItem("admin_token", t);
+        tokenInput.value = "";
+        showPanel();
+        load();
+      });
+      tokenInput.addEventListener("keydown", function (e) { if (e.key === "Enter") loginBtn.click(); });
+
+      logoutBtn.addEventListener("click", function () {
+        sessionStorage.removeItem("admin_token");
+        showLogin();
+      });
+
+      refreshBtn.addEventListener("click", load);
+      statusFilter.addEventListener("change", function () { state.status = this.value; load(); });
+      searchInput.addEventListener("keydown", function (e) {
+        if (e.key === "Enter") { state.q = this.value.trim(); load(); }
+      });
+
+      if (token()) { showPanel(); load(); } else { showLogin(); }
+    })();
+  </script>
+</body>
+</html>

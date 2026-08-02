@@ -10,6 +10,9 @@ services:
       # .env file next to this compose file (or in 1Panel's app settings).
       # Empty/unset = admin export disabled.
       ADMIN_TOKEN: ${ADMIN_TOKEN:-}
+      # Webhook URL for new-intake alerts (WeChat Work group bot, etc.).
+      # Empty/unset = notifications disabled.
+      NOTIFY_WEBHOOK_URL: ${NOTIFY_WEBHOOK_URL:-}
     volumes:
       - intake-data:/app/data
     restart: unless-stopped
