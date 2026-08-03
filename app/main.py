@@ -380,7 +380,17 @@ def _send_intake_notification(intake: dict) -> None:
     )
     try:
         with urllib.request.urlopen(request, timeout=5) as response:
-            response.read()
+            body = response.read()
+        # WeChat-style webhooks return HTTP 200 with an errcode body even on
+        # rejection (e.g. revoked key) — surface that instead of staying silent.
+        try:
+            result = json.loads(body.decode("utf-8", errors="replace"))
+            if result.get("errcode"):
+                logger.error(
+                    "Notification webhook rejected: %s", result.get("errmsg", result)
+                )
+        except ValueError:
+            pass  # non-JSON endpoint; assume delivered
     except Exception:
         logger.exception("Failed to send intake notification webhook")
 
