@@ -4,7 +4,9 @@ admin API, and the lead status workflow.
 Run with: pytest
 """
 
+import logging
 import sqlite3
+import urllib.request
 
 import pytest
 from fastapi.testclient import TestClient
@@ -414,6 +416,38 @@ def test_notification_without_webhook_url_is_noop(tmp_db):
         m._send_intake_notification(VALID_PAYLOAD)
     finally:
         monkeypatch.undo()
+
+
+def test_webhook_rejection_is_logged(tmp_db, monkeypatch, caplog):
+    """WeChat returns HTTP 200 + errcode on rejection (e.g. revoked key);
+    the app must surface it instead of staying silent."""
+
+    class FakeResponse:
+        def __init__(self, body):
+            self._body = body
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *args):
+            return False
+
+        def read(self):
+            return self._body
+
+    monkeypatch.setenv("NOTIFY_WEBHOOK_URL", "https://example.com/hook")
+    monkeypatch.setattr(
+        urllib.request,
+        "urlopen",
+        lambda request, timeout=5: FakeResponse(b'{"errcode":40013,"errmsg":"invalid webhook key"}'),
+    )
+    with caplog.at_level(logging.ERROR):
+        m._send_intake_notification(
+            {"name": "x", "email": "a@b.com", "matter": "贸易", "summary": "s",
+             "language": "zh", "created_at": "2026-08-03T00:00:00+00:00"}
+        )
+    assert "webhook rejected" in caplog.text
+    assert "invalid webhook key" in caplog.text
 
 
 # --- Admin API ---------------------------------------------------------
