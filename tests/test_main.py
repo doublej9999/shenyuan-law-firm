@@ -53,6 +53,7 @@ def _reset_limiter():
 def tmp_db(tmp_path, monkeypatch):
     db = tmp_path / "lawyers.sqlite3"
     monkeypatch.setattr(m, "DB_PATH", db)
+    monkeypatch.setattr(m, "FILES_DIR", tmp_path / "files")
     return db
 
 
@@ -317,81 +318,51 @@ def test_auto_reply_disabled_without_smtp(tmp_db):
         monkeypatch.undo()
 
 
-# --- File uploads ------------------------------------------------------
+# --- Admin file management --------------------------------------------
+# The public upload entry was removed; previously uploaded files remain
+# viewable/downloadable by admins. Seed rows directly to test this path.
 
 
-def _upload(client, intake_id, filename, content, token=None):
-    headers = {"Authorization": f"Bearer {token}"} if token else {}
-    return client.post(
-        f"/api/intakes/{intake_id}/files",
-        files={"file": (filename, content)},
-        headers=headers,
-    )
-
-
-def test_upload_valid_pdf(tmp_db):
-    with TestClient(m.app) as client:
-        intake_id = client.post("/api/intakes", json=VALID_PAYLOAD).json()["id"]
-        resp = _upload(client, intake_id, "contract.pdf", b"%PDF-1.4 fake pdf content")
-        assert resp.status_code == 200
-        assert resp.json()["original_name"] == "contract.pdf"
-        assert resp.json()["intake_id"] == intake_id
-
-        # File is listed for admins.
-        monkeypatch = pytest.MonkeyPatch()
-        monkeypatch.setenv("ADMIN_TOKEN", "secret-token")
-        try:
-            rows = client.get(
-                f"/admin/api/intakes/{intake_id}/files",
-                headers={"Authorization": "Bearer secret-token"},
-            ).json()
-            assert len(rows) == 1
-            assert rows[0]["original_name"] == "contract.pdf"
-        finally:
-            monkeypatch.undo()
-
-
-def test_upload_rejects_bad_extension(tmp_db):
-    with TestClient(m.app) as client:
-        intake_id = client.post("/api/intakes", json=VALID_PAYLOAD).json()["id"]
-        resp = _upload(client, intake_id, "evil.exe", b"MZ fake exe")
-        assert resp.status_code == 415
-
-
-def test_upload_rejects_magic_mismatch(tmp_db):
-    with TestClient(m.app) as client:
-        intake_id = client.post("/api/intakes", json=VALID_PAYLOAD).json()["id"]
-        resp = _upload(client, intake_id, "fake.pdf", b"not really a pdf")
-        assert resp.status_code == 415
-
-
-def test_upload_unknown_intake_404(tmp_db):
-    with TestClient(m.app) as client:
-        resp = _upload(client, 999, "a.pdf", b"%PDF-1.4 x")
-        assert resp.status_code == 404
-
-
-def test_admin_download_file(tmp_db):
+def test_admin_list_and_download_file(tmp_db):
     monkeypatch = pytest.MonkeyPatch()
     monkeypatch.setenv("ADMIN_TOKEN", "secret-token")
     try:
         with TestClient(m.app) as client:
             intake_id = client.post("/api/intakes", json=VALID_PAYLOAD).json()["id"]
-            _upload(client, intake_id, "contract.pdf", b"%PDF-1.4 hello")
-            rows = client.get(
-                f"/admin/api/intakes/{intake_id}/files",
-                headers={"Authorization": "Bearer secret-token"},
-            ).json()
-            file_id = rows[0]["id"]
+            stored = "abc123.pdf"
+            target = m.FILES_DIR / str(intake_id)
+            target.mkdir(parents=True, exist_ok=True)
+            (target / stored).write_bytes(b"%PDF-1.4 hello")
+            with m.db_connection() as connection:
+                connection.execute(
+                    """
+                    INSERT INTO files (intake_id, original_name, stored_name, size, content_type, uploaded_at)
+                    VALUES (?, ?, ?, ?, ?, ?)
+                    """,
+                    (intake_id, "合同.pdf", stored, 13, "application/pdf",
+                     "2026-08-03T00:00:00+00:00"),
+                )
+
+            headers = {"Authorization": "Bearer secret-token"}
+            rows = client.get(f"/admin/api/intakes/{intake_id}/files", headers=headers).json()
+            assert len(rows) == 1
+            assert rows[0]["original_name"] == "合同.pdf"
+
             resp = client.get(
-                f"/admin/api/intakes/{intake_id}/files/{file_id}/download",
-                headers={"Authorization": "Bearer secret-token"},
+                f"/admin/api/intakes/{intake_id}/files/{rows[0]['id']}/download",
+                headers=headers,
             )
             assert resp.status_code == 200
             assert resp.content == b"%PDF-1.4 hello"
-            assert "contract.pdf" in resp.headers["content-disposition"]
+            assert resp.headers["content-disposition"].startswith("attachment")
     finally:
         monkeypatch.undo()
+
+
+def test_admin_files_require_token(tmp_db):
+    with TestClient(m.app) as client:
+        assert client.get("/admin/api/intakes/1/files").status_code == 401
+        assert client.get("/admin/api/intakes/1/files/1/download").status_code == 401
 
 
 # --- Notifications -----------------------------------------------------

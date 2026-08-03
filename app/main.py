@@ -9,14 +9,13 @@ import secrets
 import sqlite3
 import smtplib
 import urllib.request
-import uuid
 from contextlib import asynccontextmanager, contextmanager
 from datetime import datetime, timedelta, timezone
 from email.message import EmailMessage
 from pathlib import Path
 from typing import Annotated, Iterator
 
-from fastapi import BackgroundTasks, FastAPI, File, HTTPException, Request, UploadFile
+from fastapi import BackgroundTasks, FastAPI, HTTPException, Request
 from fastapi.responses import FileResponse, JSONResponse, Response
 from pydantic import BaseModel, EmailStr, Field, field_validator
 from slowapi import Limiter
@@ -36,20 +35,6 @@ SITE_URL = os.environ.get("SITE_URL", "http://localhost:8000").rstrip("/")
 # the SQLite database. Humans rarely submit more than a few times a minute.
 INTAKE_RATE_LIMIT = "5/minute"
 ADMIN_RATE_LIMIT = "30/minute"
-
-MAX_UPLOAD_SIZE = 20 * 1024 * 1024  # 20 MB per file
-# Extension -> magic bytes used to verify content, not just the filename.
-ALLOWED_UPLOAD_TYPES = {
-    ".pdf": b"%PDF",
-    ".docx": b"PK",
-    ".doc": b"\xd0\xcf\x11\xe0",
-    ".xlsx": b"PK",
-    ".xls": b"\xd0\xcf\x11\xe0",
-    ".jpg": b"\xff\xd8",
-    ".jpeg": b"\xff\xd8",
-    ".png": b"\x89PNG",
-    ".zip": b"PK",
-}
 
 # Materials checklist per matter type, used in the auto-reply email.
 MATERIALS_BY_MATTER = {
@@ -873,59 +858,6 @@ def create_intake(
     )
 
     return IntakeCreated(id=cursor.lastrowid, status="created", created_at=created_at)
-
-
-@app.post("/api/intakes/{intake_id}/files", include_in_schema=False)
-@limiter.limit("10/minute")
-def upload_intake_file(
-    intake_id: int, request: Request, file: UploadFile = File(...)
-) -> dict:
-    """Upload a case-material file for an intake (public, rate-limited).
-
-    Validates size and magic bytes, never trusts the extension alone.
-    Files are stored outside the web root under data/files/.
-    """
-    with db_connection() as connection:
-        intake = connection.execute(
-            "SELECT id FROM intakes WHERE id = ?", (intake_id,)
-        ).fetchone()
-    if intake is None:
-        raise HTTPException(status_code=404, detail="Intake not found")
-
-    original_name = (file.filename or "upload").rsplit("/", 1)[-1]
-    extension = Path(original_name).suffix.lower()
-    expected_magic = ALLOWED_UPLOAD_TYPES.get(extension)
-    if expected_magic is None:
-        raise HTTPException(status_code=415, detail="Unsupported file type")
-
-    content = file.file.read(MAX_UPLOAD_SIZE + 1)
-    if len(content) > MAX_UPLOAD_SIZE:
-        raise HTTPException(status_code=413, detail="File too large (max 20 MB)")
-    if not content.startswith(expected_magic):
-        raise HTTPException(status_code=415, detail="File content does not match its type")
-
-    stored_name = f"{uuid.uuid4().hex}{extension}"
-    target_dir = FILES_DIR / str(intake_id)
-    target_dir.mkdir(parents=True, exist_ok=True)
-    (target_dir / stored_name).write_bytes(content)
-
-    uploaded_at = datetime.now(timezone.utc).isoformat()
-    with db_connection() as connection:
-        cursor = connection.execute(
-            """
-            INSERT INTO files (intake_id, original_name, stored_name, size, content_type, uploaded_at)
-            VALUES (?, ?, ?, ?, ?, ?)
-            """,
-            (intake_id, original_name, stored_name, len(content), file.content_type, uploaded_at),
-        )
-    logger.info("File %s uploaded for intake %d", stored_name, intake_id)
-    return {
-        "id": cursor.lastrowid,
-        "intake_id": intake_id,
-        "original_name": original_name,
-        "size": len(content),
-        "uploaded_at": uploaded_at,
-    }
 
 
 @app.get("/admin/api/intakes/{intake_id}/files", include_in_schema=False)

@@ -58,20 +58,17 @@ POST /api/intakes
 `SMTP_FROM`）后，提交成功会自动向客户发送中英双语确认邮件，附带按事项类型区分的
 材料清单。未配置 SMTP 时自动跳过；发送失败只记日志，不影响提交。
 
-## 补充材料上传
+## 已上传材料（客户端上传入口已移除）
 
-```text
-POST /api/intakes/{id}/files
-```
-
-提交成功后可在弹窗中继续上传合同、单据、照片等材料（单个 ≤ 20MB，支持
-PDF / Word / Excel / 图片 / ZIP）。后端校验**魔数**（文件头字节）而非仅靠扩展名，
-存储路径在 `data/files/`（不在 Web 根目录）。后台可查看文件列表并下载：
+客户端文件上传功能已隐藏/停用（公开上传接口一并关闭）。如历史数据中存在已上传
+的材料，后台仍可查看和下载：
 
 ```text
 GET  /admin/api/intakes/{id}/files
 GET  /admin/api/intakes/{id}/files/{file_id}/download
 ```
+
+材料文件存放在 `data/files/`（不在 Web 根目录，已被 .gitignore 排除）。
 
 ## 新咨询通知（webhook）
 
