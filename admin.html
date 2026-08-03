@@ -147,8 +147,39 @@
         loginView.hidden = true;
         panelView.hidden = false;
         logoutBtn.hidden = false;
-        exportLink.href = "/admin/intakes.csv?t=" + Date.now();
       }
+
+      // 导出 CSV：普通 <a> 导航不会携带 Authorization 头，必须用 fetch 带
+      // token 拉取后触发下载；顺带带上当前的状态/搜索筛选条件。
+      exportLink.addEventListener("click", async function (e) {
+        e.preventDefault();
+        var params = new URLSearchParams();
+        if (state.status) params.set("status", state.status);
+        if (state.q) params.set("q", state.q);
+        var qs = params.toString();
+        try {
+          var resp = await fetch("/admin/intakes.csv" + (qs ? "?" + qs : ""), {
+            headers: { "Authorization": "Bearer " + token() }
+          });
+          if (resp.status === 401) {
+            sessionStorage.removeItem("admin_token");
+            showLogin();
+            throw new Error("登录已失效，请重新输入管理令牌");
+          }
+          if (!resp.ok) throw new Error("HTTP " + resp.status);
+          var blob = await resp.blob();
+          var url = URL.createObjectURL(blob);
+          var a = document.createElement("a");
+          a.href = url;
+          a.download = "intakes.csv";
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+          URL.revokeObjectURL(url);
+        } catch (err) {
+          showError("导出失败：" + err.message);
+        }
+      });
 
       function statCard(num, lbl, sub) {
         return '<div class="stat"><div class="num">' + num + '</div><div class="lbl">' + lbl + "</div>" +
