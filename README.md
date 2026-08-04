@@ -100,10 +100,26 @@ PATCH /admin/api/intakes/{id}  # 更新状态 / 备注，body: {"status": "...",
 - **SEO**:首页含 Open Graph 标签、Twitter Card、canonical 和 LocalBusiness
   结构化数据（JSON-LD）；`GET /sitemap.xml` 自动生成站点地图。生产环境务必设置
   `SITE_URL`（如 `https://你的域名`），这些标签和地图里的链接都基于它生成。
+- **robots.txt**:`GET /robots.txt` 指向 sitemap，便于搜索引擎收录。
 - **独立服务落地页**:`/services/trade`、`/services/recovery`、`/services/legacy`
   三个页面，含各自的服务情形与材料清单，适合投放广告时直接链接。
 - **转化分析**:后台首页显示累计/今日线索、今日访问量与转化率，由 `GET /admin/api/stats`
   提供；首页每次访问记一条匿名计数（仅时间戳，不采集任何个人信息）。
+
+## Google Analytics 4 与 Search Console
+
+**GA4**：在 `.env`（或 1Panel 应用环境变量）设置 `GA_MEASUREMENT_ID=G-XXXXXXX`
+后，首页、服务页、文章页会自动注入 gtag 脚本。未设置时页面不输出任何 GA 标签。
+创建衡量 ID：Google Analytics → 管理 → 数据流 → Web → 复制"衡量 ID"。
+
+**Search Console**：在 GSC 添加资源后，任选一种验证方式：
+
+1. **sitemap 验证**（推荐）：先确认 `https://你的域名/sitemap.xml` 可访问，
+   在 GSC → 站点地图 提交该地址；域名验证用 DNS TXT 记录（在域名 DNS 面板添加）。
+2. 或使用 HTML 文件/meta 标签验证，把验证文件放入站点根目录即可被访问。
+
+验证通过后建议：把 sitemap 提交为站点地图；每周查看"效果"页确认收录与点击。
+服务页和文章页均含 canonical 与 JSON-LD（LegalService / 页面级结构），无需额外配置。
 
 ## 内容日历（150 篇 SEO 选题）
 
