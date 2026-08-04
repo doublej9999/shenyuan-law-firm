@@ -1019,6 +1019,19 @@ _ARTICLE_PAGE_TEMPLATE = """<!doctype html>
   <link rel="alternate" hreflang="x-default" href="{site_url}/articles/{slug}">
   {ga_tag}
   <title>{title_zh} | Shenyuan International</title>
+  <script type="application/ld+json">
+  {{
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    "headline": "{json_title_zh}",
+    "description": "{json_desc_zh}",
+    "datePublished": "{json_date}",
+    "inLanguage": "zh-CN",
+    "author": {{ "@type": "Organization", "name": "Shenyuan International 深远(国际)律师事务所" }},
+    "publisher": {{ "@type": "Organization", "name": "Shenyuan International", "url": "{json_site_url}" }},
+    "mainEntityOfPage": "{json_site_url}/articles/{json_slug}"
+  }}
+  </script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
@@ -1169,6 +1182,12 @@ def article_page(slug: str) -> Response:
         body_zh=body_zh,
         body_en=body_en,
         ga_tag=_ga_tag(),
+        # Raw (unescaped) values for the JSON-LD block — escaping would corrupt JSON.
+        json_title_zh=meta.get("title_zh", ""),
+        json_desc_zh=meta.get("description_zh", ""),
+        json_date=meta.get("date", ""),
+        json_slug=meta["slug"],
+        json_site_url=SITE_URL,
     )
     return Response(content=content, media_type="text/html; charset=utf-8")
 
@@ -1202,6 +1221,12 @@ def article_page_en(slug: str) -> Response:
         '<div class="wrap article-body" id="bodyEn" hidden>',
         '<div class="wrap article-body" id="bodyEn">',
     )
+    # Keep the BlogPosting JSON-LD in sync with the English variant.
+    zh_title = meta.get("title_zh", "")
+    en_title = meta.get("title_en", "")
+    if zh_title:
+        page = page.replace(f'"headline": "{zh_title}"', f'"headline": "{en_title}"')
+    page = page.replace('"inLanguage": "zh-CN"', '"inLanguage": "en"')
     return Response(content=page, media_type="text/html; charset=utf-8")
 
 
