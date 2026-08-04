@@ -70,37 +70,58 @@ STATUS_LABELS = {
     "closed": "已结案",
 }
 
-# Content for the three service landing pages.
+# Content for the three service landing pages (bilingual, matches homepage copy).
 SERVICES = {
     "trade": {
         "slug": "trade",
         "number": "01 / TRADE",
         "zh_title": "国际贸易争议",
-        "en_title": "International trade disputes",
+        "en_title": "International Trade Disputes",
         "zh_intro": "处理交易履行、货款、代理与跨境合同之间的纠纷，从欠款事实与证据入手，判断协商、追收或诉讼路径。",
-        "en_intro": "Disputes over performance, payment, agencies, distribution, and cross-border contracts.",
-        "items_zh": ["拖欠货款 / 供应商违约", "代理、经销、跨境合同", "海关、物流、质量争议"],
+        "en_intro": "We handle disputes over performance, payment, agencies, distribution, and cross-border contracts — starting from the facts and evidence to map negotiation, recovery, or litigation.",
+        "items_zh": ["拖欠货款 / 供应商违约", "代理、经销、跨境合同审查", "海关、物流、质量争议", "国际贸易诈骗识别与应对"],
+        "items_en": ["Unpaid invoices / supplier breach", "Agency, distribution & contract review", "Customs, logistics & quality disputes", "Trade fraud identification & response"],
         "materials_zh": MATERIALS_BY_MATTER["trade"],
+        "materials_en": [
+            "Contracts, purchase orders, invoices, and payment records",
+            "Bills of lading, logistics, customs, and quality inspection documents",
+            "Emails, WeChat, WhatsApp, or other communications",
+            "Counterparty company name, address, and contact details",
+        ],
     },
     "recovery": {
         "slug": "recovery",
         "number": "02 / RECOVERY",
         "zh_title": "诉讼与债务追收",
-        "en_title": "Litigation & debt recovery",
+        "en_title": "Litigation & Debt Recovery",
         "zh_intro": "从欠款事实与资产线索出发，判断追收、诉讼或执行路径，覆盖中国境内与海外资产。",
-        "en_intro": "Assess recovery, litigation, and enforcement options from the facts and asset trail.",
-        "items_zh": ["海外客户欠款", "中国境内资产调查", "判决、仲裁裁决执行", "商业欺诈和合作纠纷"],
+        "en_intro": "We assess recovery, litigation, and enforcement options from the facts and asset trail — covering assets both in mainland China and abroad.",
+        "items_zh": ["海外客户欠款追收", "中国境内与海外资产调查", "判决、仲裁裁决跨境执行", "商业欺诈调查"],
+        "items_en": ["Overseas customer debt recovery", "Asset tracing in China and abroad", "Cross-border judgment & award enforcement", "Commercial fraud investigation"],
         "materials_zh": MATERIALS_BY_MATTER["recovery"],
+        "materials_en": [
+            "Debt amount and due date",
+            "Debtor company or individual information",
+            "Contracts, statements, and demand records",
+            "Existing judgments, arbitral awards, or asset clues",
+        ],
     },
     "legacy": {
         "slug": "legacy",
         "number": "03 / LEGACY",
         "zh_title": "继承与家族资产纠纷",
-        "en_title": "Inheritance & family assets",
+        "en_title": "Inheritance & Family Assets",
         "zh_intro": "协助梳理大陆与海外多地的继承、房产、股权与家族争议，明确材料、法域与处理顺序。",
-        "en_intro": "Navigate multi-jurisdiction inheritance, property, equity, and family conflicts.",
+        "en_intro": "We help you navigate multi-jurisdiction inheritance, property, equity, and family conflicts — clarifying documents, jurisdictions, and the order of steps.",
         "items_zh": ["中国大陆与海外多地继承", "房产、股权、存款继承", "遗嘱、遗产分割", "家族成员失联或争议"],
+        "items_en": ["Mainland China and multi-country inheritance", "Property, equity, and deposit inheritance", "Wills and estate division", "Missing or disputed family members"],
         "materials_zh": MATERIALS_BY_MATTER["legacy"],
+        "materials_en": [
+            "Proof of family relationship",
+            "Death certificate, will, or estate documents",
+            "Property, equity, deposit, or other asset clues",
+            "Relevant countries or regions and family member contact details",
+        ],
     },
 }
 
@@ -526,67 +547,177 @@ def _record_page_view() -> None:
 
 
 def _render_service_page(svc: dict) -> str:
-    items = "".join(f"<li>{i}</li>" for i in svc["items_zh"])
-    materials = "".join(f"<li>{i}</li>" for i in svc["materials_zh"])
+    items = "".join(
+        f'<li data-zh="{z}" data-en="{e}">{z}</li>'
+        for z, e in zip(svc["items_zh"], svc["items_en"])
+    )
+    materials = "".join(
+        f'<li data-zh="{z}" data-en="{e}">{z}</li>'
+        for z, e in zip(svc["materials_zh"], svc["materials_en"])
+    )
     url = f"{SITE_URL}/services/{svc['slug']}"
+    zh_title = svc["zh_title"]
+    en_title = svc["en_title"]
+    zh_intro = svc["zh_intro"]
+    en_intro = svc["en_intro"]
+    number = svc["number"]
     return f"""<!doctype html>
 <html lang="zh-CN">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="index, follow">
-  <meta name="description" content="{svc['en_intro']}">
+  <meta name="description" content="{zh_intro}">
   <meta property="og:type" content="website">
-  <meta property="og:title" content="{svc['zh_title']} | Shenyuan Legal">
-  <meta property="og:description" content="{svc['zh_intro']}">
+  <meta property="og:title" content="{zh_title} | Shenyuan International">
+  <meta property="og:description" content="{zh_intro}">
   <meta property="og:url" content="{url}">
   <link rel="canonical" href="{url}">
-  <title>{svc['zh_title']} | Shenyuan Legal 深远(国际)律师事务所</title>
+  <title>{zh_title} | Shenyuan International 深远(国际)律师事务所</title>
+  <script type="application/ld+json">
+  {{
+    "@context": "https://schema.org",
+    "@type": "LegalService",
+    "name": "Shenyuan International 深远(国际)律师事务所",
+    "url": "{url}",
+    "description": "{zh_intro}",
+    "knowsLanguage": ["zh", "en"],
+    "areaServed": "Worldwide"
+  }}
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
   <style>
-    :root {{ --ink:#172433; --muted:#627180; --paper:#f6f3ed; --surface:#fffdf9; --line:#d9d9d2; --teal:#0d6c6b; --teal-deep:#084d50; --orange:#d76e39; }}
-    * {{ box-sizing:border-box; }}
-    body {{ margin:0; color:var(--ink); background:var(--paper); font-family:"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif; line-height:1.65; }}
-    .top {{ background:var(--teal-deep); color:#f5f2ec; }}
-    .top .wrap {{ display:flex; justify-content:space-between; align-items:center; min-height:64px; }}
-    .top a {{ color:#fff; text-decoration:none; font-size:13px; }}
-    .wrap {{ width:min(calc(100% - 40px), 960px); margin:0 auto; }}
-    .hero {{ padding:72px 0 40px; }}
-    .number {{ color:var(--orange); font-size:13px; font-weight:800; letter-spacing:.08em; }}
-    h1 {{ margin:14px 0 10px; font-size:clamp(30px,4vw,46px); letter-spacing:-.025em; line-height:1.1; }}
-    .en {{ color:var(--muted); font-size:15px; }}
-    .intro {{ margin-top:18px; font-size:16px; max-width:680px; }}
-    .cols {{ display:grid; grid-template-columns:1fr 1fr; gap:18px; margin:36px auto; }}
-    .card {{ background:var(--surface); border:1px solid var(--line); border-radius:10px; padding:24px; }}
-    .card h2 {{ margin:0 0 12px; font-size:17px; }}
-    ul {{ margin:0; padding:0; list-style:none; display:grid; gap:8px; }}
-    li {{ position:relative; padding-left:16px; }}
-    li::before {{ content:""; position:absolute; left:0; top:9px; width:5px; height:5px; background:var(--teal); border-radius:50%; }}
-    .cta {{ text-align:center; padding:10px 0 64px; }}
-    .button {{ display:inline-block; padding:14px 26px; background:var(--orange); color:#fff; border-radius:8px; text-decoration:none; font-weight:700; }}
-    .button:hover {{ background:#c85d2e; }}
-    footer {{ background:#15232d; color:rgba(255,255,255,.72); font-size:12px; padding:20px 0; text-align:center; }}
-    @media (max-width:640px) {{ .cols {{ grid-template-columns:1fr; }} }}
+    :root {{
+      --ink: #172433; --muted: #627180; --paper: #f6f3ed; --surface: #fffdf9;
+      --line: #d9d9d2; --teal: #0d6c6b; --teal-deep: #084d50;
+      --orange: #d76e39; --cream: #ede8de; --gold: #b08d57;
+      --shadow: 0 20px 50px rgba(20, 33, 44, .11);
+      --radius: 10px; --max: 1060px;
+      --serif: "Playfair Display", "Noto Serif SC", Georgia, "Songti SC", "SimSun", serif;
+      --sans: "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+    }}
+    * {{ box-sizing: border-box; }}
+    body {{ margin: 0; color: var(--ink); background: var(--paper); font-family: var(--sans); line-height: 1.65; }}
+    a {{ color: inherit; text-decoration: none; }}
+    button {{ font: inherit; cursor: pointer; }}
+    h1, h2, h3, p {{ margin: 0; }}
+    h1, h2, h3 {{ font-family: var(--serif); }}
+    .wrap {{ width: min(calc(100% - 40px), var(--max)); margin: 0 auto; }}
+
+    .topbar {{ background: var(--teal-deep); color: #f5f2ec; }}
+    .topbar .wrap {{ display: flex; justify-content: space-between; align-items: center; min-height: 66px; gap: 18px; }}
+    .topbar .brand {{ display: inline-flex; align-items: center; gap: 10px; color: #fff; font-size: 14px; font-weight: 700; }}
+    .brand-mark {{ display: grid; place-items: center; width: 30px; height: 30px; color: var(--teal-deep); background: #f7f2e9; border-radius: 7px; font-family: var(--serif); font-size: 16px; }}
+    .topbar .nav-links {{ display: flex; align-items: center; gap: 18px; font-size: 13px; }}
+    .topbar a {{ color: rgba(255,255,255,.85); }}
+    .topbar a:hover {{ color: #fff; }}
+    .lang-switch {{ padding: 7px 10px; color: rgba(255,255,255,.85); background: transparent; border: 1px solid rgba(255,255,255,.3); border-radius: 6px; font-size: 12px; }}
+
+    .hero {{ padding: 64px 0 34px; }}
+    .number {{ color: var(--gold); font-size: 13px; font-weight: 800; letter-spacing: .08em; }}
+    h1 {{ margin: 16px 0 10px; font-size: clamp(32px, 4.4vw, 50px); line-height: 1.14; letter-spacing: -.01em; }}
+    .en-sub {{ color: var(--muted); font-size: 15px; }}
+    .intro {{ margin-top: 18px; font-size: 16px; max-width: 720px; color: #334454; }}
+
+    .cols {{ display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin: 40px auto 0; }}
+    .card {{ background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 26px; }}
+    .card h2 {{ margin: 0 0 14px; font-size: 18px; }}
+    ul {{ margin: 0; padding: 0; list-style: none; display: grid; gap: 9px; }}
+    li {{ position: relative; padding-left: 16px; font-size: 14px; color: #435363; }}
+    li::before {{ content: ""; position: absolute; left: 0; top: 9px; width: 5px; height: 5px; background: var(--gold); border-radius: 50%; }}
+
+    .steps {{ margin-top: 18px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 0; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); }}
+    .step {{ padding: 22px 24px; }}
+    .step + .step {{ border-left: 1px solid var(--line); }}
+    .step span {{ display: block; color: var(--gold); font-size: 13px; font-weight: 800; }}
+    .step h3 {{ margin-top: 10px; font-size: 16px; }}
+    .step p {{ margin-top: 8px; color: var(--muted); font-size: 13px; }}
+
+    .cta {{ text-align: center; padding: 46px 0 70px; }}
+    .button {{ display: inline-flex; align-items: center; gap: 9px; min-height: 48px; padding: 0 26px; color: #fff; background: var(--orange); border-radius: 8px; font-size: 15px; font-weight: 700; transition: transform .2s ease, background .2s ease; }}
+    .button:hover {{ transform: translateY(-2px); background: #c85d2e; }}
+    .cta .note {{ margin-top: 14px; color: var(--muted); font-size: 12px; }}
+
+    footer {{ background: #15232d; color: rgba(255,255,255,.72); font-size: 12px; padding: 22px 0; text-align: center; line-height: 1.7; }}
+    footer a {{ color: rgba(255,255,255,.85); }}
+
+    @media (max-width: 720px) {{
+      .cols {{ grid-template-columns: 1fr; }}
+      .steps {{ grid-template-columns: 1fr; }}
+      .step + .step {{ border-left: 0; border-top: 1px solid var(--line); }}
+      .topbar .wrap {{ min-height: 60px; }}
+    }}
   </style>
 </head>
 <body>
-  <div class="top"><div class="wrap">
-    <strong>Shenyuan Legal</strong>
-    <a href="/">← 返回首页</a>
-  </div></div>
+  <div class="topbar">
+    <div class="wrap">
+      <a class="brand" href="/" aria-label="返回首页">
+        <span class="brand-mark">深</span>
+        <span>Shenyuan International</span>
+      </a>
+      <div class="nav-links">
+        <a href="/" data-zh="返回首页" data-en="Home">返回首页</a>
+        <button class="lang-switch" type="button" id="langToggle" aria-label="切换语言">EN / 中</button>
+      </div>
+    </div>
+  </div>
+
   <div class="wrap hero">
-    <div class="number">{svc['number']}</div>
-    <h1>{svc['zh_title']}</h1>
-    <div class="en">{svc['en_title']}</div>
-    <p class="intro">{svc['zh_intro']}</p>
+    <div class="number">{number}</div>
+    <h1 data-zh="{zh_title}" data-en="{en_title}">{zh_title}</h1>
+    <div class="en-sub" data-zh="跨境争议解决与家族资产保护" data-en="Cross-border dispute resolution & family asset protection">跨境争议解决与家族资产保护</div>
+    <p class="intro" data-zh="{zh_intro}" data-en="{en_intro}">{zh_intro}</p>
   </div>
+
   <div class="wrap cols">
-    <div class="card"><h2>常见情形</h2><ul>{items}</ul></div>
-    <div class="card"><h2>建议准备的材料</h2><ul>{materials}</ul></div>
+    <div class="card">
+      <h2 data-zh="常见情形" data-en="Common scenarios">常见情形</h2>
+      <ul>{items}</ul>
+    </div>
+    <div class="card">
+      <h2 data-zh="建议准备的材料" data-en="Suggested documents">建议准备的材料</h2>
+      <ul>{materials}</ul>
+    </div>
   </div>
+
+  <div class="wrap steps">
+    <div class="step"><span>01</span><h3 data-zh="免费咨询建档" data-en="Free consultation & intake">免费咨询建档</h3><p data-zh="提交基本情况，我们梳理人物、金额、时间线与目标。" data-en="Share the essentials; we map the parties, amounts, timeline, and goals.">提交基本情况，我们梳理人物、金额、时间线与目标。</p></div>
+    <div class="step"><span>02</span><h3 data-zh="事实、证据与法域评估" data-en="Facts, evidence & jurisdiction">事实、证据与法域评估</h3><p data-zh="识别时效、证据、资产位置与可能涉及的法域。" data-en="Identify timing, evidence, asset location, and relevant jurisdictions.">识别时效、证据、资产位置与可能涉及的法域。</p></div>
+    <div class="step"><span>03</span><h3 data-zh="策略、报价与执行" data-en="Strategy & execution">策略、报价与执行</h3><p data-zh="确定谈判、追收或诉讼策略，明确材料、风险与里程碑。" data-en="Define the strategy with clear milestones and risk boundaries.">确定谈判、追收或诉讼策略，明确材料、风险与里程碑。</p></div>
+  </div>
+
   <div class="wrap cta">
-    <a class="button" href="/#intake">提交案件信息，获取下一步建议 →</a>
+    <a class="button" href="/#intake" data-zh="免费评估我的案件 →" data-en="Free case assessment →">免费评估我的案件 →</a>
+    <p class="note" data-zh="提交不代表建立委托关系。初步咨询不收费，不承诺结果。" data-en="Submitting does not create an attorney-client relationship. Initial consultation is free and honest.">提交不代表建立委托关系。初步咨询不收费，不承诺结果。</p>
   </div>
-  <footer>© 2026 Shenyuan Legal · 深远(国际)律师事务所</footer>
+
+  <footer>
+    © 2026 Shenyuan International · 深远(国际)律师事务所<br>
+    <span data-zh="境外法律程序通过与当地执业律所合作提供。本页内容不构成法律意见。" data-en="Foreign proceedings are conducted through locally licensed counsel. This page does not constitute legal advice.">境外法律程序通过与当地执业律所合作提供。本页内容不构成法律意见。</span>
+  </footer>
+
+  <script>
+    (function () {{
+      var currentLang = "zh";
+      var zhTitle = {zh_title!r};
+      var enTitle = {en_title!r};
+      var langToggle = document.getElementById("langToggle");
+      function updateLanguage() {{
+        document.documentElement.lang = currentLang === "zh" ? "zh-CN" : "en";
+        document.title = currentLang === "zh" ? zhTitle + " | Shenyuan International 深远(国际)律师事务所" : enTitle + " | Shenyuan International";
+        document.querySelectorAll("[data-zh][data-en]").forEach(function (node) {{
+          node.textContent = currentLang === "zh" ? node.getAttribute("data-zh") : node.getAttribute("data-en");
+        }});
+      }}
+      langToggle.addEventListener("click", function () {{
+        currentLang = currentLang === "zh" ? "en" : "zh";
+        updateLanguage();
+      }});
+    }}());
+  </script>
 </body>
 </html>"""
 
