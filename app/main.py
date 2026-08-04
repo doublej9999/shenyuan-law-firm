@@ -384,7 +384,7 @@ def _resend_api_key() -> str:
 
 
 def _resend_from() -> str:
-    return os.environ.get("RESEND_FROM", "no-reply@shenyuanlaw.com")
+    return os.environ.get("RESEND_FROM", "no-reply@shenyuanlegal.com")
 
 
 def _send_auto_reply(intake: dict) -> None:

@@ -55,13 +55,13 @@ POST /api/intakes
 ## 客户自动回复邮件（Resend）
 
 配置 `RESEND_API_KEY` 后，提交成功会自动通过 **Resend API** 向客户发送中英双语
-确认邮件（发件人默认 `no-reply@shenyuanlaw.com`，可用 `RESEND_FROM` 覆盖），附带
+确认邮件（发件人默认 `no-reply@shenyuanlegal.com`，可用 `RESEND_FROM` 覆盖），附带
 按事项类型区分的材料清单。未配置密钥时自动跳过；发送失败（含被 Resend 拒绝）只记
 日志，不影响提交。
 
 使用前需要在 Resend 控制台完成两件事：
 
-1. **验证发件域名**：Domains → 添加 `shenyuanlaw.com` → 按提示添加 DNS 记录
+1. **验证发件域名**：Domains → 添加 `shenyuanlegal.com` → 按提示添加 DNS 记录
    （SPF / DKIM），等待验证通过。
 2. **创建 API Key**：API Keys → Create，复制 `re_` 开头的密钥填入 `RESEND_API_KEY`。
 

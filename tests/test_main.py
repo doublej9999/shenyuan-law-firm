@@ -354,7 +354,7 @@ def test_resend_request_shape_and_success(tmp_db, monkeypatch, caplog):
     assert captured["url"] == "https://api.resend.com/emails"
     assert captured["auth"] == "Bearer re_test_123"
     assert captured["content_type"] == "application/json"
-    assert captured["body"]["from"] == "no-reply@shenyuanlaw.com"
+    assert captured["body"]["from"] == "no-reply@shenyuanlegal.com"
     assert captured["body"]["to"] == ["w@example.com"]
     assert "已收到您的咨询信息" in captured["body"]["subject"]
     assert "合同、订单、发票、付款记录" in captured["body"]["text"]
@@ -364,7 +364,7 @@ def test_resend_request_shape_and_success(tmp_db, monkeypatch, caplog):
 def test_resend_from_override(tmp_db, monkeypatch):
     captured = {}
     monkeypatch.setenv("RESEND_API_KEY", "re_test_123")
-    monkeypatch.setenv("RESEND_FROM", "custom@shenyuanlaw.com")
+    monkeypatch.setenv("RESEND_FROM", "custom@shenyuanlegal.com")
 
     def fake_urlopen(request, timeout=10):
         captured["body"] = json.loads(request.data.decode("utf-8"))
@@ -372,7 +372,7 @@ def test_resend_from_override(tmp_db, monkeypatch):
 
     monkeypatch.setattr(urllib.request, "urlopen", fake_urlopen)
     m._send_auto_reply({"name": "x", "email": "a@b.com", "matter": "贸易", "summary": "s"})
-    assert captured["body"]["from"] == "custom@shenyuanlaw.com"
+    assert captured["body"]["from"] == "custom@shenyuanlegal.com"
 
 
 def test_resend_rejection_is_logged(tmp_db, monkeypatch, caplog):

@@ -16,7 +16,7 @@ services:
       NOTIFY_WEBHOOK_URL: ${NOTIFY_WEBHOOK_URL:-}
       # Resend API for the client auto-reply email. Empty/unset = no auto-reply.
       RESEND_API_KEY: ${RESEND_API_KEY:-}
-      RESEND_FROM: ${RESEND_FROM:-no-reply@shenyuanlaw.com}
+      RESEND_FROM: ${RESEND_FROM:-no-reply@shenyuanlegal.com}
       # Public base URL for canonical/OG/sitemap links.
       SITE_URL: ${SITE_URL:-https://your-domain.example.com}
     volumes:
