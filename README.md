@@ -101,6 +101,9 @@ PATCH /admin/api/intakes/{id}  # 更新状态 / 备注，body: {"status": "...",
   结构化数据（JSON-LD）；`GET /sitemap.xml` 自动生成站点地图。生产环境务必设置
   `SITE_URL`（如 `https://你的域名`），这些标签和地图里的链接都基于它生成。
 - **robots.txt**:`GET /robots.txt` 指向 sitemap，便于搜索引擎收录。
+- **英文版 URL**:`/en/`、`/en/services/*`、`/en/articles*` 输出英文默认版本（服务端直接渲染英文
+  文本，无 JS 也能读；页内切换仍可用）。中英文页面互相 hreflang 标注（zh-CN / en / x-default），
+  sitemap 同时收录中英文 URL。新增语言只需套用 `_en_variant()` 变换。
 - **独立服务落地页**:`/services/trade`、`/services/recovery`、`/services/legacy`
   三个页面，含各自的服务情形与材料清单，适合投放广告时直接链接。
 - **转化分析**:后台首页显示累计/今日线索、今日访问量与转化率，由 `GET /admin/api/stats`

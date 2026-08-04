@@ -880,6 +880,59 @@ def test_sitemap_includes_articles(tmp_db):
         assert "/articles/trade-payment-recovery-5-steps" in resp.text
 
 
+# --- English variants (/en/ URLs) -----------------------------------------
+
+
+def test_en_homepage(tmp_db):
+    with TestClient(m.app) as client:
+        resp = client.get("/en/")
+        assert resp.status_code == 200
+        assert '<html lang="en">' in resp.text
+        assert "Cross-border disputes," in resp.text
+        assert "resolved in your language." in resp.text
+        assert 'var currentLang = "en";' in resp.text
+        assert 'hreflang="en" href="http://localhost:8000/en/"' in resp.text
+        assert client.get("/en").status_code == 200
+        # zh homepage stays the default with zh text
+        zh = client.get("/")
+        assert '<html lang="zh-CN">' in zh.text
+        assert "跨境的纠纷" in zh.text
+
+
+def test_en_service_pages(tmp_db):
+    with TestClient(m.app) as client:
+        for slug in ("trade", "recovery", "legacy"):
+            resp = client.get(f"/en/services/{slug}")
+            assert resp.status_code == 200, slug
+            assert '<html lang="en">' in resp.text
+            assert "International Trade Disputes" in resp.text or "Litigation" in resp.text or "Inheritance" in resp.text
+            assert 'hreflang="en"' in resp.text
+        assert client.get("/en/services/bogus").status_code == 404
+
+
+def test_en_articles(tmp_db):
+    with TestClient(m.app) as client:
+        index = client.get("/en/articles")
+        assert index.status_code == 200
+        assert '<html lang="en">' in index.text
+        page = client.get("/en/articles/trade-payment-recovery-5-steps")
+        assert page.status_code == 200
+        # English body visible, Chinese body hidden server-side (no-JS crawlers)
+        assert '<div class="wrap article-body" id="bodyEn">' in page.text
+        assert '<div class="wrap article-body" id="bodyZh" hidden>' in page.text
+        assert "What to Do When an Overseas Buyer Won" in page.text
+        assert client.get("/en/articles/no-such-article").status_code == 404
+
+
+def test_sitemap_includes_en_urls(tmp_db):
+    with TestClient(m.app) as client:
+        text = client.get("/sitemap.xml").text
+        assert "/en/" in text
+        assert "/en/articles" in text
+        assert "/en/services/trade" in text
+        assert "/en/articles/trade-payment-recovery-5-steps" in text
+
+
 def test_dockerfile_ships_content_dir():
     # Regression: articles are served from content/, so the image must copy
     # the directory — otherwise /articles/{slug} 404s in production only.
