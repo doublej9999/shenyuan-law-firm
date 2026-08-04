@@ -1206,6 +1206,10 @@
             } catch (parseError) {}
             throw new Error(errorText);
           }
+          // GA4 conversion: a form submission is the primary ad conversion.
+          if (window.gtag) {
+            gtag("event", "generate_lead", { event_category: "intake", event_label: "form" });
+          }
           renderMaterialList();
           successMessage.classList.add("is-visible");
           closeModal.focus();

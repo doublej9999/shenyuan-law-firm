@@ -323,6 +323,10 @@
     })
       .then(function (resp) {
         if (resp.status === 201) {
+          // GA4 conversion: chat intake completion counts as a lead.
+          if (window.gtag) {
+            gtag("event", "generate_lead", { event_category: "intake", event_label: "chat" });
+          }
           bot("<strong>" + tr(T.done_title) + "</strong><br>" + tr(T.done_body));
           setInput(false);
           return;

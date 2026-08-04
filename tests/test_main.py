@@ -1356,10 +1356,12 @@ def test_ga_tag_absent_without_config(tmp_db):
     monkeypatch.delenv("GA_MEASUREMENT_ID", raising=False)
     try:
         with TestClient(m.app) as client:
-            assert "gtag" not in client.get("/").text
-            assert "gtag" not in client.get("/services/trade").text
-            assert "gtag" not in client.get("/articles").text
-            assert "gtag" not in client.get("/articles/trade-payment-recovery-5-steps").text
+            # Without a measurement ID the gtag LOADER must not be injected;
+            # conversion-event calls may still be present (guarded at runtime).
+            for path in ("/", "/services/trade", "/articles", "/articles/trade-payment-recovery-5-steps"):
+                html = client.get(path).text
+                assert "gtag/js?id=" not in html, path
+                assert "gtag('config'" not in html, path
     finally:
         monkeypatch.undo()
 
