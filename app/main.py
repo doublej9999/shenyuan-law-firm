@@ -9,6 +9,7 @@ import os
 import re
 import secrets
 import sqlite3
+import threading
 import urllib.error
 import urllib.request
 from contextlib import asynccontextmanager, contextmanager
@@ -32,7 +33,7 @@ logging.basicConfig(level=logging.INFO)
 ROOT_DIR = Path(__file__).resolve().parent.parent
 DB_PATH = ROOT_DIR / "data" / "lawyers.sqlite3"
 FILES_DIR = DB_PATH.parent / "files"
-SCHEMA_VERSION = 3
+SCHEMA_VERSION = 4
 
 # Public base URL used for canonical/OG/sitemap links. Override in prod.
 SITE_URL = os.environ.get("SITE_URL", "http://localhost:8000").rstrip("/")
@@ -295,6 +296,12 @@ def migrate_schema(connection: sqlite3.Connection) -> None:
         )
         """
     )
+    # v7: CRM agent — lead score (opportunity triage) and last-touch timestamp
+    # for SLA/overdue tracking.
+    if "score" not in columns:
+        connection.execute("ALTER TABLE intakes ADD COLUMN score INTEGER NOT NULL DEFAULT 0")
+    if "updated_at" not in columns:
+        connection.execute("ALTER TABLE intakes ADD COLUMN updated_at TEXT")
 
     logger.info("Migrating intakes schema to version %d", SCHEMA_VERSION)
     connection.execute(f"PRAGMA user_version = {SCHEMA_VERSION}")
@@ -303,7 +310,16 @@ def migrate_schema(connection: sqlite3.Connection) -> None:
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     init_db()
-    yield
+    # CRM Agent: daemon thread that periodically nudges about overdue leads.
+    stop_event = threading.Event()
+    thread = threading.Thread(
+        target=_crm_reminder_loop, args=(stop_event,), daemon=True, name="crm-agent"
+    )
+    thread.start()
+    try:
+        yield
+    finally:
+        stop_event.set()
 
 
 _production = os.environ.get("APP_ENV") == "production"
@@ -565,7 +581,7 @@ _MATTER_LABEL_BY_KEY = {
 }
 
 _LEGACY_KW = ("继承", "遗产", "遗嘱", "房产", "去世", "亲属", "失联", "家族", "probate", "inheritance", "estate", "will")
-_RECOVERY_KW = ("追收", "欠款", "欠债", "催收", "赖账", "跑路", "执行", "判决", "仲裁", "裁决", "欺诈", "诈骗", "资产", "collection", "debt", "judgment", "enforce", "fraud", "asset", "recover")
+_RECOVERY_KW = ("追收", "欠款", "欠债", "催收", "拖欠", "未付", "不付", "拒付", "讨债", "催款", "要账", "未还", "赖账", "跑路", "执行", "判决", "仲裁", "裁决", "欺诈", "诈骗", "资产", "collection", "debt", "judgment", "enforce", "fraud", "asset", "recover")
 _TRADE_KW = ("合同", "订单", "货物", "供应商", "发货", "物流", "海关", "信用证", "贸易", "代理", "经销", "采购", "发票", "货款", "违约", "trade", "contract", "supplier", "shipment", "customs", "invoice", "breach")
 
 
@@ -616,6 +632,153 @@ class ChatIntakeCreate(BaseModel):
     language: Annotated[str, Field(pattern="^(zh|en)$")] = "zh"
     consent: bool = False
     transcript: Annotated[str | None, Field(max_length=6000)] = None
+
+
+# --- CRM Agent: lead scoring, SLA tracking, overdue reminders --------------
+
+_URGENT_KW = (
+    "紧急", "尽快", "马上", "立刻", "明天", "本周", "期限", "到期", "转移",
+    "查封", "冻结", "跑路", "失联", "urgent", "deadline", "freeze", "asap",
+)
+_AMOUNT_HIGH_KW = ("50万以上", "百万", "千万", "100万", "500k", "million", "over ¥500k")
+_AMOUNT_MID_KW = ("5-50万", "50k-500k", "¥50k–500k")
+_NO_EVIDENCE_KW = ("暂无", "没有", "暂时没有", "none yet")
+
+
+def _crm_first_sla_hours() -> int:
+    """SLA: a 'new' lead should be contacted within this many hours."""
+    return max(1, int(os.environ.get("CRM_FIRST_SLA_HOURS", "24")))
+
+
+def _crm_progress_sla_days() -> int:
+    """SLA: a 'contacted' lead should reach a decision/in_progress in days."""
+    return max(1, int(os.environ.get("CRM_PROGRESS_SLA_DAYS", "7")))
+
+
+def _crm_reminder_interval_hours() -> int:
+    """How often the background CRM agent checks for overdue leads."""
+    return max(1, int(os.environ.get("CRM_REMINDER_INTERVAL_HOURS", "12")))
+
+
+def _lead_score(
+    name: str,
+    summary: str,
+    matter: str,
+    amount: str = "",
+    evidence: str = "",
+    email: str = "",
+    phone: str = "",
+) -> int:
+    """Heuristic 0-100 lead score for opportunity triage.
+
+    Signals: amount size (+30/+15), urgency keywords (+20), practice area
+    (recovery/legacy +10, trade +5), evidence on file (+5), complete contact
+    (+5). Base 30 so every lead is at least visible. Capped at 100.
+    """
+    text = f"{summary or ''} {amount or ''} {matter or ''} {evidence or ''}".lower()
+    score = 30
+    if any(k in text for k in _AMOUNT_HIGH_KW):
+        score += 30
+    elif any(k in text for k in _AMOUNT_MID_KW):
+        score += 15
+    if any(k in text for k in _URGENT_KW):
+        score += 20
+    if any(k in matter or "" for k in ("继承", "家族", "Inheritance", "Estate")):
+        score += 10
+    elif any(k in matter or "" for k in ("债务", "诉讼", "Litigation", "debt")):
+        score += 10
+    elif any(k in matter or "" for k in ("贸易", "Trade")):
+        score += 5
+    if evidence and not any(k in evidence.lower() for k in _NO_EVIDENCE_KW):
+        score += 5
+    if email and phone:
+        score += 5
+    return min(score, 100)
+
+
+def _overdue_leads() -> list[dict]:
+    """Leads whose SLA has lapsed: 'new' untouched for first-SLA hours, or
+    'contacted' with no movement for progress-SLA days. Ordered by score desc."""
+    now = datetime.now(timezone.utc)
+    first_cutoff = (now - timedelta(hours=_crm_first_sla_hours())).isoformat()
+    progress_cutoff = (now - timedelta(days=_crm_progress_sla_days())).isoformat()
+    with db_connection() as connection:
+        rows = connection.execute(
+            """
+            SELECT id, name, email, phone, matter, summary, score, status,
+                   created_at, updated_at
+            FROM intakes
+            WHERE (status = 'new' AND COALESCE(updated_at, created_at) < ?)
+               OR (status = 'contacted' AND COALESCE(updated_at, created_at) < ?)
+            ORDER BY score DESC, COALESCE(updated_at, created_at) ASC
+            """,
+            (first_cutoff, progress_cutoff),
+        ).fetchall()
+    leads = []
+    for row in rows:
+        lead = dict(row)
+        last_touch = lead.get("updated_at") or lead["created_at"]
+        try:
+            lead["stale_hours"] = round(
+                (now - datetime.fromisoformat(last_touch)).total_seconds() / 3600, 1
+            )
+        except (ValueError, TypeError):
+            lead["stale_hours"] = 0
+        leads.append(lead)
+    return leads
+
+
+def _send_crm_reminder(leads: list[dict]) -> None:
+    """Post a digest of overdue leads to the notification webhook (fire-and-forget)."""
+    url = _notify_webhook_url()
+    if not url or not leads:
+        return
+    new_count = sum(1 for lead in leads if lead["status"] == "new")
+    stalled = len(leads) - new_count
+    lines = [
+        "【CRM 跟进提醒】",
+        f"逾期未跟进线索：{len(leads)} 条（新线索未联系 {new_count}，已联系未推进 {stalled}）",
+        "",
+    ]
+    for lead in leads[:5]:
+        contact = lead["email"] or lead["phone"] or "-"
+        lines.append(
+            f"#{lead['id']} [{lead['status']}] {lead['name']} · {lead['matter']} · {contact}"
+            f" · 评分 {lead['score']} · 逾期 {lead.get('stale_hours', 0)}h"
+        )
+    if len(leads) > 5:
+        lines.append(f"… 共 {len(leads)} 条，其余见后台")
+    lines.append("后台处理：/admin")
+    content = "\n".join(lines)
+    payload = json.dumps({"msgtype": "text", "text": {"content": content}}).encode("utf-8")
+    request = urllib.request.Request(url, method="POST")
+    request.add_header("Content-Type", "application/json")
+    request.add_header("User-Agent", "shenyuan-law-firm/1.0")
+    request.data = payload
+    try:
+        with urllib.request.urlopen(request, timeout=5) as response:
+            body = response.read()
+        try:
+            result = json.loads(body.decode("utf-8", errors="replace"))
+            if result.get("errcode"):
+                logger.error("CRM reminder webhook rejected: %s", result.get("errmsg", result))
+        except ValueError:
+            pass
+    except Exception:
+        logger.exception("Failed to send CRM reminder webhook")
+
+
+def _crm_reminder_loop(stop_event: threading.Event) -> None:
+    """Background agent: periodically check overdue leads and notify. Daemon."""
+    interval = _crm_reminder_interval_hours() * 3600
+    while not stop_event.wait(interval):
+        try:
+            leads = _overdue_leads()
+            if leads:
+                _send_crm_reminder(leads)
+                logger.info("CRM reminder sent for %d overdue leads", len(leads))
+        except Exception:
+            logger.exception("CRM reminder loop iteration failed")
 
 
 def _record_page_view() -> None:
@@ -1797,6 +1960,7 @@ def admin_stats(request: Request) -> dict:
         ]
 
     conversion = round(intakes_today / views_today * 100, 2) if views_today else 0.0
+    overdue = _overdue_leads()
     return {
         "intakes_total": intakes_total,
         "intakes_today": intakes_today,
@@ -1806,6 +1970,23 @@ def admin_stats(request: Request) -> dict:
         "conversion_today_pct": conversion,
         "by_status": by_status,
         "by_matter": by_matter,
+        "crm_overdue": len(overdue),
+        "crm_overdue_new": sum(1 for lead in overdue if lead["status"] == "new"),
+        "crm_overdue_progress": sum(1 for lead in overdue if lead["status"] == "contacted"),
+    }
+
+
+@app.get("/admin/api/crm/overdue", include_in_schema=False)
+@limiter.limit(ADMIN_RATE_LIMIT)
+def admin_crm_overdue(request: Request) -> dict:
+    """CRM Agent: leads past their follow-up SLA, highest score first."""
+    _require_admin(request)
+    leads = _overdue_leads()
+    return {
+        "count": len(leads),
+        "first_sla_hours": _crm_first_sla_hours(),
+        "progress_sla_days": _crm_progress_sla_days(),
+        "leads": leads,
     }
 
 
@@ -1825,6 +2006,9 @@ def admin_update_intake(
         params.append(payload.note)
     if not updates:
         raise HTTPException(status_code=400, detail="Nothing to update")
+    # CRM: any status/note change counts as a touch (resets the SLA clock).
+    updates.append("updated_at = ?")
+    params.append(datetime.now(timezone.utc).isoformat())
 
     params.append(intake_id)
     with db_connection() as connection:
@@ -1913,6 +2097,13 @@ def create_intake(
     created_at = datetime.now(timezone.utc).isoformat()
     user_agent = request.headers.get("user-agent")
     consent_at = created_at if payload.consent else None
+    score = _lead_score(
+        payload.name,
+        payload.summary,
+        payload.matter,
+        email=payload.email,
+        phone=payload.phone or "",
+    )
 
     try:
         with db_connection() as connection:
@@ -1938,9 +2129,10 @@ def create_intake(
                 """
                 INSERT INTO intakes (
                     name, email, phone, matter, summary, country_or_region,
-                    language, user_agent, created_at, status, note, consent_at
+                    language, user_agent, created_at, status, note, consent_at,
+                    score, updated_at
                 )
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'new', NULL, ?)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'new', NULL, ?, ?, ?)
                 """,
                 (
                     payload.name,
@@ -1953,6 +2145,8 @@ def create_intake(
                     user_agent,
                     created_at,
                     consent_at,
+                    score,
+                    created_at,
                 ),
             )
     except sqlite3.Error:
@@ -2009,6 +2203,15 @@ def create_chat_intake(
     email, phone = _split_contact(payload.contact)
     created_at = datetime.now(timezone.utc).isoformat()
     user_agent = request.headers.get("user-agent")
+    score = _lead_score(
+        payload.name,
+        payload.summary,
+        matter_label,
+        amount=payload.amount,
+        evidence=payload.evidence,
+        email=email,
+        phone=phone,
+    )
 
     note_parts = ["来源：AI 咨询助手"]
     for label, value in (
@@ -2047,9 +2250,10 @@ def create_chat_intake(
                 """
                 INSERT INTO intakes (
                     name, email, phone, matter, summary, country_or_region,
-                    language, user_agent, created_at, status, note, consent_at
+                    language, user_agent, created_at, status, note, consent_at,
+                    score, updated_at
                 )
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'new', ?, ?)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'new', ?, ?, ?, ?)
                 """,
                 (
                     payload.name,
@@ -2062,6 +2266,8 @@ def create_chat_intake(
                     user_agent,
                     created_at,
                     note,
+                    created_at,
+                    score,
                     created_at,
                 ),
             )

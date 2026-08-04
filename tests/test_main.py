@@ -1101,6 +1101,149 @@ def test_chat_widget_mounted_on_all_pages(tmp_db):
             assert '/static/chat.js' in html, url
 
 
+# --- CRM Agent: scoring, SLA, reminders -------------------------------------
+
+
+def test_crm_migration_adds_score_and_updated_at(tmp_db):
+    m.init_db()
+    conn = sqlite3.connect(tmp_db)
+    cols = [r[1] for r in conn.execute("PRAGMA table_info(intakes)")]
+    conn.close()
+    assert "score" in cols
+    assert "updated_at" in cols
+
+
+def test_lead_score_heuristic():
+    # Base + amount + urgency + recovery matter + evidence + full contact
+    high = m._lead_score(
+        "张", "美国客户拖欠货款50万以上，情况紧急",
+        "诉讼与债务追收", amount="50万以上", evidence="合同、发票",
+        email="a@b.com", phone="138",
+    )
+    assert high >= 80
+    # Plain small lead stays low
+    low = m._lead_score("李", "简单咨询", "国际贸易争议")
+    assert low <= 35
+    # Legacy matter signal
+    legacy = m._lead_score("王", "父亲去世继承房产", "继承与家族资产纠纷")
+    assert 40 <= legacy <= 60
+
+
+def test_overdue_leads_sla(tmp_db):
+    m.init_db()
+    now = m.datetime.now(m.timezone.utc).isoformat()
+    old_new = (m.datetime.now(m.timezone.utc) - m.timedelta(hours=100)).isoformat()
+    old_progress = (m.datetime.now(m.timezone.utc) - m.timedelta(hours=200)).isoformat()
+    with m.db_connection() as conn:
+        for i, (status, ts, score) in enumerate(
+            [
+                ("new", old_new, 30),          # overdue: new untouched 100h (>24h SLA)
+                ("contacted", old_progress, 80),  # overdue: no progress 200h (>7d SLA)
+                ("new", now, 60),              # fresh — not overdue
+                ("closed", old_new, 90),       # closed — excluded
+            ]
+        ):
+            conn.execute(
+                "INSERT INTO intakes (name, email, matter, summary, status, created_at, updated_at, score, consent_at) "
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                (f"n{i}", f"n{i}@test.com", "国际贸易争议", "s", status, ts, ts, score, now),
+            )
+    leads = m._overdue_leads()
+    ids = sorted(l["id"] for l in leads)
+    assert len(leads) == 2, leads
+    # highest score first
+    assert leads[0]["score"] == 80
+    assert leads[0]["stale_hours"] > 190
+
+
+def test_crm_overdue_endpoint(tmp_db, monkeypatch):
+    m.init_db()
+    monkeypatch.setenv("ADMIN_TOKEN", "secret-token")
+    old = (m.datetime.now(m.timezone.utc) - m.timedelta(hours=100)).isoformat()
+    with m.db_connection() as conn:
+        conn.execute(
+            "INSERT INTO intakes (name, email, matter, summary, status, created_at, updated_at, score, consent_at) "
+            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            ("逾期客户", "late@test.com", "诉讼与债务追收", "欠款未还", "new", old, old, 70, old),
+        )
+    with TestClient(m.app) as client:
+        assert client.get("/admin/api/crm/overdue").status_code == 401
+        headers = {"Authorization": "Bearer secret-token"}
+        resp = client.get("/admin/api/crm/overdue", headers=headers)
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["count"] == 1
+        assert data["leads"][0]["name"] == "逾期客户"
+        assert data["first_sla_hours"] == 24
+
+
+def test_crm_reminder_webhook_payload(tmp_db, monkeypatch):
+    monkeypatch.setenv("NOTIFY_WEBHOOK_URL", "https://webhook.test/crm")
+    captured = {}
+
+    def fake_urlopen(request, timeout=5):
+        captured["url"] = request.full_url
+        captured["body"] = json.loads(request.data.decode("utf-8"))
+        return _FakeResponse(b'{"errcode":0,"errmsg":"ok"}')
+
+    monkeypatch.setattr(urllib.request, "urlopen", fake_urlopen)
+    m._send_crm_reminder(
+        [
+            {"id": 1, "status": "new", "name": "张", "matter": "诉讼与债务追收",
+             "email": "a@b.com", "phone": "", "score": 80, "stale_hours": 30},
+            {"id": 2, "status": "contacted", "name": "李", "matter": "继承",
+             "email": "", "phone": "138", "score": 55, "stale_hours": 200},
+        ]
+    )
+    assert captured["url"] == "https://webhook.test/crm"
+    content = captured["body"]["text"]["content"]
+    assert "【CRM 跟进提醒】" in content
+    assert "新线索未联系 1" in content
+    assert "#1" in content and "评分 80" in content
+    assert captured["body"]["msgtype"] == "text"
+
+
+def test_intake_creation_sets_score_and_updated_at(tmp_db):
+    with TestClient(m.app) as client:
+        resp = client.post(
+            "/api/intakes/chat",
+            json={
+                "name": "高优先客户",
+                "contact": "gao@example.com",
+                "matter": "recovery",
+                "summary": "客户拖欠货款100万，非常紧急，对方可能转移资产",
+                "amount": "50万以上",
+                "evidence": "合同、发票",
+                "consent": True,
+            },
+        )
+        assert resp.status_code == 201
+        conn = sqlite3.connect(tmp_db)
+        conn.row_factory = sqlite3.Row
+        row = conn.execute("SELECT * FROM intakes").fetchone()
+        conn.close()
+        assert row["score"] >= 70
+        assert row["updated_at"] == row["created_at"]
+
+
+def test_admin_update_touches_updated_at(tmp_db, monkeypatch):
+    monkeypatch.setenv("ADMIN_TOKEN", "secret-token")
+    with TestClient(m.app) as client:
+        resp = client.post(
+            "/api/intakes/chat",
+            json={"name": "王", "contact": "wang@example.com", "summary": "咨询", "consent": True},
+        )
+        intake_id = resp.json()["id"]
+        headers = {"Authorization": "Bearer secret-token"}
+        # 48h pass...
+        client.patch(f"/admin/api/intakes/{intake_id}", json={"status": "contacted"}, headers=headers)
+        conn = sqlite3.connect(tmp_db)
+        conn.row_factory = sqlite3.Row
+        row = conn.execute("SELECT updated_at FROM intakes WHERE id = ?", (intake_id,)).fetchone()
+        conn.close()
+        assert row["updated_at"] is not None
+
+
 def test_dockerfile_ships_content_dir():
     # Regression: articles are served from content/, so the image must copy
     # the directory — otherwise /articles/{slug} 404s in production only.

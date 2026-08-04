@@ -112,6 +112,12 @@ PATCH /admin/api/intakes/{id}  # 更新状态 / 备注，body: {"status": "...",
   提交到 `POST /api/intakes/chat`：服务端关键词分诊（继承>追收>贸易，兜底用户选择）、
   结构化字段写入 note、复用表单同一条线索管线（去重/企业微信 webhook/Resend 自动回复）。
   转人工视图直接展示微信二维码。小部件声明 AI 身份与"不构成法律意见"。
+- **CRM Agent**:线索商机评分（金额/紧急度/业务线/证据/联系方式完整度，0-100，入库即算，
+  后台显示高/中/低徽章）；SLA 逾期跟踪（新线索 24h 内应联系、已联系 7 天内应推进，任何
+  状态/备注变更重置计时）；后台 daemon 线程每 12h 检查一次，逾期线索经企业微信 webhook
+  推送【CRM 跟进提醒】摘要（`/admin/api/crm/overdue` 提供后台面板数据）。可用环境变量调整：
+  `CRM_FIRST_SLA_HOURS`（默认 24）、`CRM_PROGRESS_SLA_DAYS`（默认 7）、
+  `CRM_REMINDER_INTERVAL_HOURS`（默认 12）。
 - **独立服务落地页**:`/services/trade`、`/services/recovery`、`/services/legacy`
   三个页面，含各自的服务情形与材料清单，适合投放广告时直接链接。
 - **转化分析**:后台首页显示累计/今日线索、今日访问量与转化率，由 `GET /admin/api/stats`
