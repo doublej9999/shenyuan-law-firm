@@ -624,6 +624,15 @@ def service_page(slug: str) -> Response:
     )
 
 
+@app.get("/wechat-qrcode.png", include_in_schema=False)
+def wechat_qrcode() -> FileResponse:
+    """Real WeChat QR code for the contact section and success modal."""
+    path = ROOT_DIR / "wechat-qrcode.png"
+    if not path.is_file():
+        raise HTTPException(status_code=404, detail="QR code image not found")
+    return FileResponse(path, media_type="image/png")
+
+
 @app.get("/api/health")
 def health() -> dict[str, str]:
     return {"status": "ok"}
