@@ -10,6 +10,7 @@ import logging
 import sqlite3
 import urllib.error
 import urllib.request
+from pathlib import Path
 
 import pytest
 from fastapi.testclient import TestClient
@@ -875,3 +876,12 @@ def test_sitemap_includes_articles(tmp_db):
         assert resp.status_code == 200
         assert "/articles" in resp.text
         assert "/articles/trade-payment-recovery-5-steps" in resp.text
+
+
+def test_dockerfile_ships_content_dir():
+    # Regression: articles are served from content/, so the image must copy
+    # the directory — otherwise /articles/{slug} 404s in production only.
+    dockerfile = (Path(__file__).resolve().parent.parent / "Dockerfile").read_text(
+        encoding="utf-8"
+    )
+    assert "COPY content ./content" in dockerfile
