@@ -257,6 +257,14 @@ def test_health(tmp_db):
         assert resp.json() == {"status": "ok"}
 
 
+def test_wechat_qrcode_served(tmp_db):
+    with TestClient(m.app) as client:
+        resp = client.get("/wechat-qrcode.png")
+        assert resp.status_code == 200
+        assert resp.headers["content-type"].startswith("image/png")
+        assert resp.content[:8] == b"\x89PNG\r\n\x1a\n"
+
+
 def test_rate_limit_returns_429(tmp_db):
     with TestClient(m.app) as client:
         # Unique emails so the dedupe check never fires; the rate limiter is
