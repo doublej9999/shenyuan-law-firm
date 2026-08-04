@@ -853,6 +853,8 @@ def test_article_pages_render_bilingual(tmp_db):
             "recovery-enforce-arbitral-award-new-york-convention",
             "legacy-chinese-citizen-dies-abroad",
             "legacy-relative-dies-abroad-china-heirs",
+            "legacy-inheriting-overseas-property-us-canada-australia",
+            "recovery-types-of-commercial-fraud-contracts-investments-exports",
         ):
             resp = client.get(f"/articles/{slug}")
             assert resp.status_code == 200, slug
