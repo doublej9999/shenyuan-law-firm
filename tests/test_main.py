@@ -944,6 +944,38 @@ def test_article_blogposting_schema(tmp_db):
         assert '"inLanguage": "en"' in en
 
 
+# --- Country landing pages -------------------------------------------------
+
+
+def test_country_pages(tmp_db):
+    with TestClient(m.app) as client:
+        index = client.get("/countries")
+        assert index.status_code == 200
+        assert "国家专页" in index.text
+        for slug in ("united-states", "canada", "australia", "singapore", "united-kingdom"):
+            resp = client.get(f"/countries/{slug}")
+            assert resp.status_code == 200, slug
+            assert 'hreflang="en"' in resp.text
+            assert "LegalService" in resp.text
+            en = client.get(f"/en/countries/{slug}")
+            assert en.status_code == 200
+            assert '<html lang="en">' in en.text
+        assert client.get("/countries/bogus").status_code == 404
+        assert client.get("/en/countries/bogus").status_code == 404
+        # Homepage region chips link to country pages (language-aware hrefs)
+        home = client.get("/").text
+        assert "/countries/united-states" in home
+        assert 'data-en-href="/en/countries/united-states"' in home
+
+
+def test_sitemap_includes_countries(tmp_db):
+    with TestClient(m.app) as client:
+        text = client.get("/sitemap.xml").text
+        assert "/countries" in text
+        assert "/countries/united-states" in text
+        assert "/en/countries/united-states" in text
+
+
 def test_dockerfile_ships_content_dir():
     # Regression: articles are served from content/, so the image must copy
     # the directory — otherwise /articles/{slug} 404s in production only.

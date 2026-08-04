@@ -104,6 +104,9 @@ PATCH /admin/api/intakes/{id}  # 更新状态 / 备注，body: {"status": "...",
 - **英文版 URL**:`/en/`、`/en/services/*`、`/en/articles*` 输出英文默认版本（服务端直接渲染英文
   文本，无 JS 也能读；页内切换仍可用）。中英文页面互相 hreflang 标注（zh-CN / en / x-default），
   sitemap 同时收录中英文 URL。新增语言只需套用 `_en_variant()` 变换。
+- **国家专页**:`/countries`（及 `/en/countries`）为高商业意图落地页，首期覆盖美国、加拿大、
+  澳大利亚、新加坡、英国，每页含覆盖服务、当地实务要点、处理路径与 CTA；数据在 `COUNTRIES`
+  字典中维护，新增国家加一个条目即可。首页全球网络区块已联动链接（中英文 href 自动切换）。
 - **独立服务落地页**:`/services/trade`、`/services/recovery`、`/services/legacy`
   三个页面，含各自的服务情形与材料清单，适合投放广告时直接链接。
 - **转化分析**:后台首页显示累计/今日线索、今日访问量与转化率，由 `GET /admin/api/stats`
