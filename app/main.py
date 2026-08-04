@@ -813,6 +813,12 @@ def _en_variant(html: str) -> str:
         lambda m: f"{m.group(1)}{m.group(2)}{m.group(3)}{m.group(4)}{m.group(5)}{m.group(4)}{m.group(7)}",
         html,
     )
+    # Language-aware links (e.g. homepage region chips): point href at the /en/ URL.
+    html = re.sub(
+        r'(href=")([^"]*)(" data-zh-href=")([^"]*)(" data-en-href=")([^"]*)(")',
+        lambda m: f"{m.group(1)}{m.group(6)}{m.group(3)}{m.group(4)}{m.group(5)}{m.group(6)}{m.group(7)}",
+        html,
+    )
     html = html.replace('<html lang="zh-CN">', '<html lang="en">')
     html = html.replace('var currentLang = "zh";', 'var currentLang = "en";')
     html = html.replace(
@@ -831,8 +837,12 @@ def _swap_meta(html: str, tag: str, value: str) -> str:
 @app.api_route("/sitemap.xml", methods=["GET", "HEAD"], include_in_schema=False)
 def sitemap() -> Response:
     urls = [f"{SITE_URL}/", f"{SITE_URL}/articles", f"{SITE_URL}/en/", f"{SITE_URL}/en/articles"] + [
-        f"{SITE_URL}/services/{slug}" for slug in SERVICES
-    ] + [f"{SITE_URL}/en/services/{slug}" for slug in SERVICES] + [
+        f"{SITE_URL}/countries", f"{SITE_URL}/en/countries"
+    ] + [f"{SITE_URL}/countries/{slug}" for slug in COUNTRIES] + [
+        f"{SITE_URL}/en/countries/{slug}" for slug in COUNTRIES
+    ] + [f"{SITE_URL}/services/{slug}" for slug in SERVICES] + [
+        f"{SITE_URL}/en/services/{slug}" for slug in SERVICES
+    ] + [
         f"{SITE_URL}/articles/{a['meta']['slug']}" for a in _load_articles()
     ] + [f"{SITE_URL}/en/articles/{a['meta']['slug']}" for a in _load_articles()]
     xml = (
@@ -1227,6 +1237,386 @@ def article_page_en(slug: str) -> Response:
     if zh_title:
         page = page.replace(f'"headline": "{zh_title}"', f'"headline": "{en_title}"')
     page = page.replace('"inLanguage": "zh-CN"', '"inLanguage": "en"')
+    return Response(content=page, media_type="text/html; charset=utf-8")
+
+
+# ---------- Country landing pages (high commercial intent) ----------
+
+# Shared CSS for the landing-page templates (plain string — not an f-string).
+_PAGE_CSS = """
+    :root {
+      --ink: #172433; --muted: #627180; --paper: #f6f3ed; --surface: #fffdf9;
+      --line: #d9d9d2; --teal: #0d6c6b; --teal-deep: #084d50;
+      --orange: #d76e39; --cream: #ede8de; --gold: #b08d57;
+      --shadow: 0 20px 50px rgba(20, 33, 44, .11);
+      --radius: 10px; --max: 1060px;
+      --serif: "Playfair Display", "Noto Serif SC", Georgia, "Songti SC", "SimSun", serif;
+      --sans: "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; color: var(--ink); background: var(--paper); font-family: var(--sans); line-height: 1.65; }
+    a { color: inherit; text-decoration: none; }
+    button { font: inherit; cursor: pointer; }
+    h1, h2, h3, p { margin: 0; }
+    h1, h2, h3 { font-family: var(--serif); }
+    .wrap { width: min(calc(100% - 40px), var(--max)); margin: 0 auto; }
+    .topbar { background: var(--teal-deep); color: #f5f2ec; }
+    .topbar .wrap { display: flex; justify-content: space-between; align-items: center; min-height: 66px; gap: 18px; }
+    .topbar .brand { display: inline-flex; align-items: center; gap: 10px; color: #fff; font-size: 14px; font-weight: 700; }
+    .brand-mark { display: grid; place-items: center; width: 30px; height: 30px; color: var(--teal-deep); background: #f7f2e9; border-radius: 7px; font-family: var(--serif); font-size: 16px; }
+    .topbar .nav-links { display: flex; align-items: center; gap: 18px; font-size: 13px; }
+    .topbar a { color: rgba(255,255,255,.85); }
+    .topbar a:hover { color: #fff; }
+    .lang-switch { padding: 7px 10px; color: rgba(255,255,255,.85); background: transparent; border: 1px solid rgba(255,255,255,.3); border-radius: 6px; font-size: 12px; }
+    .hero { padding: 64px 0 34px; }
+    .number { color: var(--gold); font-size: 13px; font-weight: 800; letter-spacing: .08em; }
+    h1 { margin: 16px 0 10px; font-size: clamp(32px, 4.4vw, 50px); line-height: 1.14; letter-spacing: -.01em; }
+    .en-sub { color: var(--muted); font-size: 15px; }
+    .intro { margin-top: 18px; font-size: 16px; max-width: 720px; color: #334454; }
+    .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin: 40px auto 0; }
+    .card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 26px; }
+    .card h2 { margin: 0 0 14px; font-size: 18px; }
+    ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 9px; }
+    li { position: relative; padding-left: 16px; font-size: 14px; color: #435363; }
+    li::before { content: ""; position: absolute; left: 0; top: 9px; width: 5px; height: 5px; background: var(--gold); border-radius: 50%; }
+    .steps { margin-top: 18px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 0; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); }
+    .step { padding: 22px 24px; }
+    .step + .step { border-left: 1px solid var(--line); }
+    .step span { display: block; color: var(--gold); font-size: 13px; font-weight: 800; }
+    .step h3 { margin-top: 10px; font-size: 16px; }
+    .step p { margin-top: 8px; color: var(--muted); font-size: 13px; }
+    .cta { text-align: center; padding: 46px 0 70px; }
+    .button { display: inline-flex; align-items: center; gap: 9px; min-height: 48px; padding: 0 26px; color: #fff; background: var(--orange); border-radius: 8px; font-size: 15px; font-weight: 700; transition: transform .2s ease, background .2s ease; }
+    .button:hover { transform: translateY(-2px); background: #c85d2e; }
+    .cta .note { margin-top: 14px; color: var(--muted); font-size: 12px; }
+    footer { background: #15232d; color: rgba(255,255,255,.72); font-size: 12px; padding: 22px 0; text-align: center; line-height: 1.7; }
+    footer a { color: rgba(255,255,255,.85); }
+    @media (max-width: 720px) {
+      .cols { grid-template-columns: 1fr; }
+      .steps { grid-template-columns: 1fr; }
+      .step + .step { border-left: 0; border-top: 1px solid var(--line); }
+      .topbar .wrap { min-height: 60px; }
+    }
+"""
+
+# Country landing pages: high-commercial-intent keywords per market.
+COUNTRIES = {
+    "united-states": {
+        "name_zh": "美国",
+        "name_en": "United States",
+        "zh_title": "美国跨境法律服务：欠款追收 · 判决执行 · 房产继承",
+        "en_title": "US Cross-Border Legal Services: Debt Recovery, Judgment Enforcement & Inheritance",
+        "zh_intro": "美国客户拖欠货款、中国判决在美国执行、父母留下的美国房产——跨时区的沟通与陌生的程序让很多企业和家庭一拖再拖。本页梳理在美国最常见的三类跨境法律事项：贸易追收、判决执行与遗产继承。",
+        "en_intro": "Unpaid invoices from US buyers, Chinese judgments to enforce in the United States, and property left behind in America — time zones and unfamiliar procedures make many businesses and families delay. This page maps the three most common cross-border matters: trade recovery, judgment enforcement, and inheritance.",
+        "items_zh": ["美国客户货款追收与律师函", "中国判决在美国的承认与执行", "美国房产与银行账户资产调查", "跨境继承与美国遗嘱认证 (Probate)"],
+        "items_en": ["Debt recovery & demand letters against US buyers", "Recognition & enforcement of Chinese judgments in the US", "Tracing US property and bank accounts", "Cross-border inheritance & US probate"],
+        "points_zh": ["多数州承认外国金钱判决不要求互惠，但各州规则与程序不同", "诉讼时效各州不同，常见 2-6 年，务必尽早确认", "财产保全须取得法院命令，资产调查与保全应同步规划", "联邦与州两级司法体系，法院程序须由当地执业律师办理", "继承通常须走 Probate，中国公证文件不能直接替代当地程序"],
+        "points_en": ["Most states recognize foreign money judgments without reciprocity, but rules differ by state", "Statutes of limitation vary by state, commonly 2-6 years — confirm early", "Asset preservation requires a court order; plan tracing and preservation together", "Federal and state courts are separate systems; local licensed counsel is required", "Inheritance usually runs through probate; Chinese notarized documents do not replace local procedure"],
+    },
+    "canada": {
+        "name_zh": "加拿大",
+        "name_en": "Canada",
+        "zh_title": "加拿大跨境法律服务：欠款追收 · 判决执行 · 房产继承",
+        "en_title": "Canada Cross-Border Legal Services: Debt Recovery, Judgment Enforcement & Inheritance",
+        "zh_intro": "加拿大客户拖欠款项、中国判决在加执行、温哥华或多伦多的房产继承——普通法与各省差异让跨境处理并不简单。本页梳理在加拿大最常见的跨境法律事项。",
+        "en_intro": "Unpaid amounts from Canadian customers, Chinese judgments to enforce in Canada, and property in Vancouver or Toronto — common law and provincial differences complicate cross-border matters. This page maps the common paths.",
+        "items_zh": ["加拿大客户欠款追收与协商", "中国判决在加拿大的承认与执行", "加拿大房产与资产调查", "跨境继承与遗产管理"],
+        "items_en": ["Debt recovery & negotiation with Canadian counterparties", "Recognition & enforcement of Chinese judgments in Canada", "Tracing Canadian property and assets", "Cross-border inheritance & estate administration"],
+        "points_zh": ["普通法省份对外国金钱判决的执行规则成熟，多数不要求互惠", "各省规则不同；魁北克为大陆法系省份，程序有别", "加拿大无遗产税，但去世时视为按市价处置资产，可能产生资本利得税", "时效各省不同，通常 2-6 年", "银行与地产登记查询渠道因省而异，需当地律师协助"],
+        "points_en": ["Common-law provinces have settled foreign-judgment rules, mostly without reciprocity", "Rules vary by province; Quebec is a civil-law province with different procedures", "No estate tax, but deemed disposition at death can trigger capital gains tax", "Limitation periods vary by province, commonly 2-6 years", "Bank and property record access varies by province; local counsel is needed"],
+    },
+    "australia": {
+        "name_zh": "澳大利亚",
+        "name_en": "Australia",
+        "zh_title": "澳大利亚跨境法律服务：欠款追收 · 判决执行 · 房产继承",
+        "en_title": "Australia Cross-Border Legal Services: Debt Recovery, Judgment Enforcement & Inheritance",
+        "zh_intro": "澳洲客户拖欠货款、中国判决在澳执行、悉尼或墨尔本的房产继承——执行路径清晰但程序严格。本页梳理在澳大利亚最常见的跨境法律事项。",
+        "en_intro": "Unpaid invoices from Australian buyers, Chinese judgments to enforce in Australia, and property in Sydney or Melbourne — enforcement paths are clear but procedural. This page maps the common cross-border matters.",
+        "items_zh": ["澳洲客户货款追收与律师函", "中国判决在澳大利亚的执行", "澳洲房产与资产调查", "跨境继承与遗嘱认证"],
+        "items_en": ["Debt recovery & demand letters against Australian buyers", "Enforcement of Chinese judgments in Australia", "Tracing Australian property and assets", "Cross-border inheritance & probate"],
+        "points_zh": ["外国判决执行依据各州《外国判决法》与普通法规则，程序成熟", "商业债务时效通常 6 年，需尽早启动", "澳大利亚无遗产税，但继承后出售房产可能产生资本利得税", "律师在各州分别执业，跨州案件需协调", "法院程序与文件认证要求严格，建议委托当地律师办理"],
+        "points_en": ["Enforcement follows state Foreign Judgments Acts and common law — a settled path", "Limitation for commercial debts is typically 6 years; start early", "No inheritance tax, but selling inherited property may trigger capital gains tax", "Lawyers are admitted per state; multi-state matters need coordination", "Court procedure and document legalization are strict; use local counsel"],
+    },
+    "singapore": {
+        "name_zh": "新加坡",
+        "name_en": "Singapore",
+        "zh_title": "新加坡跨境法律服务：欠款追收 · 裁决执行 · 家族资产",
+        "en_title": "Singapore Cross-Border Legal Services: Debt Recovery, Award Enforcement & Family Assets",
+        "zh_intro": "新加坡是华人企业出海与家族资产布局的重镇——中间商纠纷、仲裁裁决执行、家族信托与继承。本页梳理在新加坡最常见的跨境法律事项。",
+        "en_intro": "Singapore is a hub for Chinese business expansion and family wealth — intermediary disputes, award enforcement, family trusts and inheritance. This page maps the common cross-border matters.",
+        "items_zh": ["新加坡客户与中间商欠款追收", "中国判决与仲裁裁决在新加坡执行", "新加坡银行与公司资产调查", "跨境继承、信托与家族资产规划"],
+        "items_en": ["Debt recovery from Singapore buyers and intermediaries", "Enforcement of Chinese judgments and arbitral awards in Singapore", "Tracing Singapore bank and corporate assets", "Cross-border inheritance, trusts & family wealth planning"],
+        "points_zh": ["普通法体系，外国判决执行路径成熟（普通法 + 成文法）", "仲裁裁决依据《纽约公约》执行，速度快、可预期", "债务时效通常 6 年", "家族办公室与信托常见，继承与传承规划需求高", "银行信息受严格保密法规约束，资产调查需法律程序配合"],
+        "points_en": ["Common-law system with a mature foreign-judgment enforcement path", "Arbitral awards enforce under the New York Convention — fast and predictable", "Limitation for debts is typically 6 years", "Family offices and trusts are common; succession planning demand is high", "Banking secrecy is strict; asset tracing needs court processes"],
+    },
+    "united-kingdom": {
+        "name_zh": "英国",
+        "name_en": "United Kingdom",
+        "zh_title": "英国跨境法律服务：欠款追收 · 判决执行 · 遗产规划",
+        "en_title": "UK Cross-Border Legal Services: Debt Recovery, Judgment Enforcement & Estate Planning",
+        "zh_intro": "英国客户拖欠货款、中国判决在英国执行、伦敦房产与遗产继承——普通法传统与遗产税制度让规划尤为关键。本页梳理在英国最常见的跨境法律事项。",
+        "en_intro": "Unpaid invoices from UK buyers, Chinese judgments to enforce in the UK, and London property and estates — common-law tradition and inheritance tax make planning essential. This page maps the common cross-border matters.",
+        "items_zh": ["英国客户货款追收与律师函", "中国判决与仲裁裁决在英国执行", "英国房产与资产调查", "跨境继承、遗嘱认证与遗产税规划"],
+        "items_en": ["Debt recovery & demand letters against UK buyers", "Enforcement of Chinese judgments and awards in the UK", "Tracing UK property and assets", "Cross-border inheritance, probate & inheritance tax planning"],
+        "points_zh": ["外国判决执行依据《外国判决法》与普通法规则", "商业债务时效通常 6 年", "遗产税 (IHT) 最高 40%，继承规划窗口重要", "律师与出庭律师分业，程序角色分明", "房产登记与产权查询渠道公开，调查相对便利"],
+        "points_en": ["Enforcement follows the Foreign Judgments Act and common law", "Limitation for commercial debts is typically 6 years", "Inheritance tax reaches 40% — planning windows matter", "Solicitors and barristers have distinct roles in proceedings", "Land registry searches are accessible, making tracing easier"],
+    },
+}
+
+
+def _render_country_page(country: dict, slug: str) -> str:
+    items = "".join(
+        f'<li data-zh="{z}" data-en="{e}">{z}</li>'
+        for z, e in zip(country["items_zh"], country["items_en"])
+    )
+    points = "".join(
+        f'<li data-zh="{z}" data-en="{e}">{z}</li>'
+        for z, e in zip(country["points_zh"], country["points_en"])
+    )
+    url = f"{SITE_URL}/countries/{slug}"
+    en_url = f"{SITE_URL}/en/countries/{slug}"
+    page_css = _PAGE_CSS
+    ga_tag = _ga_tag()
+    return f"""<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="index, follow">
+  <meta name="description" content="{country['zh_intro']}">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="{country['zh_title']} | Shenyuan International">
+  <meta property="og:description" content="{country['zh_intro']}">
+  <meta property="og:url" content="{url}">
+  <link rel="canonical" href="{url}">
+  <link rel="alternate" hreflang="zh-CN" href="{url}">
+  <link rel="alternate" hreflang="en" href="{en_url}">
+  <link rel="alternate" hreflang="x-default" href="{url}">
+  {ga_tag}
+  <title>{country['zh_title']} | Shenyuan International 深远(国际)律师事务所</title>
+  <script type="application/ld+json">
+  {{
+    "@context": "https://schema.org",
+    "@type": "LegalService",
+    "name": "Shenyuan International 深远(国际)律师事务所",
+    "url": "{url}",
+    "description": "{country['zh_intro']}",
+    "areaServed": "{country['name_zh']}",
+    "knowsLanguage": ["zh", "en"]
+  }}
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+  <style>{page_css}</style>
+</head>
+<body>
+  <div class="topbar">
+    <div class="wrap">
+      <a class="brand" href="/"><span class="brand-mark">深</span><span>Shenyuan International</span></a>
+      <div class="nav-links">
+        <a href="/" data-zh="返回首页" data-en="Home">返回首页</a>
+        <a href="/countries" data-zh="国家专页" data-en="Country pages">国家专页</a>
+        <button class="lang-switch" type="button" id="langToggle" aria-label="切换语言">EN / 中</button>
+      </div>
+    </div>
+  </div>
+  <div class="wrap hero">
+    <div class="number" data-zh="国家专页 · {country['name_zh']}" data-en="COUNTRY PAGE · {country['name_en']}">国家专页 · {country['name_zh']}</div>
+    <h1 data-zh="{country['zh_title']}" data-en="{country['en_title']}">{country['zh_title']}</h1>
+    <div class="en-sub" data-zh="跨境争议解决与家族资产保护" data-en="Cross-border dispute resolution & family asset protection">跨境争议解决与家族资产保护</div>
+    <p class="intro" data-zh="{country['zh_intro']}" data-en="{country['en_intro']}">{country['zh_intro']}</p>
+  </div>
+  <div class="wrap cols">
+    <div class="card">
+      <h2 data-zh="覆盖服务" data-en="What we cover">覆盖服务</h2>
+      <ul>{items}</ul>
+    </div>
+    <div class="card">
+      <h2 data-zh="当地实务要点" data-en="Local practice notes">当地实务要点</h2>
+      <ul>{points}</ul>
+    </div>
+  </div>
+  <div class="wrap steps">
+    <div class="step"><span>01</span><h3 data-zh="免费咨询建档" data-en="Free consultation & intake">免费咨询建档</h3><p data-zh="提交基本情况，我们梳理人物、金额、时间线与目标。" data-en="Share the essentials; we map the parties, amounts, timeline, and goals.">提交基本情况，我们梳理人物、金额、时间线与目标。</p></div>
+    <div class="step"><span>02</span><h3 data-zh="事实、证据与法域评估" data-en="Facts, evidence & jurisdiction">事实、证据与法域评估</h3><p data-zh="识别时效、证据、资产位置与涉及的法域。" data-en="Identify timing, evidence, asset location, and relevant jurisdictions.">识别时效、证据、资产位置与涉及的法域。</p></div>
+    <div class="step"><span>03</span><h3 data-zh="策略、报价与执行" data-en="Strategy & execution">策略、报价与执行</h3><p data-zh="确定谈判、追收或诉讼策略，明确材料、风险与里程碑。" data-en="Define the strategy with clear milestones and risk boundaries.">确定谈判、追收或诉讼策略，明确材料、风险与里程碑。</p></div>
+  </div>
+  <div class="wrap cta">
+    <a class="button" href="/#intake" data-zh="免费评估我的案件 →" data-en="Free case assessment →">免费评估我的案件 →</a>
+    <p class="note" data-zh="提交不代表建立委托关系。初步咨询不收费，不承诺结果。" data-en="Submitting does not create an attorney-client relationship. Initial consultation is free and honest.">提交不代表建立委托关系。初步咨询不收费，不承诺结果。</p>
+  </div>
+  <footer>
+    © 2026 Shenyuan International · 深远(国际)律师事务所<br>
+    <span data-zh="境外法律程序通过与当地执业律所合作提供。本页内容不构成法律意见。" data-en="Foreign proceedings are conducted through locally licensed counsel. This page does not constitute legal advice.">境外法律程序通过与当地执业律所合作提供。本页内容不构成法律意见。</span>
+  </footer>
+  <script>
+    (function () {{
+      var currentLang = "zh";
+      var zhTitle = {country['zh_title']!r};
+      var enTitle = {country['en_title']!r};
+      var langToggle = document.getElementById("langToggle");
+      function updateLanguage() {{
+        document.documentElement.lang = currentLang === "zh" ? "zh-CN" : "en";
+        document.title = currentLang === "zh" ? zhTitle + " | Shenyuan International 深远(国际)律师事务所" : enTitle + " | Shenyuan International";
+        document.querySelectorAll("[data-zh][data-en]").forEach(function (node) {{
+          node.textContent = currentLang === "zh" ? node.getAttribute("data-zh") : node.getAttribute("data-en");
+        }});
+      }}
+      langToggle.addEventListener("click", function () {{
+        currentLang = currentLang === "zh" ? "en" : "zh";
+        updateLanguage();
+      }});
+    }}());
+  </script>
+</body>
+</html>"""
+
+
+_COUNTRY_INDEX_TEMPLATE = """<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="深远国际律师事务所国家专页：美国、加拿大、澳大利亚、新加坡、英国——欠款追收、判决执行与跨境继承的当地实务要点。">
+  <link rel="canonical" href="{site_url}/countries">
+  <link rel="alternate" hreflang="zh-CN" href="{site_url}/countries">
+  <link rel="alternate" hreflang="en" href="{site_url}/en/countries">
+  <link rel="alternate" hreflang="x-default" href="{site_url}/countries">
+  {ga_tag}
+  <title>国家专页 | Shenyuan International 深远(国际)律师事务所</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {{ --ink:#172433; --muted:#627180; --paper:#f6f3ed; --surface:#fffdf9; --line:#d9d9d2; --teal:#0d6c6b; --teal-deep:#084d50; --orange:#d76e39; --gold:#b08d57; --max:1060px;
+      --serif:"Playfair Display","Noto Serif SC",Georgia,"Songti SC","SimSun",serif; --sans:"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif; }}
+    * {{ box-sizing:border-box; }} body {{ margin:0; color:var(--ink); background:var(--paper); font-family:var(--sans); line-height:1.65; }}
+    a {{ color:inherit; text-decoration:none; }} button {{ font:inherit; cursor:pointer; }}
+    h1,h2,h3,p {{ margin:0; }} h1,h2,h3 {{ font-family:var(--serif); }}
+    .wrap {{ width:min(calc(100% - 40px), var(--max)); margin:0 auto; }}
+    .topbar {{ background:var(--teal-deep); color:#f5f2ec; }}
+    .topbar .wrap {{ display:flex; justify-content:space-between; align-items:center; min-height:66px; gap:18px; }}
+    .topbar .brand {{ display:inline-flex; align-items:center; gap:10px; color:#fff; font-size:14px; font-weight:700; }}
+    .brand-mark {{ display:grid; place-items:center; width:30px; height:30px; color:var(--teal-deep); background:#f7f2e9; border-radius:7px; font-family:var(--serif); font-size:16px; }}
+    .topbar .nav-links {{ display:flex; align-items:center; gap:18px; font-size:13px; }}
+    .topbar a {{ color:rgba(255,255,255,.85); }} .topbar a:hover {{ color:#fff; }}
+    .lang-switch {{ padding:7px 10px; color:rgba(255,255,255,.85); background:transparent; border:1px solid rgba(255,255,255,.3); border-radius:6px; font-size:12px; }}
+    .page-head {{ padding:64px 0 30px; }}
+    .eyebrow {{ display:inline-flex; align-items:center; gap:8px; color:var(--gold); font-size:12px; font-weight:700; letter-spacing:.13em; text-transform:uppercase; }}
+    .eyebrow::before {{ content:""; width:24px; height:2px; background:var(--gold); }}
+    h1 {{ margin:16px 0 0; font-size:clamp(30px,4vw,44px); line-height:1.15; }}
+    .page-head p {{ margin-top:14px; color:var(--muted); font-size:15px; max-width:720px; }}
+    .cards {{ display:grid; grid-template-columns:repeat(2, 1fr); gap:18px; padding-bottom:80px; }}
+    .c-card {{ padding:28px; background:var(--surface); border:1px solid var(--line); border-radius:10px; transition:transform .2s ease, box-shadow .2s ease; }}
+    .c-card:hover {{ transform:translateY(-3px); box-shadow:0 20px 50px rgba(20,33,44,.11); }}
+    .c-name {{ color:var(--gold); font-size:12px; font-weight:800; letter-spacing:.08em; text-transform:uppercase; }}
+    .c-card h2 {{ margin-top:12px; font-size:20px; }}
+    .c-card p {{ margin-top:9px; color:var(--muted); font-size:13.5px; line-height:1.6; }}
+    .c-more {{ display:inline-block; margin-top:14px; color:var(--teal); font-size:13px; font-weight:800; }}
+    footer {{ background:#15232d; color:rgba(255,255,255,.72); font-size:12px; padding:22px 0; text-align:center; }}
+    footer a {{ color:rgba(255,255,255,.85); }}
+    @media (max-width:720px) {{ .cards {{ grid-template-columns:1fr; }} .topbar .wrap {{ min-height:60px; }} }}
+  </style>
+</head>
+<body>
+  <div class="topbar"><div class="wrap">
+    <a class="brand" href="/"><span class="brand-mark">深</span><span>Shenyuan International</span></a>
+    <div class="nav-links">
+      <a href="/" data-zh="返回首页" data-en="Home">返回首页</a>
+      <button class="lang-switch" type="button" id="langToggle" aria-label="切换语言">EN / 中</button>
+    </div>
+  </div></div>
+  <div class="wrap page-head">
+    <div class="eyebrow" data-zh="国家专页" data-en="Country pages">国家专页</div>
+    <h1 data-zh="客户在哪里，协作网络就在哪里。" data-en="Where our clients are, our network follows.">客户在哪里，协作网络就在哪里。</h1>
+    <p data-zh="每个国家专页梳理当地最常见的跨境法律事项：欠款追收、判决执行与跨境继承的实务要点与处理路径。" data-en="Each country page maps the most common cross-border matters: debt recovery, judgment enforcement, and inheritance — with local practice notes and a clear path forward.">每个国家专页梳理当地最常见的跨境法律事项：欠款追收、判决执行与跨境继承的实务要点与处理路径。</p>
+  </div>
+  <div class="wrap cards">{cards}</div>
+  <footer>© 2026 Shenyuan International · 深远(国际)律师事务所 · <a href="/">返回首页</a></footer>
+  <script>
+    (function () {{
+      var currentLang = "zh";
+      document.getElementById("langToggle").addEventListener("click", function () {{
+        currentLang = currentLang === "zh" ? "en" : "zh";
+        document.documentElement.lang = currentLang === "zh" ? "zh-CN" : "en";
+        document.title = currentLang === "zh" ? "国家专页 | Shenyuan International 深远(国际)律师事务所" : "Country Pages | Shenyuan International";
+        document.querySelectorAll("[data-zh][data-en]").forEach(function (node) {{
+          node.textContent = currentLang === "zh" ? node.getAttribute("data-zh") : node.getAttribute("data-en");
+        }});
+      }});
+    }}());
+  </script>
+</body>
+</html>"""
+
+
+def _countries_index_html() -> str:
+    cards = []
+    for slug, c in COUNTRIES.items():
+        cards.append(
+            '<article class="c-card">'
+            f'<div class="c-name" data-zh="{c["name_zh"]}" data-en="{c["name_en"]}">{c["name_zh"]}</div>'
+            f'<a href="/countries/{slug}"><h2 data-zh="{html.escape(c["zh_title"])}" data-en="{html.escape(c["en_title"])}">{html.escape(c["zh_title"])}</h2></a>'
+            f'<p data-zh="{html.escape(c["zh_intro"])}" data-en="{html.escape(c["en_intro"])}">{html.escape(c["zh_intro"])}</p>'
+            f'<a class="c-more" href="/countries/{slug}" data-zh="查看专页 →" data-en="View page →">查看专页 →</a>'
+            "</article>"
+        )
+    return _COUNTRY_INDEX_TEMPLATE.format(site_url=SITE_URL, cards="\n".join(cards), ga_tag=_ga_tag())
+
+
+@app.get("/countries", include_in_schema=False)
+def countries_index() -> Response:
+    return Response(content=_countries_index_html(), media_type="text/html; charset=utf-8")
+
+
+@app.get("/countries/{slug}", include_in_schema=False)
+def country_page(slug: str) -> Response:
+    country = COUNTRIES.get(slug)
+    if country is None:
+        raise HTTPException(status_code=404, detail="Not found")
+    return Response(
+        content=_render_country_page(country, slug),
+        media_type="text/html; charset=utf-8",
+    )
+
+
+@app.api_route("/en/countries/{slug}", methods=["GET", "HEAD"], include_in_schema=False)
+def country_page_en(slug: str) -> Response:
+    country = COUNTRIES.get(slug)
+    if country is None:
+        raise HTTPException(status_code=404, detail="Not found")
+    page = _en_variant(_render_country_page(country, slug))
+    page = _swap_meta(page, "meta name=\"description\"", html.escape(country["en_intro"]))
+    page = _swap_meta(page, "meta property=\"og:title\"", html.escape(country["en_title"]) + " | Shenyuan International")
+    page = _swap_meta(page, "meta property=\"og:description\"", html.escape(country["en_intro"]))
+    page = re.sub(
+        r"(<title>)[^<]*(</title>)",
+        rf"\g<1>{html.escape(country['en_title'])} | Shenyuan International\g<2>",
+        page,
+        count=1,
+    )
+    page = page.replace(
+        f'<link rel="canonical" href="{SITE_URL}/countries/{slug}">',
+        f'<link rel="canonical" href="{SITE_URL}/en/countries/{slug}">',
+    )
+    return Response(content=page, media_type="text/html; charset=utf-8")
+
+
+@app.api_route("/en/countries", methods=["GET", "HEAD"], include_in_schema=False)
+def countries_index_en() -> Response:
+    page = _en_variant(_countries_index_html())
+    page = _swap_meta(
+        page,
+        "meta name=\"description\"",
+        "Shenyuan International country pages: United States, Canada, Australia, "
+        "Singapore, United Kingdom — local practice notes on debt recovery, "
+        "judgment enforcement, and inheritance.",
+    )
+    page = page.replace(
+        f'<link rel="canonical" href="{SITE_URL}/countries">',
+        f'<link rel="canonical" href="{SITE_URL}/en/countries">',
+    )
     return Response(content=page, media_type="text/html; charset=utf-8")
 
 

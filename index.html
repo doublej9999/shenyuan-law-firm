@@ -914,8 +914,13 @@
           <p data-zh="通过与当地执业律所的合作，覆盖中国企业出海与海外华人集中的主要市场。具体地区以当次评估为准，一案一议。" data-en="Through partnerships with locally licensed counsel, we cover the markets where Chinese businesses and overseas Chinese communities are concentrated. Every matter is assessed on its own facts.">通过与当地执业律所的合作，覆盖中国企业出海与海外华人集中的主要市场。具体地区以当次评估为准，一案一议。</p>
         </div>
         <div class="global-grid">
-          <div class="region">美国</div><div class="region">加拿大</div><div class="region">澳大利亚</div><div class="region">新西兰</div>
-          <div class="region">新加坡</div><div class="region">英国</div><div class="region">德国</div><div class="region">法国</div>
+          <a class="region" href="/countries/united-states" data-zh-href="/countries/united-states" data-en-href="/en/countries/united-states" data-zh="美国" data-en="United States">美国</a>
+          <a class="region" href="/countries/canada" data-zh-href="/countries/canada" data-en-href="/en/countries/canada" data-zh="加拿大" data-en="Canada">加拿大</a>
+          <a class="region" href="/countries/australia" data-zh-href="/countries/australia" data-en-href="/en/countries/australia" data-zh="澳大利亚" data-en="Australia">澳大利亚</a>
+          <div class="region">新西兰</div>
+          <a class="region" href="/countries/singapore" data-zh-href="/countries/singapore" data-en-href="/en/countries/singapore" data-zh="新加坡" data-en="Singapore">新加坡</a>
+          <a class="region" href="/countries/united-kingdom" data-zh-href="/countries/united-kingdom" data-en-href="/en/countries/united-kingdom" data-zh="英国" data-en="United Kingdom">英国</a>
+          <div class="region">德国</div><div class="region">法国</div>
           <div class="region">日本</div><div class="region">韩国</div><div class="region">阿联酋</div><div class="region">沙特</div>
           <div class="region">泰国</div><div class="region">越南</div><div class="region">马来西亚</div><div class="region">印尼</div>
           <div class="region">香港</div><div class="region">澳门</div><div class="region">巴西</div><div class="region">墨西哥</div>
@@ -1050,6 +1055,7 @@
           <h4 data-zh="快速入口" data-en="Quick links">快速入口</h4>
           <a href="#intake" data-zh="免费法律咨询" data-en="Free consultation">免费法律咨询</a>
           <a href="/articles" data-zh="法律专栏" data-en="Legal insights">法律专栏</a>
+          <a href="/countries" data-zh="国家专页" data-en="Country pages">国家专页</a>
           <a href="#faq" data-zh="常见问题" data-en="FAQ">常见问题</a>
           <a href="#privacy" data-zh="隐私说明" data-en="Privacy notice">隐私说明</a>
         </div>
@@ -1134,6 +1140,9 @@
         document.documentElement.lang = currentLang === "zh" ? "zh-CN" : "en";
         document.querySelectorAll("[data-zh][data-en]").forEach(function (node) {
           node.textContent = currentLang === "zh" ? node.getAttribute("data-zh") : node.getAttribute("data-en");
+        });
+        document.querySelectorAll("[data-zh-href][data-en-href]").forEach(function (node) {
+          node.setAttribute("href", currentLang === "zh" ? node.getAttribute("data-zh-href") : node.getAttribute("data-en-href"));
         });
         document.querySelectorAll("option[data-zh][data-en]").forEach(function (option) {
           option.textContent = currentLang === "zh" ? option.getAttribute("data-zh") : option.getAttribute("data-en");
