@@ -555,7 +555,7 @@ def _render_service_page(svc: dict) -> str:
     h1 {{ margin:14px 0 10px; font-size:clamp(30px,4vw,46px); letter-spacing:-.025em; line-height:1.1; }}
     .en {{ color:var(--muted); font-size:15px; }}
     .intro {{ margin-top:18px; font-size:16px; max-width:680px; }}
-    .cols {{ display:grid; grid-template-columns:1fr 1fr; gap:18px; margin:36px 0; }}
+    .cols {{ display:grid; grid-template-columns:1fr 1fr; gap:18px; margin:36px auto; }}
     .card {{ background:var(--surface); border:1px solid var(--line); border-radius:10px; padding:24px; }}
     .card h2 {{ margin:0 0 12px; font-size:17px; }}
     ul {{ margin:0; padding:0; list-style:none; display:grid; gap:8px; }}

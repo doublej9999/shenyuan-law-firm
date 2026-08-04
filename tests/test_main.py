@@ -705,6 +705,15 @@ def test_service_pages(tmp_db):
         assert client.get("/services/bogus").status_code == 404
 
 
+def test_service_page_cards_centered(tmp_db):
+    # Regression: .cols used to override .wrap's auto centering with
+    # margin:36px 0, pushing the two cards (常见情形 / 建议准备的材料)
+    # flush left instead of centered.
+    with TestClient(m.app) as client:
+        resp = client.get("/services/trade")
+        assert "margin:36px auto" in resp.text
+
+
 # --- Conversion stats --------------------------------------------------
 
 
