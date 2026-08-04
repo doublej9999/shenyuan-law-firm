@@ -933,6 +933,17 @@ def test_sitemap_includes_en_urls(tmp_db):
         assert "/en/articles/trade-payment-recovery-5-steps" in text
 
 
+def test_article_blogposting_schema(tmp_db):
+    with TestClient(m.app) as client:
+        zh = client.get("/articles/trade-payment-recovery-5-steps").text
+        assert '"@type": "BlogPosting"' in zh
+        assert '"headline": "海外客户拖欠货款怎么办？律师教你5步合法追收"' in zh
+        assert '"inLanguage": "zh-CN"' in zh
+        en = client.get("/en/articles/trade-payment-recovery-5-steps").text
+        assert '"headline": "What to Do When an Overseas Buyer Won' in en
+        assert '"inLanguage": "en"' in en
+
+
 def test_dockerfile_ships_content_dir():
     # Regression: articles are served from content/, so the image must copy
     # the directory — otherwise /articles/{slug} 404s in production only.
