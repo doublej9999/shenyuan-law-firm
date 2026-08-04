@@ -899,6 +899,14 @@ def test_robots_txt_points_to_sitemap(tmp_db):
         assert "Sitemap: http://localhost:8000/sitemap.xml" in resp.text
 
 
+def test_sitemap_and_robots_accept_head(tmp_db):
+    # Regression: GSC's fetcher probes with HEAD; a 405 there surfaces as
+    # "couldn't fetch" in Search Console even though GET works fine.
+    with TestClient(m.app) as client:
+        assert client.head("/sitemap.xml").status_code == 200
+        assert client.head("/robots.txt").status_code == 200
+
+
 def test_ga_tag_absent_without_config(tmp_db):
     monkeypatch = pytest.MonkeyPatch()
     monkeypatch.delenv("GA_MEASUREMENT_ID", raising=False)
