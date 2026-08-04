@@ -12,6 +12,7 @@ RUN pip install --no-cache-dir -r requirements.lock
 COPY app ./app
 COPY index.html .
 COPY admin.html .
+COPY admin_marketing.html .
 COPY wechat-qrcode.png .
 COPY content ./content
 

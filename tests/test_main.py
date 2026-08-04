@@ -1298,13 +1298,39 @@ def test_marketing_generate_endpoint(tmp_db, monkeypatch):
         assert "/services/legacy" in biz.json()["article_url"]
 
 
+def test_admin_marketing_page_and_articles_api(tmp_db, monkeypatch):
+    monkeypatch.setenv("ADMIN_TOKEN", "secret-token")
+    with TestClient(m.app) as client:
+        # console shell is unauthenticated (like /admin)
+        page = client.get("/admin/marketing")
+        assert page.status_code == 200
+        assert "营销素材" in page.text
+        # articles API requires token
+        assert client.get("/admin/api/articles").status_code == 401
+        headers = {"Authorization": "Bearer secret-token"}
+        articles = client.get("/admin/api/articles", headers=headers)
+        assert articles.status_code == 200
+        data = articles.json()
+        slugs = [a["slug"] for a in data]
+        assert "trade-payment-recovery-5-steps" in slugs
+        assert all(a["business"] in ("trade", "recovery", "legacy", "unsure") for a in data)
+        # newest first
+        dates = [a["date"] for a in data]
+        assert dates == sorted(dates, reverse=True)
+
+
 def test_dockerfile_ships_content_dir():
     # Regression: articles are served from content/, so the image must copy
     # the directory — otherwise /articles/{slug} 404s in production only.
-    dockerfile = (Path(__file__).resolve().parent.parent / "Dockerfile").read_text(
-        encoding="utf-8"
-    )
-    assert "COPY content ./content" in dockerfile
+    docke = (Path(__file__).resolve().parent.parent / "Dockerfile").read_text(encoding="utf-8")
+    assert "COPY content ./content" in docke
+
+
+def test_dockerfile_ships_admin_marketing_page():
+    # Regression: the marketing console is served from admin_marketing.html,
+    # so the image must copy it like admin.html.
+    docke = (Path(__file__).resolve().parent.parent / "Dockerfile").read_text(encoding="utf-8")
+    assert "COPY admin_marketing.html ." in docke
 
 
 # --- SEO / analytics plumbing --------------------------------------------

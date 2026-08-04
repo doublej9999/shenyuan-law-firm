@@ -123,6 +123,9 @@ PATCH /admin/api/intakes/{id}  # 更新状态 / 备注，body: {"status": "...",
   口播+YouTube 标签）、Google Ads（标题/描述/关键词/附加链接，遵循平台字数限制）、朋友圈文案、
   LinkedIn 英文帖、全渠道 UTM 追踪链接与每周排期建议。纯模板生成（无 LLM 依赖），内容基于文章
   结构与业务线词库，确定性、可测试。每周二由「营销素材」定时任务拉取最新文章自动生成并投递。
+  **营销素材控制台**：`/admin/marketing`（后台顶栏「📣 营销素材」入口）——选择文章或业务线
+  一键生成，分区展示带「复制」按钮（写入剪贴板），支持整包下载 Markdown；`GET /admin/api/articles`
+  提供文章下拉列表（按日期倒序）。
 - **独立服务落地页**:`/services/trade`、`/services/recovery`、`/services/legacy`
   三个页面，含各自的服务情形与材料清单，适合投放广告时直接链接。
 - **转化分析**:后台首页显示累计/今日线索、今日访问量与转化率，由 `GET /admin/api/stats`

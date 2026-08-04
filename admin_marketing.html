@@ -1,0 +1,262 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>营销素材 · Shenyuan Marketing Console</title>
+  <style>
+    :root { --ink:#172433; --muted:#627180; --paper:#f6f3ed; --surface:#fffdf9; --line:#d9d9d2;
+      --teal:#0d6c6b; --teal-deep:#084d50; --orange:#d76e39; --cream:#ede8de;
+      --serif:"Playfair Display","Noto Serif SC",Georgia,serif; --sans:"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif; }
+    * { box-sizing:border-box; }
+    body { margin:0; background:var(--paper); color:var(--ink); font-family:var(--sans); line-height:1.65; }
+    .topbar { background:var(--teal-deep); color:#f5f2ec; padding:0 22px; min-height:58px; display:flex; align-items:center; gap:14px; }
+    .topbar .brand { font-weight:800; font-size:15px; }
+    .topbar .sub { font-size:12px; color:rgba(245,242,236,.75); }
+    .topbar a { margin-left:auto; color:#f5f2ec; font-size:13px; text-decoration:none; }
+    .wrap { max-width:980px; margin:0 auto; padding:22px; }
+    .controls { display:flex; gap:12px; flex-wrap:wrap; align-items:flex-end; background:var(--surface);
+      border:1px solid var(--line); border-radius:10px; padding:16px; }
+    .field { display:flex; flex-direction:column; gap:6px; font-size:12.5px; color:var(--muted); }
+    select, button { font:inherit; }
+    select { min-width:280px; padding:9px 12px; border:1px solid var(--line); border-radius:8px; background:#fff; color:var(--ink); }
+    .btn-primary { padding:10px 20px; border:0; border-radius:8px; background:var(--orange); color:#fff; font-weight:700; cursor:pointer; }
+    .btn-ghost { padding:8px 14px; border:1px solid var(--line); border-radius:8px; background:var(--surface); color:var(--teal-deep); font-size:12.5px; font-weight:700; cursor:pointer; }
+    .btn-ghost:hover { background:var(--cream); }
+    .btn-primary:disabled { opacity:.55; cursor:default; }
+    .login { max-width:360px; margin:80px auto; background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:28px; }
+    .login h1 { font-family:var(--serif); font-size:20px; margin:0 0 16px; }
+    .login input { width:100%; padding:10px 12px; border:1px solid var(--line); border-radius:8px; margin-bottom:12px; }
+    .error { color:#b3261e; font-size:13px; margin-top:10px; min-height:1.2em; }
+    .result { margin-top:18px; }
+    .meta-bar { display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:14px; }
+    .meta-bar .title { font-family:var(--serif); font-size:19px; font-weight:700; }
+    .meta-bar a { color:var(--teal); font-size:12.5px; }
+    .section { background:var(--surface); border:1px solid var(--line); border-radius:10px; margin-bottom:14px; overflow:hidden; }
+    .section > h2 { margin:0; padding:12px 16px; font-size:14px; color:var(--teal-deep); background:var(--cream);
+      display:flex; align-items:center; gap:10px; }
+    .section > h2 .copy { margin-left:auto; }
+    .section .body { padding:14px 16px; font-size:13.5px; color:#334454; white-space:pre-wrap; word-break:break-word; }
+    .section .body .titles li { margin:4px 0; }
+    .section .body ul { margin:6px 0; padding-left:20px; }
+    .section .body code { background:#f0ede4; padding:1px 6px; border-radius:4px; font-size:12.5px; }
+    .schedule li { margin:3px 0; }
+    .hint { font-size:12px; color:var(--muted); }
+    .toast { position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:#0d6c6b; color:#fff;
+      padding:9px 18px; border-radius:8px; font-size:13px; opacity:0; transition:opacity .25s; pointer-events:none; }
+    .toast.show { opacity:1; }
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <span class="brand">Shenyuan Marketing</span>
+    <span class="sub">营销素材 · 一键生成发布物料</span>
+    <a href="/admin">← 线索管理</a>
+  </div>
+
+  <div id="loginView" class="login" hidden>
+    <h1>营销素材控制台</h1>
+    <input type="password" id="tokenInput" placeholder="管理令牌（与后台一致）" autocomplete="off">
+    <button class="btn-primary" id="loginBtn" style="width:100%;">进入</button>
+    <div class="error" id="errorBox"></div>
+  </div>
+
+  <div id="panelView" class="wrap" hidden>
+    <div class="controls">
+      <div class="field">
+        <label>按文章生成（默认最新）</label>
+        <select id="articleSelect"></select>
+      </div>
+      <div class="field">
+        <label>或按业务线生成（广告落地页）</label>
+        <select id="businessSelect">
+          <option value="">— 不指定，跟随文章 —</option>
+          <option value="trade">国际贸易争议 TRADE</option>
+          <option value="recovery">诉讼与债务追收 RECOVERY</option>
+          <option value="legacy">继承与家族资产 LEGACY</option>
+        </select>
+      </div>
+      <button class="btn-primary" id="generateBtn">生成素材包</button>
+      <button class="btn-ghost" id="downloadBtn" disabled>下载 Markdown</button>
+      <div class="error" id="genError"></div>
+    </div>
+    <div id="result" class="result" hidden></div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    (function () {
+      var tokenInput = document.getElementById("tokenInput");
+      var loginBtn = document.getElementById("loginBtn");
+      var errorBox = document.getElementById("errorBox");
+      var genError = document.getElementById("genError");
+      var loginView = document.getElementById("loginView");
+      var panelView = document.getElementById("panelView");
+      var articleSelect = document.getElementById("articleSelect");
+      var businessSelect = document.getElementById("businessSelect");
+      var generateBtn = document.getElementById("generateBtn");
+      var downloadBtn = document.getElementById("downloadBtn");
+      var result = document.getElementById("result");
+      var toast = document.getElementById("toast");
+      var articles = [];
+      var lastBundle = null;
+
+      function token() { return sessionStorage.getItem("admin_token") || ""; }
+      function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
+        return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
+
+      async function api(path, options) {
+        options = options || {};
+        options.headers = Object.assign({ "Authorization": "Bearer " + token() }, options.headers || {});
+        var resp = await fetch(path, options);
+        if (resp.status === 401) {
+          sessionStorage.removeItem("admin_token");
+          showLogin();
+          throw new Error("登录已失效，请重新输入管理令牌");
+        }
+        if (!resp.ok) {
+          var detail = "";
+          try { detail = (await resp.json()).detail || resp.status; } catch (e) { detail = resp.status; }
+          throw new Error(detail);
+        }
+        return resp.json();
+      }
+
+      function showLogin() { loginView.hidden = false; panelView.hidden = true; }
+      function showPanel() { loginView.hidden = true; panelView.hidden = false; }
+
+      function showToast(msg) {
+        toast.textContent = msg;
+        toast.classList.add("show");
+        setTimeout(function () { toast.classList.remove("show"); }, 1600);
+      }
+      async function copyText(text, label) {
+        try { await navigator.clipboard.writeText(text); showToast(label + " 已复制"); }
+        catch (e) { showToast("复制失败，请手动选择"); }
+      }
+      function section(title, bodyHtml, copyContent) {
+        var s = document.createElement("div");
+        s.className = "section";
+        s.innerHTML = "<h2>" + esc(title) + '<button class="btn-ghost copy" type="button">复制</button></h2>' +
+          '<div class="body">' + bodyHtml + "</div>";
+        s.querySelector(".copy").addEventListener("click", function () { copyText(copyContent, title); });
+        return s;
+      }
+      function listHtml(items) {
+        return "<ul>" + items.map(function (i) { return "<li>" + esc(i) + "</li>"; }).join("") + "</ul>";
+      }
+
+      function renderBundle(b) {
+        lastBundle = b;
+        result.innerHTML = "";
+        result.hidden = false;
+        downloadBtn.disabled = false;
+        var meta = document.createElement("div");
+        meta.className = "meta-bar";
+        meta.innerHTML = '<span class="title">' + esc(b.title_zh) + "</span>" +
+          '<a href="' + esc(b.article_url) + '" target="_blank">' + esc(b.article_url) + "</a>" +
+          '<span class="hint">业务线：' + esc(b.business) + "</span>";
+        result.appendChild(meta);
+
+        var mp = b.wechat_mp;
+        result.appendChild(section("公众号（周一）",
+          listHtml(mp.titles) + "<p><b>摘要：</b>" + esc(mp.summary) + "</p>",
+          "公众号标题：\n" + mp.titles.join("\n") + "\n\n摘要：\n" + mp.summary));
+        result.appendChild(section("小红书（周三）",
+          "<p><b>标题：</b>" + esc(b.xiaohongshu.title) + "</p>" + esc(b.xiaohongshu.body) +
+          "<p><b>标签：</b>" + esc(b.xiaohongshu.tags.join(" ")) + "</p>" +
+          "<p><b>封面：</b>" + esc(b.xiaohongshu.cover) + "</p>",
+          "标题：\n" + b.xiaohongshu.title + "\n\n正文：\n" + b.xiaohongshu.body + "\n\n标签：\n" + b.xiaohongshu.tags.join(" ")));
+        result.appendChild(section("视频（周五 · 视频号/YouTube）",
+          "<p><b>标题：</b>" + esc(b.video.youtube_title) + "</p>" + esc(b.video.script_zh) +
+          "<p><b>标签：</b>" + esc(b.video.hashtags.join(" ")) + "</p>" +
+          "<p><b>YouTube 英文描述：</b></p>" + esc(b.video.caption_en),
+          "标题：\n" + b.video.youtube_title + "\n\n口播脚本：\n" + b.video.script_zh + "\n\n标签：\n" + b.video.hashtags.join(" ") + "\n\nYouTube 英文描述：\n" + b.video.caption_en));
+        result.appendChild(section("朋友圈 + 社群（周日）", esc(b.moments), b.moments));
+        result.appendChild(section("LinkedIn（英文）",
+          "<p><b>Headline：</b>" + esc(b.linkedin.headline) + "</p>" + esc(b.linkedin.body_en),
+          "Headline：\n" + b.linkedin.headline + "\n\nBody：\n" + b.linkedin.body_en));
+        result.appendChild(section("Google Ads",
+          "<p><b>标题（≤30字）：</b>" + listHtml(b.ads.headlines) + "</p>" +
+          "<p><b>描述（≤90字）：</b>" + listHtml(b.ads.descriptions) + "</p>" +
+          "<p><b>关键词：</b>" + esc(b.ads.keywords.join(" / ")) + "</p>" +
+          "<p><b>落地页：</b>" + esc(b.ads.final_url) + "</p>" +
+          "<p><b>附加链接：</b>" + listHtml(b.ads.sitelinks) + "</p>",
+          "标题：\n" + b.ads.headlines.join("\n") + "\n\n描述：\n" + b.ads.descriptions.join("\n") + "\n\n关键词：\n" + b.ads.keywords.join(" / ") + "\n\n落地页：\n" + b.ads.final_url));
+        result.appendChild(section("UTM 追踪链接",
+          listHtml([b.utm.wechat_mp, b.utm.xiaohongshu, b.utm.video, b.utm.ads, b.utm.moments]),
+          Object.keys(b.utm).map(function (k) { return k + ": " + b.utm[k]; }).join("\n")));
+        result.appendChild(section("每周排期建议", listHtml(b.schedule.map(function (s) { return s[0] + "：" + s[1]; })), ""));
+        result.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+
+      function markdownExport(b) {
+        return "# " + b.title_zh + "\n\n" +
+          "- 链接：" + b.article_url + "\n- 业务线：" + b.business + "\n\n" +
+          "## 公众号（周一）\n" + b.wechat_mp.titles.join("\n") + "\n\n摘要：" + b.wechat_mp.summary + "\n\n" +
+          "## 小红书（周三）\n标题：" + b.xiaohongshu.title + "\n\n" + b.xiaohongshu.body + "\n\n标签：" + b.xiaohongshu.tags.join(" ") + "\n\n" +
+          "## 视频（周五）\n标题：" + b.video.youtube_title + "\n\n" + b.video.script_zh + "\n\n标签：" + b.video.hashtags.join(" ") + "\n\n" +
+          "## 朋友圈（周日）\n" + b.moments + "\n\n" +
+          "## LinkedIn\nHeadline：" + b.linkedin.headline + "\n\n" + b.linkedin.body_en + "\n\n" +
+          "## Google Ads\n" + b.ads.headlines.join(" / ") + "\n\n" + b.ads.descriptions.join("\n") + "\n\n关键词：" + b.ads.keywords.join(" / ") + "\n\n落地页：" + b.ads.final_url + "\n\n" +
+          "## UTM\n" + Object.keys(b.utm).map(function (k) { return "- " + b.utm[k]; }).join("\n");
+      }
+
+      async function loadArticles() {
+        try {
+          articles = await api("/admin/api/articles");
+          articleSelect.innerHTML = "";
+          articles.forEach(function (a) {
+            var o = document.createElement("option");
+            o.value = a.slug;
+            o.textContent = a.date + " · " + a.title_zh + "（" + a.business + "）";
+            articleSelect.appendChild(o);
+          });
+        } catch (e) { genError.textContent = "文章列表加载失败：" + e.message; }
+      }
+
+      async function generate() {
+        genError.textContent = "";
+        generateBtn.disabled = true;
+        generateBtn.textContent = "生成中…";
+        try {
+          var params = new URLSearchParams();
+          var slug = articleSelect.value;
+          if (slug) params.set("slug", slug);
+          var biz = businessSelect.value;
+          if (biz) params.set("business", biz);
+          var b = await api("/admin/api/marketing/generate?" + params.toString());
+          renderBundle(b);
+        } catch (e) { genError.textContent = "生成失败：" + e.message; }
+        generateBtn.disabled = false;
+        generateBtn.textContent = "生成素材包";
+      }
+
+      loginBtn.addEventListener("click", function () {
+        var t = tokenInput.value.trim();
+        if (!t) return;
+        sessionStorage.setItem("admin_token", t);
+        tokenInput.value = "";
+        showPanel();
+        loadArticles();
+      });
+      tokenInput.addEventListener("keydown", function (e) { if (e.key === "Enter") loginBtn.click(); });
+      generateBtn.addEventListener("click", generate);
+      downloadBtn.addEventListener("click", function () {
+        if (!lastBundle) return;
+        var blob = new Blob([markdownExport(lastBundle)], { type: "text/markdown;charset=utf-8" });
+        var a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = "marketing-" + lastBundle.slug + ".md";
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(a.href);
+      });
+
+      if (token()) { showPanel(); loadArticles(); } else { showLogin(); }
+    })();
+  </script>
+</body>
+</html>
