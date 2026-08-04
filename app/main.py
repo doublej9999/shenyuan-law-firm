@@ -1,10 +1,12 @@
 from __future__ import annotations
 
 import csv
+import html
 import io
 import json
 import logging
 import os
+import re
 import secrets
 import sqlite3
 import urllib.error
@@ -13,6 +15,8 @@ from contextlib import asynccontextmanager, contextmanager
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Annotated, Iterator
+
+import markdown
 
 from fastapi import BackgroundTasks, FastAPI, HTTPException, Request
 from fastapi.responses import FileResponse, JSONResponse, Response
@@ -734,7 +738,9 @@ def read_index() -> Response:
 
 @app.get("/sitemap.xml", include_in_schema=False)
 def sitemap() -> Response:
-    urls = [f"{SITE_URL}/"] + [f"{SITE_URL}/services/{slug}" for slug in SERVICES]
+    urls = [f"{SITE_URL}/", f"{SITE_URL}/articles"] + [
+        f"{SITE_URL}/services/{slug}" for slug in SERVICES
+    ] + [f"{SITE_URL}/articles/{a['meta']['slug']}" for a in _load_articles()]
     xml = (
         '<?xml version="1.0" encoding="UTF-8"?>\n'
         '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
@@ -753,6 +759,272 @@ def service_page(slug: str) -> Response:
         content=_render_service_page(svc),
         media_type="text/html; charset=utf-8",
     )
+
+
+# ---------- Articles (content factory) ----------
+
+ARTICLES_DIR = ROOT_DIR / "content" / "articles"
+_SLUG_RE = re.compile(r"^[a-z0-9-]{1,80}$")
+BUSINESS_LABELS = {
+    "trade": ("国际贸易争议", "Trade"),
+    "recovery": ("诉讼与债务追收", "Recovery"),
+    "legacy": ("继承与家族资产", "Legacy"),
+}
+
+
+def _parse_article_file(path: Path) -> dict | None:
+    """Parse one article: YAML-ish frontmatter + zh body + `<!-- EN -->` + en body."""
+    text = path.read_text(encoding="utf-8")
+    if not text.startswith("---"):
+        return None
+    _, frontmatter, body = text.split("---", 2)
+    meta = {}
+    for line in frontmatter.strip().splitlines():
+        if ":" in line:
+            key, value = line.split(":", 1)
+            meta[key.strip()] = value.strip()
+    parts = body.split("\n<!-- EN -->\n", 1)
+    meta["slug"] = path.parent.name
+    return {
+        "meta": meta,
+        "zh": parts[0].strip(),
+        "en": parts[1].strip() if len(parts) > 1 else "",
+    }
+
+
+def _load_articles() -> list[dict]:
+    """All articles sorted by date descending; invalid entries are skipped."""
+    articles = []
+    if ARTICLES_DIR.is_dir():
+        for path in sorted(ARTICLES_DIR.glob("*/index.md")):
+            try:
+                article = _parse_article_file(path)
+            except (OSError, ValueError):
+                continue
+            if article and _SLUG_RE.match(article["meta"].get("slug", "")):
+                articles.append(article)
+    return sorted(articles, key=lambda a: a["meta"].get("date", ""), reverse=True)
+
+
+def _article_html(article: dict) -> tuple[str, str]:
+    """Render zh/en markdown bodies to HTML (extra enables tables, etc.)."""
+    render = lambda text: markdown.markdown(text, extensions=["extra", "sane_lists"])
+    return render(article["zh"]), render(article["en"])
+
+
+_ARTICLE_INDEX_TEMPLATE = """<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="跨境法律实务指南：国际贸易争议、债务追收、继承与家族资产。深远国际律师事务所律师团队撰写。">
+  <link rel="canonical" href="{site_url}/articles">
+  <title>法律专栏 | Shenyuan International 深远(国际)律师事务所</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {{ --ink:#172433; --muted:#627180; --paper:#f6f3ed; --surface:#fffdf9; --line:#d9d9d2; --teal:#0d6c6b; --teal-deep:#084d50; --orange:#d76e39; --gold:#b08d57; --max:1060px;
+      --serif:"Playfair Display","Noto Serif SC",Georgia,"Songti SC","SimSun",serif; --sans:"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif; }}
+    * {{ box-sizing:border-box; }} body {{ margin:0; color:var(--ink); background:var(--paper); font-family:var(--sans); line-height:1.65; }}
+    a {{ color:inherit; text-decoration:none; }} button {{ font:inherit; cursor:pointer; }}
+    h1,h2,h3,p {{ margin:0; }} h1,h2,h3 {{ font-family:var(--serif); }}
+    .wrap {{ width:min(calc(100% - 40px), var(--max)); margin:0 auto; }}
+    .topbar {{ background:var(--teal-deep); color:#f5f2ec; }}
+    .topbar .wrap {{ display:flex; justify-content:space-between; align-items:center; min-height:66px; gap:18px; }}
+    .topbar .brand {{ display:inline-flex; align-items:center; gap:10px; color:#fff; font-size:14px; font-weight:700; }}
+    .brand-mark {{ display:grid; place-items:center; width:30px; height:30px; color:var(--teal-deep); background:#f7f2e9; border-radius:7px; font-family:var(--serif); font-size:16px; }}
+    .topbar .nav-links {{ display:flex; align-items:center; gap:18px; font-size:13px; }}
+    .topbar a {{ color:rgba(255,255,255,.85); }} .topbar a:hover {{ color:#fff; }}
+    .lang-switch {{ padding:7px 10px; color:rgba(255,255,255,.85); background:transparent; border:1px solid rgba(255,255,255,.3); border-radius:6px; font-size:12px; }}
+    .page-head {{ padding:64px 0 30px; }}
+    .eyebrow {{ display:inline-flex; align-items:center; gap:8px; color:var(--gold); font-size:12px; font-weight:700; letter-spacing:.13em; text-transform:uppercase; }}
+    .eyebrow::before {{ content:""; width:24px; height:2px; background:var(--gold); }}
+    h1 {{ margin:16px 0 0; font-size:clamp(30px,4vw,44px); line-height:1.15; }}
+    .page-head p {{ margin-top:14px; color:var(--muted); font-size:15px; max-width:720px; }}
+    .cards {{ display:grid; gap:18px; padding-bottom:80px; }}
+    .a-card {{ padding:28px; background:var(--surface); border:1px solid var(--line); border-radius:var(--radius,10px); transition:transform .2s ease, box-shadow .2s ease; }}
+    .a-card:hover {{ transform:translateY(-3px); box-shadow:0 20px 50px rgba(20,33,44,.11); }}
+    .a-meta {{ display:flex; align-items:center; gap:12px; font-size:12px; color:var(--muted); }}
+    .a-tag {{ display:inline-block; padding:3px 10px; color:var(--teal-deep); background:#deefea; border-radius:12px; font-weight:700; }}
+    .a-card h2 {{ margin-top:14px; font-size:21px; line-height:1.3; }}
+    .a-card h2:hover {{ color:var(--teal); }}
+    .a-card p {{ margin-top:10px; color:var(--muted); font-size:14px; }}
+    .a-more {{ display:inline-block; margin-top:14px; color:var(--teal); font-size:13px; font-weight:800; }}
+    footer {{ background:#15232d; color:rgba(255,255,255,.72); font-size:12px; padding:22px 0; text-align:center; }}
+    footer a {{ color:rgba(255,255,255,.85); }}
+    @media (max-width:720px) {{ .topbar .wrap {{ min-height:60px; }} }}
+  </style>
+</head>
+<body>
+  <div class="topbar"><div class="wrap">
+    <a class="brand" href="/"><span class="brand-mark">深</span><span>Shenyuan International</span></a>
+    <div class="nav-links">
+      <a href="/" data-zh="返回首页" data-en="Home">返回首页</a>
+      <button class="lang-switch" type="button" id="langToggle" aria-label="切换语言">EN / 中</button>
+    </div>
+  </div></div>
+  <div class="wrap page-head">
+    <div class="eyebrow" data-zh="法律专栏" data-en="Legal insights">法律专栏</div>
+    <h1 data-zh="跨境法律实务指南" data-en="Cross-border legal guides">跨境法律实务指南</h1>
+    <p data-zh="由深远国际律师事务所团队撰写，围绕国际贸易争议、债务追收、继承与家族资产，用中文讲清跨境法律实务。" data-en="Written by the Shenyuan International team on international trade disputes, debt recovery, inheritance, and family assets — cross-border legal practice in plain language.">由深远国际律师事务所团队撰写，围绕国际贸易争议、债务追收、继承与家族资产，用中文讲清跨境法律实务。</p>
+  </div>
+  <div class="wrap cards">{cards}</div>
+  <footer>© 2026 Shenyuan International · 深远(国际)律师事务所 · <a href="/">返回首页</a></footer>
+  <script>
+    (function () {{
+      var currentLang = "zh";
+      document.getElementById("langToggle").addEventListener("click", function () {{
+        currentLang = currentLang === "zh" ? "en" : "zh";
+        document.documentElement.lang = currentLang === "zh" ? "zh-CN" : "en";
+        document.title = currentLang === "zh" ? "法律专栏 | Shenyuan International 深远(国际)律师事务所" : "Legal Insights | Shenyuan International";
+        document.querySelectorAll("[data-zh][data-en]").forEach(function (node) {{
+          node.textContent = currentLang === "zh" ? node.getAttribute("data-zh") : node.getAttribute("data-en");
+        }});
+      }});
+    }}());
+  </script>
+</body>
+</html>"""
+
+_ARTICLE_PAGE_TEMPLATE = """<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="{description_zh}">
+  <link rel="canonical" href="{site_url}/articles/{slug}">
+  <title>{title_zh} | Shenyuan International</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {{ --ink:#172433; --muted:#627180; --paper:#f6f3ed; --surface:#fffdf9; --line:#d9d9d2; --teal:#0d6c6b; --teal-deep:#084d50; --orange:#d76e39; --gold:#b08d57; --max:820px;
+      --serif:"Playfair Display","Noto Serif SC",Georgia,"Songti SC","SimSun",serif; --sans:"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif; }}
+    * {{ box-sizing:border-box; }} body {{ margin:0; color:var(--ink); background:var(--paper); font-family:var(--sans); line-height:1.75; }}
+    a {{ color:inherit; text-decoration:none; }} button {{ font:inherit; cursor:pointer; }}
+    h1,h2,h3,p {{ margin:0; }} h1,h2,h3 {{ font-family:var(--serif); }}
+    .wrap {{ width:min(calc(100% - 40px), var(--max)); margin:0 auto; }}
+    .topbar {{ background:var(--teal-deep); color:#f5f2ec; }}
+    .topbar .wrap {{ display:flex; justify-content:space-between; align-items:center; min-height:66px; gap:18px; }}
+    .topbar .brand {{ display:inline-flex; align-items:center; gap:10px; color:#fff; font-size:14px; font-weight:700; }}
+    .brand-mark {{ display:grid; place-items:center; width:30px; height:30px; color:var(--teal-deep); background:#f7f2e9; border-radius:7px; font-family:var(--serif); font-size:16px; }}
+    .topbar .nav-links {{ display:flex; align-items:center; gap:18px; font-size:13px; }}
+    .topbar a {{ color:rgba(255,255,255,.85); }} .topbar a:hover {{ color:#fff; }}
+    .lang-switch {{ padding:7px 10px; color:rgba(255,255,255,.85); background:transparent; border:1px solid rgba(255,255,255,.3); border-radius:6px; font-size:12px; }}
+    .article-head {{ padding:56px 0 26px; }}
+    .a-meta {{ display:flex; align-items:center; gap:12px; font-size:12px; color:var(--muted); }}
+    .a-tag {{ display:inline-block; padding:3px 10px; color:var(--teal-deep); background:#deefea; border-radius:12px; font-weight:700; }}
+    h1 {{ margin-top:16px; font-size:clamp(28px,3.8vw,40px); line-height:1.25; }}
+    .a-desc {{ margin-top:14px; color:var(--muted); font-size:15px; }}
+    .article-body {{ padding-bottom:34px; }}
+    .article-body h2 {{ margin:38px 0 14px; font-size:24px; }}
+    .article-body h3 {{ margin:26px 0 10px; font-size:18px; color:var(--teal-deep); }}
+    .article-body p {{ margin-top:12px; font-size:15px; color:#334454; }}
+    .article-body ul, .article-body ol {{ margin:12px 0 0; padding-left:22px; color:#334454; font-size:15px; }}
+    .article-body li {{ margin-top:6px; }}
+    .article-body table {{ width:100%; margin:16px 0 4px; border-collapse:collapse; font-size:13.5px; background:var(--surface); }}
+    .article-body th, .article-body td {{ border:1px solid var(--line); padding:9px 12px; text-align:left; vertical-align:top; }}
+    .article-body th {{ background:var(--cream); color:var(--teal-deep); font-weight:700; }}
+    .article-body strong {{ color:var(--ink); }}
+    .article-body a {{ color:var(--teal); font-weight:700; border-bottom:1px solid rgba(13,108,107,.3); }}
+    .article-body hr {{ margin:30px 0 0; border:0; border-top:1px solid var(--line); }}
+    .cta-box {{ margin:10px 0 70px; padding:30px; text-align:center; background:var(--teal-deep); border-radius:12px; color:#f5f2ec; }}
+    .cta-box h2 {{ font-size:22px; }}
+    .cta-box p {{ margin-top:10px; color:rgba(255,255,255,.75); font-size:14px; }}
+    .button {{ display:inline-flex; align-items:center; gap:9px; margin-top:18px; min-height:46px; padding:0 24px; color:#fff; background:var(--orange); border-radius:8px; font-size:14px; font-weight:700; }}
+    .button:hover {{ background:#c85d2e; }}
+    footer {{ background:#15232d; color:rgba(255,255,255,.72); font-size:12px; padding:22px 0; text-align:center; line-height:1.7; }}
+    footer a {{ color:rgba(255,255,255,.85); }}
+    @media (max-width:720px) {{ .topbar .wrap {{ min-height:60px; }} .article-body table {{ font-size:12.5px; }} }}
+  </style>
+</head>
+<body>
+  <div class="topbar"><div class="wrap">
+    <a class="brand" href="/"><span class="brand-mark">深</span><span>Shenyuan International</span></a>
+    <div class="nav-links">
+      <a href="/" data-zh="返回首页" data-en="Home">返回首页</a>
+      <a href="/articles" data-zh="全部文章" data-en="All articles">全部文章</a>
+      <button class="lang-switch" type="button" id="langToggle" aria-label="切换语言">EN / 中</button>
+    </div>
+  </div></div>
+  <div class="wrap article-head">
+    <div class="a-meta"><span class="a-tag">{tag_zh}</span><span data-zh="发布于" data-en="Published">发布于</span><span>{date}</span></div>
+    <h1 data-zh="{title_zh}" data-en="{title_en}">{title_zh}</h1>
+    <p class="a-desc" data-zh="{description_zh}" data-en="{description_en}">{description_zh}</p>
+  </div>
+  <div class="wrap article-body" id="bodyZh">{body_zh}</div>
+  <div class="wrap article-body" id="bodyEn" hidden>{body_en}</div>
+  <div class="wrap cta-box">
+    <h2 data-zh="您的案件需要评估？" data-en="Need your case assessed?">您的案件需要评估？</h2>
+    <p data-zh="提交基本信息，我们会判断时效、证据与可行路径——免费评估，不承诺结果。" data-en="Share the basics and we will review the limitation period, evidence, and viable paths — free, honest, no promised outcomes.">提交基本信息，我们会判断时效、证据与可行路径——免费评估，不承诺结果。</p>
+    <a class="button" href="/#intake" data-zh="免费法律咨询 →" data-en="Free legal consultation →">免费法律咨询 →</a>
+  </div>
+  <footer>© 2026 Shenyuan International · 深远(国际)律师事务所 · <a href="/articles" data-zh="法律专栏" data-en="Legal insights">法律专栏</a></footer>
+  <script>
+    (function () {{
+      var currentLang = "zh";
+      var zhTitle = {title_zh!r};
+      var enTitle = {title_en!r};
+      var bodyZh = document.getElementById("bodyZh");
+      var bodyEn = document.getElementById("bodyEn");
+      document.getElementById("langToggle").addEventListener("click", function () {{
+        currentLang = currentLang === "zh" ? "en" : "zh";
+        document.documentElement.lang = currentLang === "zh" ? "zh-CN" : "en";
+        document.title = currentLang === "zh" ? zhTitle + " | Shenyuan International" : enTitle + " | Shenyuan International";
+        bodyZh.hidden = currentLang !== "zh";
+        bodyEn.hidden = currentLang !== "en";
+        document.querySelectorAll("[data-zh][data-en]").forEach(function (node) {{
+          node.textContent = currentLang === "zh" ? node.getAttribute("data-zh") : node.getAttribute("data-en");
+        }});
+      }});
+    }}());
+  </script>
+</body>
+</html>"""
+
+
+@app.get("/articles", include_in_schema=False)
+def articles_index() -> Response:
+    cards = []
+    for article in _load_articles():
+        meta = article["meta"]
+        biz = BUSINESS_LABELS.get(meta.get("business", ""), ("法律专栏", "Legal"))
+        cards.append(
+            '<article class="a-card">'
+            f'<div class="a-meta"><span class="a-tag">{biz[0]}</span><span>{html.escape(meta.get("date", ""))}</span></div>'
+            f'<a href="/articles/{html.escape(meta["slug"])}"><h2 data-zh="{html.escape(meta.get("title_zh", ""))}" data-en="{html.escape(meta.get("title_en", ""))}">{html.escape(meta.get("title_zh", ""))}</h2></a>'
+            f'<p data-zh="{html.escape(meta.get("description_zh", ""))}" data-en="{html.escape(meta.get("description_en", ""))}">{html.escape(meta.get("description_zh", ""))}</p>'
+            f'<a class="a-more" href="/articles/{html.escape(meta["slug"])}" data-zh="阅读全文 →" data-en="Read more →">阅读全文 →</a>'
+            "</article>"
+        )
+    content = _ARTICLE_INDEX_TEMPLATE.format(site_url=SITE_URL, cards="\n".join(cards))
+    return Response(content=content, media_type="text/html; charset=utf-8")
+
+
+@app.get("/articles/{slug}", include_in_schema=False)
+def article_page(slug: str) -> Response:
+    if not _SLUG_RE.match(slug):
+        raise HTTPException(status_code=404, detail="Not found")
+    article = next((a for a in _load_articles() if a["meta"]["slug"] == slug), None)
+    if article is None:
+        raise HTTPException(status_code=404, detail="Not found")
+    body_zh, body_en = _article_html(article)
+    meta = article["meta"]
+    biz = BUSINESS_LABELS.get(meta.get("business", ""), ("法律专栏", "Legal"))
+    content = _ARTICLE_PAGE_TEMPLATE.format(
+        site_url=SITE_URL,
+        slug=html.escape(meta["slug"]),
+        tag_zh=biz[0],
+        date=html.escape(meta.get("date", "")),
+        title_zh=html.escape(meta.get("title_zh", "")),
+        title_en=html.escape(meta.get("title_en", "")),
+        description_zh=html.escape(meta.get("description_zh", "")),
+        description_en=html.escape(meta.get("description_en", "")),
+        body_zh=body_zh,
+        body_en=body_en,
+    )
+    return Response(content=content, media_type="text/html; charset=utf-8")
 
 
 @app.get("/wechat-qrcode.png", include_in_schema=False)

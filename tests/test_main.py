@@ -824,3 +824,54 @@ def test_prune_dry_run_and_execute(tmp_db, monkeypatch, capsys):
     assert remaining == [{"name": "新线索"}]
     rows = audit_rows(tmp_db)
     assert any(r["action"] == "prune" for r in rows)
+
+
+# --- Articles (content factory) -----------------------------------------
+
+
+def test_articles_index_lists_articles(tmp_db):
+    with TestClient(m.app) as client:
+        resp = client.get("/articles")
+        assert resp.status_code == 200
+        assert "法律专栏" in resp.text
+        assert "跨境法律实务指南" in resp.text
+        # At least the 10 published articles appear as cards.
+        assert resp.text.count("a-card") >= 10
+
+
+def test_article_pages_render_bilingual(tmp_db):
+    with TestClient(m.app) as client:
+        for slug in (
+            "trade-payment-recovery-5-steps",
+            "trade-export-debt-collection-process",
+            "trade-contract-review-10-clauses",
+            "recovery-demand-letter-vs-lawsuit",
+            "recovery-debt-collection-golden-window",
+            "recovery-enforce-chinese-judgment-us-canada",
+            "recovery-locate-debtor-overseas-assets",
+            "recovery-enforce-arbitral-award-new-york-convention",
+            "legacy-chinese-citizen-dies-abroad",
+            "legacy-relative-dies-abroad-china-heirs",
+        ):
+            resp = client.get(f"/articles/{slug}")
+            assert resp.status_code == 200, slug
+            # Both language bodies are present and the EN marker is consumed.
+            assert "bodyZh" in resp.text and "bodyEn" in resp.text
+            assert "<!-- EN -->" not in resp.text
+            # Markdown actually rendered (headings + CTA).
+            assert "<h2" in resp.text and "免费法律咨询" in resp.text
+
+
+def test_article_unknown_slug_404(tmp_db):
+    with TestClient(m.app) as client:
+        assert client.get("/articles/no-such-article").status_code == 404
+        assert client.get("/articles/../../etc/passwd").status_code == 404
+        assert client.get("/articles/..%2f..%2fetc%2fpasswd").status_code == 404
+
+
+def test_sitemap_includes_articles(tmp_db):
+    with TestClient(m.app) as client:
+        resp = client.get("/sitemap.xml")
+        assert resp.status_code == 200
+        assert "/articles" in resp.text
+        assert "/articles/trade-payment-recovery-5-steps" in resp.text

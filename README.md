@@ -116,8 +116,22 @@ PATCH /admin/api/intakes/{id}  # 更新状态 / 备注，body: {"status": "...",
 - `docs/content-calendar.csv` — 同数据 CSV（UTF-8 BOM，Excel 直接打开），可导入
   Notion / Google Sheets / 飞书等排期工具。
 
-生成脚本在 `docs/` 外维护（`/tmp/gen_calendar.py` 为一次性生成器，数据源见 md 首页说明）；
-修改排期后如需重新生成 CSV，按 md 文件中的结构同步更新即可。
+## 法律专栏（内容工厂文章）
+
+文章以 markdown 存放在 `content/articles/{slug}/index.md`：YAML 风格 frontmatter
+（标题/描述/业务线/意图/日期）+ 中文正文 + `<!-- EN -->` 分隔符 + 英文正文。
+新增文章只需加一个目录即可自动上线：
+
+```text
+GET /articles              # 专栏索引（按日期倒序）
+GET /articles/{slug}       # 文章页（中英双语切换，正文由 markdown 渲染）
+```
+
+- frontmatter 必填：`title_zh`、`title_en`、`description_zh`、`description_en`、
+  `business`（trade/recovery/legacy）、`date`；
+- slug 限小写字母、数字、连字符（`^[a-z0-9-]{1,80}$`），其余返回 404；
+- 正文支持表格、列表、引用等（python-markdown `extra` 扩展）；
+- `/sitemap.xml` 自动收录全部文章。
 
 ## 查看咨询记录（管理导出）
 
