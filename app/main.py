@@ -555,6 +555,69 @@ class IntakeCreated(BaseModel):
     created_at: str
 
 
+# --- AI 咨询助手 (chat intake) ---
+
+_MATTER_LABEL_BY_KEY = {
+    "trade": "国际贸易争议",
+    "recovery": "诉讼与债务追收",
+    "legacy": "继承与家族资产纠纷",
+    "unsure": "不确定，希望先沟通",
+}
+
+_LEGACY_KW = ("继承", "遗产", "遗嘱", "房产", "去世", "亲属", "失联", "家族", "probate", "inheritance", "estate", "will")
+_RECOVERY_KW = ("追收", "欠款", "欠债", "催收", "赖账", "跑路", "执行", "判决", "仲裁", "裁决", "欺诈", "诈骗", "资产", "collection", "debt", "judgment", "enforce", "fraud", "asset", "recover")
+_TRADE_KW = ("合同", "订单", "货物", "供应商", "发货", "物流", "海关", "信用证", "贸易", "代理", "经销", "采购", "发票", "货款", "违约", "trade", "contract", "supplier", "shipment", "customs", "invoice", "breach")
+
+
+def _classify_matter(summary: str, user_choice: str = "") -> str:
+    """Keyword triage of a chat intake into trade / recovery / legacy / unsure.
+
+    Only the free-text summary is keyword-scanned (the raw user_choice string
+    is never appended to it — "recovery"/"trade" would match their own
+    keyword lists). Priority: legacy > recovery > trade. The visitor's
+    explicit choice is the fallback, then "unsure".
+    """
+    chosen = "unsure"
+    if user_choice:
+        for key, label in _MATTER_LABEL_BY_KEY.items():
+            if user_choice == key or user_choice == label or key in user_choice:
+                chosen = key
+                break
+    text = (summary or "").lower()
+    for keywords, key in (
+        (_LEGACY_KW, "legacy"),
+        (_RECOVERY_KW, "recovery"),
+        (_TRADE_KW, "trade"),
+    ):
+        if any(k in text for k in keywords):
+            return key
+    return chosen
+
+
+def _split_contact(contact: str) -> tuple[str, str]:
+    """Return (email, phone/wechat) — anything containing '@' counts as email."""
+    contact = contact.strip()
+    if "@" in contact:
+        return contact, ""
+    return "", contact
+
+
+class ChatIntakeCreate(BaseModel):
+    name: Annotated[str, Field(min_length=1, max_length=80)]
+    contact: Annotated[str, Field(min_length=2, max_length=120)]
+    matter: Annotated[str, Field(max_length=80)] = ""
+    summary: Annotated[str, Field(min_length=1, max_length=3000)]
+    parties: Annotated[str, Field(max_length=500)] = ""
+    amount: Annotated[str, Field(max_length=200)] = ""
+    timeline: Annotated[str, Field(max_length=200)] = ""
+    evidence: Annotated[str, Field(max_length=500)] = ""
+    goal: Annotated[str, Field(max_length=300)] = ""
+    country: Annotated[str | None, Field(max_length=120)] = None
+    language: Annotated[str, Field(pattern="^(zh|en)$")] = "zh"
+    consent: bool = False
+    transcript: Annotated[str | None, Field(max_length=6000)] = None
+
+
 def _record_page_view() -> None:
     """Count a homepage visit for conversion analytics. Best-effort only."""
     try:
@@ -745,6 +808,8 @@ def _render_service_page(svc: dict) -> str:
       }});
     }}());
   </script>
+  <div id="chat-widget-root"></div>
+  <script src="/static/chat.js" defer></script>
 </body>
 </html>"""
 
@@ -1014,6 +1079,8 @@ _ARTICLE_INDEX_TEMPLATE = """<!doctype html>
       }});
     }}());
   </script>
+  <div id="chat-widget-root"></div>
+  <script src="/static/chat.js" defer></script>
 </body>
 </html>"""
 
@@ -1127,6 +1194,8 @@ _ARTICLE_PAGE_TEMPLATE = """<!doctype html>
       }});
     }}());
   </script>
+  <div id="chat-widget-root"></div>
+  <script src="/static/chat.js" defer></script>
 </body>
 </html>"""
 
@@ -1469,6 +1538,8 @@ def _render_country_page(country: dict, slug: str) -> str:
       }});
     }}());
   </script>
+  <div id="chat-widget-root"></div>
+  <script src="/static/chat.js" defer></script>
 </body>
 </html>"""
 
@@ -1547,6 +1618,8 @@ _COUNTRY_INDEX_TEMPLATE = """<!doctype html>
       }});
     }}());
   </script>
+  <div id="chat-widget-root"></div>
+  <script src="/static/chat.js" defer></script>
 </body>
 </html>"""
 
@@ -1618,6 +1691,15 @@ def countries_index_en() -> Response:
         f'<link rel="canonical" href="{SITE_URL}/en/countries">',
     )
     return Response(content=page, media_type="text/html; charset=utf-8")
+
+
+@app.get("/static/chat.js", include_in_schema=False)
+def chat_widget_js() -> FileResponse:
+    """The AI 咨询助手 widget script (self-contained: styles + flow + submit)."""
+    path = ROOT_DIR / "app" / "static" / "chat.js"
+    if not path.is_file():
+        raise HTTPException(status_code=404, detail="chat.js not found")
+    return FileResponse(path, media_type="application/javascript")
 
 
 @app.get("/wechat-qrcode.png", include_in_schema=False)
@@ -1899,6 +1981,117 @@ def create_intake(
             "summary": payload.summary,
         },
     )
+
+    return IntakeCreated(id=cursor.lastrowid, status="created", created_at=created_at)
+
+
+@app.post("/api/intakes/chat", response_model=IntakeCreated, status_code=201)
+@limiter.limit(INTAKE_RATE_LIMIT)
+def create_chat_intake(
+    payload: ChatIntakeCreate,
+    request: Request,
+    background_tasks: BackgroundTasks,
+) -> IntakeCreated:
+    """Save a guided-chat intake from the AI 咨询助手 widget.
+
+    The widget collects the same core fields as the form (structured), and the
+    server re-classifies the matter with keyword triage so a visitor's free
+    description can override their quick pick. Structured fields land in the
+    `note` column so admin triage sees them without opening files.
+    """
+    if not payload.consent:
+        raise HTTPException(
+            status_code=400,
+            detail="需要同意隐私说明后才能提交 / Please accept the privacy notice to continue",
+        )
+    matter_key = _classify_matter(payload.summary, payload.matter)
+    matter_label = _MATTER_LABEL_BY_KEY[matter_key]
+    email, phone = _split_contact(payload.contact)
+    created_at = datetime.now(timezone.utc).isoformat()
+    user_agent = request.headers.get("user-agent")
+
+    note_parts = ["来源：AI 咨询助手"]
+    for label, value in (
+        ("主体", payload.parties),
+        ("金额", payload.amount),
+        ("时间", payload.timeline),
+        ("证据", payload.evidence),
+        ("诉求", payload.goal),
+    ):
+        if value:
+            note_parts.append(f"{label}：{value}")
+    if payload.transcript:
+        note_parts.append(f"对话记录：{payload.transcript[:3800]}")
+    note = "\n".join(note_parts)[:2000]
+
+    try:
+        with db_connection() as connection:
+            cutoff = (
+                datetime.now(timezone.utc) - timedelta(hours=_dedupe_window_hours())
+            ).isoformat()
+            duplicate = connection.execute(
+                """
+                SELECT id FROM intakes
+                WHERE created_at > ?
+                  AND ((email != '' AND email = ?) OR (phone != '' AND ? != '' AND phone = ?))
+                LIMIT 1
+                """,
+                (cutoff, email, phone, phone),
+            ).fetchone()
+            if duplicate:
+                raise HTTPException(
+                    status_code=409,
+                    detail="已收到过您的信息，请勿重复提交 / We already received your submission",
+                )
+            cursor = connection.execute(
+                """
+                INSERT INTO intakes (
+                    name, email, phone, matter, summary, country_or_region,
+                    language, user_agent, created_at, status, note, consent_at
+                )
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'new', ?, ?)
+                """,
+                (
+                    payload.name,
+                    email,
+                    phone,
+                    matter_label,
+                    payload.summary,
+                    payload.country,
+                    payload.language,
+                    user_agent,
+                    created_at,
+                    note,
+                    created_at,
+                ),
+            )
+    except sqlite3.Error:
+        logger.exception("Failed to save chat intake for %s", payload.contact)
+        raise HTTPException(status_code=500, detail="Failed to save consultation") from None
+
+    background_tasks.add_task(
+        _send_intake_notification,
+        {
+            "name": payload.name,
+            "email": email or "-",
+            "phone": phone,
+            "country": payload.country,
+            "matter": matter_label,
+            "summary": payload.summary,
+            "language": payload.language,
+            "created_at": created_at,
+        },
+    )
+    if email:
+        background_tasks.add_task(
+            _send_auto_reply,
+            {
+                "name": payload.name,
+                "email": email,
+                "matter": matter_label,
+                "summary": payload.summary,
+            },
+        )
 
     return IntakeCreated(id=cursor.lastrowid, status="created", created_at=created_at)
 
