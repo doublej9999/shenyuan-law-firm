@@ -3,7 +3,8 @@ services:
     build: .
     image: shenyuan-law-firm:latest
     ports:
-      - "8000:8000"
+      # 生产本地定制：只绑定本机回环地址，由 Caddy 反向代理对外提供 HTTPS。
+      - "127.0.0.1:8000:8000"
     environment:
       APP_ENV: production
       # Bearer token for GET /admin/intakes.csv. Set a strong value in the
@@ -13,17 +14,15 @@ services:
       # Webhook URL for new-intake alerts (WeChat Work group bot, etc.).
       # Empty/unset = notifications disabled.
       NOTIFY_WEBHOOK_URL: ${NOTIFY_WEBHOOK_URL:-}
-      # SMTP for the client auto-reply email. Empty/unset = no auto-reply.
-      SMTP_HOST: ${SMTP_HOST:-}
-      SMTP_PORT: ${SMTP_PORT:-587}
-      SMTP_USER: ${SMTP_USER:-}
-      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
-      SMTP_FROM: ${SMTP_FROM:-}
+      # Resend API for the client auto-reply email. Empty/unset = no auto-reply.
+      RESEND_API_KEY: ${RESEND_API_KEY:-}
+      RESEND_FROM: ${RESEND_FROM:-no-reply@shenyuanlaw.com}
       # Public base URL for canonical/OG/sitemap links.
       SITE_URL: ${SITE_URL:-https://your-domain.example.com}
     volumes:
-      - intake-data:/app/data
+      # 生产本地定制：bind mount，数据在 /opt/shenyuan-law-firm/data，便于备份。
+      - ./data:/app/data
     restart: unless-stopped
 
 volumes:
-  intake-data:
+  {}

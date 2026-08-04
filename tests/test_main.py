@@ -4,8 +4,11 @@ admin API, and the lead status workflow.
 Run with: pytest
 """
 
+import io
+import json
 import logging
 import sqlite3
+import urllib.error
 import urllib.request
 
 import pytest
@@ -308,14 +311,87 @@ def test_intake_triggers_auto_reply(tmp_db, monkeypatch):
     assert sent.get("matter") == "国际贸易争议"
 
 
-def test_auto_reply_disabled_without_smtp(tmp_db):
+def test_auto_reply_disabled_without_key(tmp_db):
     monkeypatch = pytest.MonkeyPatch()
-    monkeypatch.delenv("SMTP_HOST", raising=False)
-    monkeypatch.delenv("SMTP_FROM", raising=False)
+    monkeypatch.delenv("RESEND_API_KEY", raising=False)
     try:
         m._send_auto_reply({"name": "x", "email": "x@test.com", "matter": "贸易", "summary": "s"})
     finally:
         monkeypatch.undo()
+
+
+class _FakeResponse:
+    def __init__(self, body=b"{}"):
+        self._body = body
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *args):
+        return False
+
+    def read(self):
+        return self._body
+
+
+def test_resend_request_shape_and_success(tmp_db, monkeypatch, caplog):
+    captured = {}
+    monkeypatch.setenv("RESEND_API_KEY", "re_test_123")
+
+    def fake_urlopen(request, timeout=10):
+        captured["url"] = request.full_url
+        captured["auth"] = request.get_header("Authorization")
+        # urllib stores headers capitalized ("Content-type"); HTTP headers
+        # are case-insensitive, so the server sees Content-Type correctly.
+        captured["content_type"] = request.get_header("Content-type")
+        captured["body"] = json.loads(request.data.decode("utf-8"))
+        return _FakeResponse(b'{"id":"abc123"}')
+
+    monkeypatch.setattr(urllib.request, "urlopen", fake_urlopen)
+    with caplog.at_level(logging.INFO):
+        m._send_auto_reply({"name": "王女士", "email": "w@example.com", "matter": "国际贸易争议", "summary": "欠款"})
+
+    assert captured["url"] == "https://api.resend.com/emails"
+    assert captured["auth"] == "Bearer re_test_123"
+    assert captured["content_type"] == "application/json"
+    assert captured["body"]["from"] == "no-reply@shenyuanlaw.com"
+    assert captured["body"]["to"] == ["w@example.com"]
+    assert "已收到您的咨询信息" in captured["body"]["subject"]
+    assert "合同、订单、发票、付款记录" in captured["body"]["text"]
+    assert "Auto-reply sent" in caplog.text
+
+
+def test_resend_from_override(tmp_db, monkeypatch):
+    captured = {}
+    monkeypatch.setenv("RESEND_API_KEY", "re_test_123")
+    monkeypatch.setenv("RESEND_FROM", "custom@shenyuanlaw.com")
+
+    def fake_urlopen(request, timeout=10):
+        captured["body"] = json.loads(request.data.decode("utf-8"))
+        return _FakeResponse(b'{"id":"x"}')
+
+    monkeypatch.setattr(urllib.request, "urlopen", fake_urlopen)
+    m._send_auto_reply({"name": "x", "email": "a@b.com", "matter": "贸易", "summary": "s"})
+    assert captured["body"]["from"] == "custom@shenyuanlaw.com"
+
+
+def test_resend_rejection_is_logged(tmp_db, monkeypatch, caplog):
+    monkeypatch.setenv("RESEND_API_KEY", "re_test_123")
+
+    def fake_urlopen(request, timeout=10):
+        raise urllib.error.HTTPError(
+            "https://api.resend.com/emails",
+            401,
+            "Unauthorized",
+            {},
+            io.BytesIO(b'{"statusCode":401,"message":"API key invalid","name":"authentication_error"}'),
+        )
+
+    monkeypatch.setattr(urllib.request, "urlopen", fake_urlopen)
+    with caplog.at_level(logging.ERROR):
+        m._send_auto_reply({"name": "x", "email": "a@b.com", "matter": "贸易", "summary": "s"})
+    assert "Resend rejected" in caplog.text
+    assert "API key invalid" in caplog.text
 
 
 # --- Admin file management --------------------------------------------

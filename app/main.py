@@ -7,11 +7,10 @@ import logging
 import os
 import secrets
 import sqlite3
-import smtplib
+import urllib.error
 import urllib.request
 from contextlib import asynccontextmanager, contextmanager
 from datetime import datetime, timedelta, timezone
-from email.message import EmailMessage
 from pathlib import Path
 from typing import Annotated, Iterator
 
@@ -357,12 +356,11 @@ def _send_intake_notification(intake: dict) -> None:
         ]
     )
     payload = json.dumps({"msgtype": "text", "text": {"content": content}}).encode("utf-8")
-    request = urllib.request.Request(
-        url,
-        data=payload,
-        headers={"Content-Type": "application/json"},
-        method="POST",
-    )
+    request = urllib.request.Request(url, method="POST")
+    # 显式设置 headers：如果通过构造参数传 data + headers，urllib 可能再自动
+    # 附加一个 x-www-form-urlencoded 的 Content-Type（大小写敏感检查的坑）。
+    request.add_header("Content-Type", "application/json")
+    request.data = payload
     try:
         with urllib.request.urlopen(request, timeout=5) as response:
             body = response.read()
@@ -380,25 +378,24 @@ def _send_intake_notification(intake: dict) -> None:
         logger.exception("Failed to send intake notification webhook")
 
 
-def _smtp_config() -> dict:
-    return {
-        "host": os.environ.get("SMTP_HOST", ""),
-        "port": int(os.environ.get("SMTP_PORT", "587")),
-        "user": os.environ.get("SMTP_USER", ""),
-        "password": os.environ.get("SMTP_PASSWORD", ""),
-        "from": os.environ.get("SMTP_FROM", ""),
-        "tls": os.environ.get("SMTP_USE_TLS", "1") == "1",
-    }
+def _resend_api_key() -> str:
+    """Resend API key. Read per-request for testability; empty = feature off."""
+    return os.environ.get("RESEND_API_KEY", "")
+
+
+def _resend_from() -> str:
+    return os.environ.get("RESEND_FROM", "no-reply@shenyuanlaw.com")
 
 
 def _send_auto_reply(intake: dict) -> None:
-    """Send a confirmation + materials-checklist email to the client.
+    """Send a confirmation + materials-checklist email via the Resend API.
 
-    Disabled unless SMTP_HOST and SMTP_FROM are configured. Failures are
-    logged, never surfaced to the request.
+    Disabled unless RESEND_API_KEY is configured. Failures are logged,
+    never surfaced to the request. The sender domain must be verified in
+    Resend before messages will be accepted.
     """
-    config = _smtp_config()
-    if not config["host"] or not config["from"]:
+    api_key = _resend_api_key()
+    if not api_key:
         return
 
     key = _matter_key(intake["matter"])
@@ -414,19 +411,35 @@ def _send_auto_reply(intake: dict) -> None:
         "本邮件不构成委托关系或正式法律意见。\n"
         "This email does not create an attorney-client relationship or formal legal advice."
     )
-    message = EmailMessage()
-    message["From"] = config["from"]
-    message["To"] = intake["email"]
-    message["Subject"] = "已收到您的咨询信息 / We received your inquiry"
-    message.set_content(body)
 
+    payload = json.dumps(
+        {
+            "from": _resend_from(),
+            "to": [intake["email"]],
+            "subject": "已收到您的咨询信息 / We received your inquiry",
+            "text": body,
+        }
+    ).encode("utf-8")
+    request = urllib.request.Request("https://api.resend.com/emails", method="POST")
+    request.add_header("Authorization", f"Bearer {api_key}")
+    request.add_header("Content-Type", "application/json")
+    request.data = payload
     try:
-        with smtplib.SMTP(config["host"], config["port"], timeout=10) as server:
-            if config["tls"]:
-                server.starttls()
-            if config["user"]:
-                server.login(config["user"], config["password"])
-            server.send_message(message)
+        with urllib.request.urlopen(request, timeout=10) as response:
+            response_body = response.read()
+        logger.info(
+            "Auto-reply sent to %s via Resend (%s)",
+            intake["email"],
+            response_body.decode("utf-8", "replace")[:120],
+        )
+    except urllib.error.HTTPError as exc:
+        detail = exc.read().decode("utf-8", "replace")
+        logger.error(
+            "Resend rejected auto-reply to %s: HTTP %s %s",
+            intake["email"],
+            exc.code,
+            detail,
+        )
     except Exception:
         logger.exception("Failed to send auto-reply to %s", intake["email"])
 
