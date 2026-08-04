@@ -1166,6 +1166,189 @@ def _article_html(article: dict) -> tuple[str, str]:
     return render(article["zh"]), render(article["en"])
 
 
+# ---------- Marketing Agent: collateral generator ---------------------------
+
+_MARKETING_KW = {
+    "trade": {
+        "zh": ["国际贸易争议", "跨境合同", "外贸货款", "供应商违约", "国际仲裁"],
+        "en": ["international trade dispute", "cross-border contract", "export payment", "supplier breach", "trade arbitration"],
+        "tags": ["#国际贸易", "#外贸", "#跨境法律", "#货款追收", "#合同纠纷"],
+        "hook": "外贸生意最怕的不是没订单，而是货发了、款收不回来。",
+        "ads_zh": ["跨境贸易纠纷 专业律师", "外贸货款追收 律师团队", "国际合同审查 免费评估"],
+        "ads_en": ["Cross-border trade lawyers", "Export debt recovery experts", "International contract review"],
+    },
+    "recovery": {
+        "zh": ["债务追收", "欠款催收", "判决执行", "资产调查", "商业欺诈"],
+        "en": ["debt collection", "judgment enforcement", "asset tracing", "commercial fraud", "arbitral award"],
+        "tags": ["#债务追收", "#欠款催收", "#跨境维权", "#判决执行", "#法律"],
+        "hook": "欠款拖一天，追回难一分。对方的耐心，就是你坏账的成本。",
+        "ads_zh": ["债务追收 专业律师", "欠款催收 律师出面", "判决执行 跨境协作"],
+        "ads_en": ["Cross-border debt recovery", "Judgment enforcement China", "Asset tracing lawyers"],
+    },
+    "legacy": {
+        "zh": ["跨境继承", "遗嘱效力", "房产继承", "遗产规划", "家族资产"],
+        "en": ["cross-border inheritance", "probate", "estate planning", "family assets", "will dispute"],
+        "tags": ["#跨境继承", "#遗嘱", "#遗产规划", "#家族资产", "#法律"],
+        "hook": "海外亲人的遗产，拖着拖着，就成了别人的。",
+        "ads_zh": ["跨境继承 专业律师", "海外房产继承 咨询", "遗嘱规划 提前安排"],
+        "ads_en": ["Cross-border inheritance", "Probate for Chinese heirs", "Estate planning lawyers"],
+    },
+    "unsure": {
+        "zh": ["跨境法律咨询", "涉外纠纷", "律师咨询"],
+        "en": ["cross-border legal advice", "international dispute", "legal consultation"],
+        "tags": ["#跨境法律", "#法律咨询", "#律师"],
+        "hook": "跨境的法律问题，最贵的是“等等再说”。",
+        "ads_zh": ["跨境法律 免费咨询", "涉外纠纷 专业律师"],
+        "ads_en": ["Cross-border legal advice", "International dispute lawyers"],
+    },
+}
+
+
+def _business_key(raw: str) -> str:
+    if any(k in raw for k in ("继承", "家族", "legacy", "Inheritance")):
+        return "legacy"
+    if any(k in raw for k in ("债务", "诉讼", "追收", "recovery", "debt", "Litigation")):
+        return "recovery"
+    if any(k in raw for k in ("贸易", "trade", "Trade")):
+        return "trade"
+    return "unsure"
+
+
+def _article_headings(md: str) -> list[str]:
+    return [line.lstrip("# ").strip() for line in (md or "").splitlines() if line.startswith("## ")]
+
+
+def _article_intro(md: str, max_chars: int = 200) -> str:
+    out = []
+    for line in (md or "").splitlines():
+        if line.strip() and not line.startswith("#"):
+            out.append(line.strip())
+        if sum(len(x) for x in out) > max_chars:
+            break
+    return " ".join(out)[:max_chars]
+
+
+def _marketing_bundle(article: dict | None, business: str, article_url: str) -> dict:
+    """Deterministic marketing collateral for one article (or a business line).
+
+    Sections: WeChat 公众号 titles, 小红书 note, video script (YouTube/视频号),
+    Google Ads (headlines/descriptions/keywords/sitelinks), 朋友圈 copy,
+    LinkedIn (EN), UTM-tagged links, and a weekly posting schedule. No LLM
+    dependency: templates + article structure, so it is stable and testable.
+    """
+    meta = (article or {}).get("meta", {})
+    biz = _MARKETING_KW.get(business, _MARKETING_KW["unsure"])
+    title_zh = meta.get("title_zh", "") or biz["zh"][0]
+    title_en = meta.get("title_en", "") or biz["en"][0]
+    desc_zh = meta.get("description_zh", "") or _article_intro((article or {}).get("zh", ""))
+    desc_en = meta.get("description_en", "") or _article_intro((article or {}).get("en", ""))
+    points = _article_headings((article or {}).get("zh", ""))[:3] or [
+        "第一步：梳理事实与证据", "第二步：确认时效与管辖", "第三步：谈判或诉讼路径",
+    ]
+    points_en = _article_headings((article or {}).get("en", ""))[:3] or points
+
+    def utm(channel: str, medium: str) -> str:
+        campaign = f"article-{meta.get('slug', business)}"
+        return f"{article_url}?utm_source={channel}&utm_medium={medium}&utm_campaign={campaign}"
+
+    moments = "\n".join([biz["hook"], f"——{title_zh}", "有类似问题？欢迎私信评估（免费，不承诺结果）。", f"🔗 {utm('wechat', 'moments')}"])
+
+    return {
+        "slug": meta.get("slug", ""),
+        "business": business,
+        "title_zh": title_zh,
+        "title_en": title_en,
+        "article_url": article_url,
+        "utm": {
+            "wechat_mp": utm("wechat", "mp"),
+            "xiaohongshu": utm("xiaohongshu", "note"),
+            "video": utm("youtube", "video"),
+            "ads": utm("google", "cpc"),
+            "moments": utm("wechat", "moments"),
+        },
+        "wechat_mp": {
+            "titles": [title_zh, f"律师提醒：{title_zh}", f"一文讲透：{title_zh}"],
+            "summary": desc_zh,
+        },
+        "xiaohongshu": {
+            "title": f"跨境法律干货｜{title_zh[:28]}",
+            "body": "\n".join(
+                [biz["hook"], ""]
+                + [f"✅ {p}" for p in points]
+                + ["", "需要帮您评估？评论区留「咨询」或私信。", "👨‍⚖️ 深远国际 · 跨境争议解决与家族资产保护", "（本内容不构成法律意见）"]
+            ),
+            "tags": biz["tags"],
+            "cover": "建议：纯色底 + 痛点大字标题 + 品牌角标",
+        },
+        "video": {
+            "youtube_title": f"{title_zh}｜跨境法律 一分钟讲清",
+            "script_zh": "\n".join(
+                [f"[开头3秒] {biz['hook']}"]
+                + [f"[正文] 今天用一分钟讲清楚：{title_zh}。"]
+                + [f"{i + 1}) {p}。" for i, p in enumerate(points)]
+                + ["[结尾] 有类似情况？评论区或私信「评估」，免费初步咨询。跨境法律问题，交给专业的人。"]
+            ),
+            "hashtags": biz["tags"] + ["#ShenyuanInternational"],
+            "caption_en": f"{desc_en[:220]}\n\nNeed help? Free initial assessment — link below.\n\n#ShenyuanInternational",
+        },
+        "ads": {
+            "headlines": (biz["ads_zh"] + ["免费初步评估", "中英双语 · 30+国家网络"])[:5],
+            "descriptions": [
+                "专注跨境争议解决与债务追收：中国律师+当地律所协作网络，免费初步评估，不承诺结果。",
+                "国际贸易纠纷、判决执行、跨境继承一站处理。提交表单，24小时内响应。",
+                "Overseas disputes? Bilingual team, 30+ jurisdictions. Free initial assessment.",
+            ],
+            "keywords": (biz["zh"] + biz["en"] + [title_zh[:20]])[:10],
+            "final_url": article_url,
+            "sitelinks": [
+                f"{SITE_URL}/services/trade",
+                f"{SITE_URL}/services/recovery",
+                f"{SITE_URL}/services/legacy",
+                f"{SITE_URL}/articles",
+            ],
+        },
+        "moments": moments,
+        "linkedin": {
+            "headline": title_en,
+            "body_en": "\n".join(
+                [desc_en[:300], ""]
+                + [f"• {p}" for p in points_en[:3]]
+                + ["", "Free initial assessment — DM or comment. Shenyuan International: bilingual cross-border dispute resolution & family asset protection."]
+            ),
+        },
+        "schedule": [
+            ("周一", "公众号推文（标题+摘要，附文章链接）"),
+            ("周三", "小红书笔记（标题/正文/标签/封面建议）"),
+            ("周五", "视频号 + YouTube（脚本+标签）"),
+            ("周日", "朋友圈 + 社群文案"),
+        ],
+    }
+
+
+@app.get("/admin/api/marketing/generate", include_in_schema=False)
+@limiter.limit(ADMIN_RATE_LIMIT)
+def admin_marketing_generate(
+    request: Request,
+    slug: str | None = None,
+    business: str | None = None,
+) -> dict:
+    """Marketing Agent: collateral for an article slug, or a business line."""
+    _require_admin(request)
+    article = None
+    if slug:
+        article = next((a for a in _load_articles() if a["meta"]["slug"] == slug), None)
+        if article is None:
+            raise HTTPException(status_code=404, detail="Article not found")
+        biz = _business_key(article["meta"].get("business", ""))
+        if business in _MARKETING_KW:
+            biz = business
+        url = f"{SITE_URL}/articles/{slug}"
+    else:
+        biz = business if business in _MARKETING_KW else "unsure"
+        url = f"{SITE_URL}/services/{biz}" if biz in ("trade", "recovery", "legacy") else f"{SITE_URL}/articles"
+    return _marketing_bundle(article, biz, url)
+
+
 _ARTICLE_INDEX_TEMPLATE = """<!doctype html>
 <html lang="zh-CN">
 <head>

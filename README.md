@@ -118,6 +118,11 @@ PATCH /admin/api/intakes/{id}  # 更新状态 / 备注，body: {"status": "...",
   推送【CRM 跟进提醒】摘要（`/admin/api/crm/overdue` 提供后台面板数据）。可用环境变量调整：
   `CRM_FIRST_SLA_HOURS`（默认 24）、`CRM_PROGRESS_SLA_DAYS`（默认 7）、
   `CRM_REMINDER_INTERVAL_HOURS`（默认 12）。
+- **Marketing Agent**:`GET /admin/api/marketing/generate?slug=文章slug`（或 `?business=trade|recovery|legacy`）
+  一键生成发布素材包：公众号标题×3、小红书笔记（标题/正文/标签/封面建议）、视频脚本（30-60s
+  口播+YouTube 标签）、Google Ads（标题/描述/关键词/附加链接，遵循平台字数限制）、朋友圈文案、
+  LinkedIn 英文帖、全渠道 UTM 追踪链接与每周排期建议。纯模板生成（无 LLM 依赖），内容基于文章
+  结构与业务线词库，确定性、可测试。每周二由「营销素材」定时任务拉取最新文章自动生成并投递。
 - **独立服务落地页**:`/services/trade`、`/services/recovery`、`/services/legacy`
   三个页面，含各自的服务情形与材料清单，适合投放广告时直接链接。
 - **转化分析**:后台首页显示累计/今日线索、今日访问量与转化率，由 `GET /admin/api/stats`

@@ -1244,6 +1244,60 @@ def test_admin_update_touches_updated_at(tmp_db, monkeypatch):
         assert row["updated_at"] is not None
 
 
+# --- Marketing Agent: collateral generator -----------------------------------
+
+
+def test_marketing_headings_and_intro():
+    md = "# 标题\n\n开头段落一。\n\n## 第一点\n\n内容。\n## 第二点\n\n内容。\n\n结尾。"
+    assert m._article_headings(md) == ["第一点", "第二点"]
+    intro = m._article_intro(md)
+    assert "开头段落一" in intro
+    assert len(intro) <= 200
+
+
+def test_marketing_bundle_for_article(tmp_db):
+    article = next(a for a in m._load_articles() if a["meta"]["slug"] == "trade-payment-recovery-5-steps")
+    biz = m._business_key(article["meta"].get("business", ""))
+    bundle = m._marketing_bundle(article, biz, "https://shenyuanlegal.com/articles/trade-payment-recovery-5-steps")
+    assert bundle["business"] == "trade"
+    assert len(bundle["wechat_mp"]["titles"]) == 3
+    # 小红书 note has points + CTA + disclaimer
+    assert "✅" in bundle["xiaohongshu"]["body"]
+    assert "不构成法律意见" in bundle["xiaohongshu"]["body"]
+    # video script has hook, body and CTA
+    assert "[开头3秒]" in bundle["video"]["script_zh"]
+    # ads respect platform limits (headline <= 30, description <= 90)
+    assert all(len(h) <= 30 for h in bundle["ads"]["headlines"])
+    assert all(len(d) <= 90 for d in bundle["ads"]["descriptions"])
+    assert len(bundle["ads"]["keywords"]) == 10
+    # UTM links carry channel params
+    assert "utm_source=xiaohongshu" in bundle["utm"]["xiaohongshu"]
+    assert "utm_medium=cpc" in bundle["utm"]["ads"]
+    # weekly schedule
+    assert bundle["schedule"][0][0] == "周一"
+
+
+def test_marketing_generate_endpoint(tmp_db, monkeypatch):
+    monkeypatch.setenv("ADMIN_TOKEN", "secret-token")
+    with TestClient(m.app) as client:
+        assert client.get("/admin/api/marketing/generate?slug=x").status_code == 401
+        headers = {"Authorization": "Bearer secret-token"}
+        resp = client.get(
+            "/admin/api/marketing/generate?slug=trade-payment-recovery-5-steps", headers=headers
+        )
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["slug"] == "trade-payment-recovery-5-steps"
+        assert "wechat_mp" in data and "ads" in data and "linkedin" in data
+        # unknown slug -> 404
+        assert client.get("/admin/api/marketing/generate?slug=no-such", headers=headers).status_code == 404
+        # business-only mode (no slug) works as an ad-landing generator
+        biz = client.get("/admin/api/marketing/generate?business=legacy", headers=headers)
+        assert biz.status_code == 200
+        assert biz.json()["business"] == "legacy"
+        assert "/services/legacy" in biz.json()["article_url"]
+
+
 def test_dockerfile_ships_content_dir():
     # Regression: articles are served from content/, so the image must copy
     # the directory — otherwise /articles/{slug} 404s in production only.
