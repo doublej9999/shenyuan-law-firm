@@ -21,6 +21,9 @@ from slowapi import Limiter
 from slowapi.errors import RateLimitExceeded
 
 logger = logging.getLogger(__name__)
+# uvicorn 默认不配置 root logger，INFO 级日志（自动回复成功、webhook 活动等）
+# 会被吞掉；显式配置后 docker logs 里才能看到。
+logging.basicConfig(level=logging.INFO)
 
 ROOT_DIR = Path(__file__).resolve().parent.parent
 DB_PATH = ROOT_DIR / "data" / "lawyers.sqlite3"
@@ -360,6 +363,8 @@ def _send_intake_notification(intake: dict) -> None:
     # 显式设置 headers：如果通过构造参数传 data + headers，urllib 可能再自动
     # 附加一个 x-www-form-urlencoded 的 Content-Type（大小写敏感检查的坑）。
     request.add_header("Content-Type", "application/json")
+    # Resend 的 API 在 Cloudflare 后面，默认的 Python-urllib UA 会被 1010 拦截。
+    request.add_header("User-Agent", "shenyuan-law-firm/1.0")
     request.data = payload
     try:
         with urllib.request.urlopen(request, timeout=5) as response:
@@ -423,6 +428,8 @@ def _send_auto_reply(intake: dict) -> None:
     request = urllib.request.Request("https://api.resend.com/emails", method="POST")
     request.add_header("Authorization", f"Bearer {api_key}")
     request.add_header("Content-Type", "application/json")
+    # Cloudflare 会拦截 Python-urllib 默认 UA（403 error code: 1010）。
+    request.add_header("User-Agent", "shenyuan-law-firm/1.0")
     request.data = payload
     try:
         with urllib.request.urlopen(request, timeout=10) as response:
