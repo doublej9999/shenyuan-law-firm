@@ -2069,6 +2069,30 @@ def admin_page() -> FileResponse:
     return FileResponse(ROOT_DIR / "admin.html")
 
 
+@app.get("/admin/marketing", include_in_schema=False)
+def admin_marketing_page() -> FileResponse:
+    """Marketing Agent console: generate & copy the full collateral bundle."""
+    return FileResponse(ROOT_DIR / "admin_marketing.html")
+
+
+@app.get("/admin/api/articles", include_in_schema=False)
+@limiter.limit(ADMIN_RATE_LIMIT)
+def admin_list_articles(request: Request) -> list[dict]:
+    """Articles for the marketing console dropdown (newest first)."""
+    _require_admin(request)
+    return [
+        {
+            "slug": a["meta"]["slug"],
+            "title_zh": a["meta"].get("title_zh", ""),
+            "title_en": a["meta"].get("title_en", ""),
+            "date": a["meta"].get("date", ""),
+            "business": _business_key(a["meta"].get("business", "")),
+            "url": f"{SITE_URL}/articles/{a['meta']['slug']}",
+        }
+        for a in _load_articles()
+    ]
+
+
 @app.get("/admin/api/intakes", include_in_schema=False)
 @limiter.limit(ADMIN_RATE_LIMIT)
 def admin_list_intakes(
