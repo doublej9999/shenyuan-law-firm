@@ -54,6 +54,13 @@
     .empty { padding: 30px; text-align: center; color: var(--muted); }
     .hint { font-size: 12px; color: var(--muted); }
     .stats { display: flex; gap: 14px; flex-wrap: wrap; margin-bottom: 14px; }
+    .score-badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 700; }
+    .score-badge.s-high { color: #fff; background: #c0392b; }
+    .score-badge.s-mid { color: #7a4d00; background: #f7e3b5; }
+    .score-badge.s-low { color: #54636f; background: #e6e9ec; }
+    .crm-banner { padding: 10px 14px; margin-bottom: 12px; background: #fdf1e0; border: 1px solid #eccd94; border-radius: 8px; font-size: 13px; color: #7a4d00; }
+    .crm-table { margin-bottom: 16px; }
+    .crm-table td, .crm-table th { font-size: 12.5px; }
     .stat { flex: 1; min-width: 120px; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; }
     .stat .num { font-size: 22px; font-weight: 800; color: var(--teal-deep); }
     .stat .lbl { font-size: 12px; color: var(--muted); margin-top: 2px; }
@@ -79,6 +86,7 @@
 
     <div id="panelView" hidden>
       <div class="stats" id="statsBar"></div>
+      <div id="crmBox" hidden></div>
       <div class="toolbar">
         <input type="search" id="searchInput" placeholder="搜索姓名 / 邮箱 / 电话 / 事项 / 摘要">
         <select id="statusFilter">
@@ -96,7 +104,7 @@
       <table>
         <thead>
           <tr>
-            <th>ID</th><th>提交时间</th><th>姓名</th><th>联系方式</th>
+            <th>ID</th><th>评分</th><th>提交时间</th><th>姓名</th><th>联系方式</th>
             <th>国家 / 事项</th><th>问题描述</th><th>状态</th><th>备注</th>
           </tr>
         </thead>
@@ -197,8 +205,39 @@
             statCard(s.intakes_today, "今日线索", "本周 " + s.intakes_week) +
             statCard(s.views_today, "今日访问", "累计 " + s.views_total) +
             statCard(s.conversion_today_pct + "%", "今日转化率") +
+            (s.crm_overdue ? statCard(s.crm_overdue, "⚠ 逾期跟进", "新线索 " + s.crm_overdue_new + " · 推进 " + s.crm_overdue_progress) : "") +
             (statuses ? statCard(statuses, "按状态") : "");
         } catch (e) { /* stats are non-blocking */ }
+      }
+
+      async function loadCRM() {
+        var box = document.getElementById("crmBox");
+        try {
+          var c = await api("/admin/api/crm/overdue");
+          if (!c.count) { box.innerHTML = ""; box.hidden = true; return; }
+          var html = '<div class="crm-banner">⚠ CRM 跟进提醒：' + c.count + " 条线索逾期未跟进（新线索未联系 " +
+            c.leads.filter(function (l) { return l.status === "new"; }).length +
+            " · 已联系未推进 " + c.leads.filter(function (l) { return l.status === "contacted"; }).length +
+            "）— SLA：新线索 " + c.first_sla_hours + " 小时内联系，已联系 " + c.progress_sla_days + " 天内推进</div>" +
+            '<table class="crm-table"><thead><tr><th>ID</th><th>姓名</th><th>事项</th><th>联系方式</th><th>评分</th><th>状态</th><th>逾期</th><th>操作</th></tr></thead><tbody>';
+          c.leads.forEach(function (l) {
+            var contact = escapeHtml(l.email || l.phone || "-");
+            var act = l.status === "new"
+              ? '<button class="btn-ghost crm-act" data-id="' + l.id + '" data-status="contacted">标记已联系</button>'
+              : '<button class="btn-ghost crm-act" data-id="' + l.id + '" data-status="in_progress">标记处理中</button>';
+            html += "<tr><td>" + l.id + "</td><td>" + escapeHtml(l.name) + "</td><td>" + escapeHtml(l.matter) +
+              "</td><td>" + contact + "</td><td>" + scoreBadge(l.score) + "</td><td>" + statusBadge(l.status) +
+              "</td><td>" + Math.round(l.stale_hours) + "h</td><td>" + act + "</td></tr>";
+          });
+          html += "</tbody></table>";
+          box.innerHTML = html;
+          box.hidden = false;
+          box.querySelectorAll(".crm-act").forEach(function (btn) {
+            btn.addEventListener("click", function () {
+              patch(btn.getAttribute("data-id"), { status: btn.getAttribute("data-status") }, false).then(function () { load(); });
+            });
+          });
+        } catch (e) { /* CRM box is non-blocking */ }
       }
 
       async function api(path, options) {
@@ -224,10 +263,18 @@
         return '<span class="badge b-' + status + '">' + (labels[status] || status) + "</span>";
       }
 
+      function scoreBadge(score) {
+        var s = score || 0;
+        var cls = s >= 70 ? "s-high" : (s >= 40 ? "s-mid" : "s-low");
+        var lbl = s >= 70 ? "高" : (s >= 40 ? "中" : "低");
+        return '<span class="score-badge ' + cls + '" title="商机评分 ' + s + '/100">' + lbl + " " + s + "</span>";
+      }
+
       function rowElement(row) {
         var tr = document.createElement("tr");
         tr.innerHTML =
           '<td class="id">' + row.id + "</td>" +
+          "<td>" + scoreBadge(row.score) + "</td>" +
           '<td class="time">' + escapeHtml(row.created_at) + "</td>" +
           "<td>" + escapeHtml(row.name) + "</td>" +
           "<td>" + escapeHtml(row.email) + "<br><span class='hint'>" + escapeHtml(row.phone || "") + "</span></td>" +
@@ -267,6 +314,7 @@
 
       async function load() {
         loadStats();
+        loadCRM();
         var params = new URLSearchParams();
         if (state.status) params.set("status", state.status);
         if (state.q) params.set("q", state.q);
