@@ -416,6 +416,23 @@ def _send_auto_reply(intake: dict) -> None:
         "本邮件不构成委托关系或正式法律意见。\n"
         "This email does not create an attorney-client relationship or formal legal advice."
     )
+    html_body = (
+        "<!doctype html><html><body "
+        "style=\"font-family:'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;"
+        "color:#172433;line-height:1.7;max-width:600px;margin:0 auto;padding:24px;\">"
+        f"<h2 style=\"color:#0d6c6b;\">已收到您的咨询信息</h2>"
+        f"<p>您好，{intake['name']}，</p>"
+        "<p>我们已收到您的咨询信息，会尽快与您联系。<br>"
+        "<em>Dear client, we have received your inquiry and will get back to you shortly.</em></p>"
+        "<p><strong>建议先准备以下材料 / Suggested documents to prepare:</strong></p><ul>"
+        + "".join(f"<li>{item}</li>" for item in MATERIALS_BY_MATTER[key])
+        + "</ul>"
+        "<p style=\"color:#6b341d;\">紧急情况（财产转移、期限临近、证据灭失等）请直接通过微信注明“紧急”。<br>"
+        "<em>If the matter is urgent, please mark it as urgent on WeChat.</em></p>"
+        "<p style=\"font-size:12px;color:#627180;\">本邮件不构成委托关系或正式法律意见。<br>"
+        "<em>This email does not create an attorney-client relationship or formal legal advice.</em></p>"
+        "</body></html>"
+    )
 
     payload = json.dumps(
         {
@@ -423,6 +440,7 @@ def _send_auto_reply(intake: dict) -> None:
             "to": [intake["email"]],
             "subject": "已收到您的咨询信息 / We received your inquiry",
             "text": body,
+            "html": html_body,
         }
     ).encode("utf-8")
     request = urllib.request.Request("https://api.resend.com/emails", method="POST")

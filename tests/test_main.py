@@ -358,6 +358,8 @@ def test_resend_request_shape_and_success(tmp_db, monkeypatch, caplog):
     assert captured["body"]["to"] == ["w@example.com"]
     assert "已收到您的咨询信息" in captured["body"]["subject"]
     assert "合同、订单、发票、付款记录" in captured["body"]["text"]
+    assert "<html>" in captured["body"]["html"]
+    assert "合同、订单、发票、付款记录" in captured["body"]["html"]
     assert "Auto-reply sent" in caplog.text
 
 
