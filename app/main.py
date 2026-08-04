@@ -755,7 +755,7 @@ def read_index() -> Response:
     )
 
 
-@app.get("/robots.txt", include_in_schema=False)
+@app.api_route("/robots.txt", methods=["GET", "HEAD"], include_in_schema=False)
 def robots() -> Response:
     return Response(
         content=f"User-agent: *\nAllow: /\nSitemap: {SITE_URL}/sitemap.xml\n",
@@ -763,7 +763,7 @@ def robots() -> Response:
     )
 
 
-@app.get("/sitemap.xml", include_in_schema=False)
+@app.api_route("/sitemap.xml", methods=["GET", "HEAD"], include_in_schema=False)
 def sitemap() -> Response:
     urls = [f"{SITE_URL}/", f"{SITE_URL}/articles"] + [
         f"{SITE_URL}/services/{slug}" for slug in SERVICES
