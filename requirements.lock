@@ -16,6 +16,7 @@ h11==0.16.0
 httptools==0.8.0
 idna==3.18
 limits==5.8.0
+markdown==3.10.3
 packaging==26.2
 pydantic==2.13.4
 pydantic-core==2.46.4
