@@ -3,28 +3,31 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Shenyuan Legal 深远(国际)律师事务所为海外华人提供跨境商事、债务追收、继承与家族资产纠纷的双语法律咨询服务。">
+  <meta name="description" content="Shenyuan International 深远(国际)律师事务所：为中国企业与家庭提供跨境商事争议、债务追收、继承与家族资产的国际法律服务，中英双语，覆盖全球 30+ 国家与地区的合作律所网络。">
   <meta property="og:type" content="website">
-  <meta property="og:site_name" content="Shenyuan Legal">
-  <meta property="og:title" content="Shenyuan Legal | 深远(国际)律师事务所">
-  <meta property="og:description" content="面向海外华人的跨境商事、债务追收、继承与家族资产纠纷双语法律咨询服务。">
+  <meta property="og:site_name" content="Shenyuan International">
+  <meta property="og:title" content="Shenyuan International | 深远(国际)律师事务所">
+  <meta property="og:description" content="跨境的纠纷，用母语解决。跨境商事争议、债务追收、继承与家族资产——中英双语，全球协作网络。">
   <meta property="og:url" content="{{SITE_URL}}/">
   <meta property="og:image" content="https://images.unsplash.com/photo-1526304640581-d334cdbbf45e?auto=format&fit=crop&w=1200&q=80">
   <meta name="twitter:card" content="summary_large_image">
   <link rel="canonical" href="{{SITE_URL}}/">
-  <title>Shenyuan Legal | 深远(国际)律师事务所</title>
+  <title>Shenyuan International | 深远(国际)律师事务所</title>
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
     "@type": "LegalService",
-    "name": "Shenyuan Legal 深远(国际)律师事务所",
+    "name": "Shenyuan International 深远(国际)律师事务所",
     "url": "{{SITE_URL}}/",
     "image": "https://images.unsplash.com/photo-1526304640581-d334cdbbf45e?auto=format&fit=crop&w=1200&q=80",
-    "description": "面向海外华人的双语法律咨询服务：跨境商事、债务追收、继承与家族资产纠纷。",
+    "description": "面向中国企业与家庭的跨境法律服务：国际贸易争议、诉讼与债务追收、继承与家族资产。中英双语，覆盖 30+ 国家与地区的合作律所网络。",
     "knowsLanguage": ["zh", "en"],
     "areaServed": "Worldwide"
   }
   </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
   <style>
     :root {
       --ink: #172433;
@@ -37,9 +40,12 @@
       --orange: #d76e39;
       --orange-soft: #f2dfd1;
       --cream: #ede8de;
+      --gold: #b08d57;
       --shadow: 0 20px 50px rgba(20, 33, 44, .11);
       --radius: 10px;
       --max: 1180px;
+      --serif: "Playfair Display", "Noto Serif SC", Georgia, "Songti SC", "SimSun", serif;
+      --sans: "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
     }
 
     * { box-sizing: border-box; }
@@ -48,7 +54,7 @@
       margin: 0;
       color: var(--ink);
       background: var(--paper);
-      font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+      font-family: var(--sans);
       line-height: 1.65;
     }
     a { color: inherit; text-decoration: none; }
@@ -59,7 +65,7 @@
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      color: var(--teal);
+      color: var(--gold);
       font-size: 12px;
       font-weight: 700;
       letter-spacing: .13em;
@@ -69,15 +75,15 @@
       content: "";
       width: 24px;
       height: 2px;
-      background: var(--orange);
+      background: var(--gold);
     }
     h1, h2, h3, p { margin: 0; }
-    h1, h2, h3 { letter-spacing: -.025em; }
-    h1 { font-size: clamp(38px, 5vw, 70px); line-height: 1.05; }
-    h2 { font-size: clamp(30px, 4vw, 48px); line-height: 1.1; }
-    h3 { font-size: 22px; line-height: 1.25; }
-    .section { padding: 104px 0; }
-    .section-head { max-width: 680px; margin-bottom: 42px; }
+    h1, h2, h3 { font-family: var(--serif); }
+    h1 { font-size: clamp(38px, 5vw, 66px); line-height: 1.12; letter-spacing: -.01em; }
+    h2 { font-size: clamp(30px, 4vw, 46px); line-height: 1.18; letter-spacing: -.01em; }
+    h3 { font-size: 21px; line-height: 1.3; }
+    .section { padding: 100px 0; }
+    .section-head { max-width: 720px; margin-bottom: 42px; }
     .section-head h2 { margin-top: 15px; }
     .section-head p { margin-top: 16px; color: var(--muted); font-size: 17px; }
 
@@ -110,8 +116,9 @@
       color: var(--teal-deep);
       background: #f7f2e9;
       border-radius: 8px;
+      font-family: var(--serif);
       font-size: 18px;
-      font-weight: 800;
+      font-weight: 700;
     }
     .brand-text { display: grid; gap: 1px; }
     .brand-text small { color: rgba(255,255,255,.66); font-size: 11px; font-weight: 500; letter-spacing: 0; }
@@ -141,8 +148,8 @@
 
     .hero {
       position: relative;
-      min-height: 720px;
-      padding: 166px 0 88px;
+      min-height: 760px;
+      padding: 170px 0 96px;
       color: #fff;
       background-color: #18383a;
       background-image: url("https://images.unsplash.com/photo-1526304640581-d334cdbbf45e?auto=format&fit=crop&w=1800&q=85");
@@ -155,7 +162,7 @@
       position: absolute;
       inset: 0;
       z-index: -1;
-      background: rgba(7, 31, 38, .80);
+      background: rgba(7, 31, 38, .82);
     }
     .hero::after {
       content: "";
@@ -173,10 +180,11 @@
       gap: 72px;
     }
     .hero-copy { max-width: 690px; }
-    .hero-copy .eyebrow { color: #f4d1bc; }
+    .hero-copy .eyebrow { color: #f1b68f; }
+    .hero-copy .eyebrow::before { background: #f1b68f; }
     .hero-copy h1 { margin-top: 18px; max-width: 700px; }
     .hero-copy h1 .highlight { color: #f1b68f; }
-    .hero-copy p { max-width: 600px; margin-top: 25px; color: rgba(255,255,255,.78); font-size: 18px; }
+    .hero-copy p { max-width: 620px; margin-top: 25px; color: rgba(255,255,255,.78); font-size: 18px; }
     .hero-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 32px; }
     .button {
       display: inline-flex;
@@ -208,7 +216,7 @@
       border-radius: var(--radius);
       box-shadow: var(--shadow);
     }
-    .intake-card h2 { font-size: 28px; }
+    .intake-card h2 { font-size: 27px; }
     .intake-card > p { margin-top: 10px; color: var(--muted); font-size: 14px; }
     .contact-options {
       display: grid;
@@ -301,6 +309,205 @@
     .privacy summary { justify-content: flex-start; font-weight: 700; }
     .privacy summary::after { margin-left: 6px; }
     .privacy p { margin-top: 8px; max-width: none; line-height: 1.6; }
+
+    .trust-strip { border-bottom: 1px solid var(--line); background: var(--surface); }
+    .trust-strip .wrap { display: grid; grid-template-columns: repeat(4, 1fr); }
+    .trust-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 22px 18px;
+      border-left: 1px solid var(--line);
+    }
+    .trust-item:first-child { border-left: 0; }
+    .trust-item i {
+      flex: none;
+      width: 9px;
+      height: 9px;
+      background: var(--gold);
+      border-radius: 50%;
+    }
+    .trust-item strong { display: block; font-size: 14px; }
+    .trust-item span { display: block; margin-top: 1px; color: var(--muted); font-size: 12px; }
+
+    .service-section { background: var(--paper); }
+    .service-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+    .service-card {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      min-height: 380px;
+      padding: 30px;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      transition: transform .2s ease, box-shadow .2s ease;
+    }
+    .service-card:hover { transform: translateY(-5px); box-shadow: var(--shadow); }
+    .service-number { color: var(--gold); font-size: 13px; font-weight: 800; letter-spacing: .08em; }
+    .service-card h3 { margin-top: 20px; }
+    .service-card > p { margin-top: 12px; color: var(--muted); font-size: 14px; }
+    .service-list { display: grid; gap: 7px; margin: 22px 0 0; padding: 0; list-style: none; color: #435363; font-size: 13px; }
+    .service-list li { position: relative; padding-left: 16px; }
+    .service-list li::before { content: ""; position: absolute; top: 9px; left: 0; width: 5px; height: 5px; background: var(--gold); border-radius: 50%; }
+    .service-link { display: inline-flex; align-items: center; gap: 8px; margin-top: auto; padding-top: 28px; color: var(--teal); font-size: 13px; font-weight: 800; }
+    .service-cta-row { margin-top: 34px; text-align: center; }
+    .service-cta-row p { color: var(--muted); font-size: 14px; }
+    .service-cta-row .button { margin-top: 14px; }
+
+    .process-section { color: #f5f2ec; background: var(--teal-deep); }
+    .process-section .eyebrow { color: #f1b68f; }
+    .process-section .eyebrow::before { background: #f1b68f; }
+    .process-section .section-head p { color: rgba(255,255,255,.7); }
+    .process-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0; }
+    .process-step { min-height: 220px; padding: 26px 32px 10px 0; border-top: 1px solid rgba(255,255,255,.23); }
+    .process-step + .process-step { padding-left: 32px; border-left: 1px solid rgba(255,255,255,.23); }
+    .process-step span { display: block; color: #f1b68f; font-size: 15px; font-weight: 800; }
+    .process-step h3 { margin-top: 20px; font-size: 19px; }
+    .process-step p { margin-top: 11px; color: rgba(255,255,255,.68); font-size: 14px; }
+
+    .stats-section { color: #f5f2ec; background: #10282e; border-bottom: 1px solid rgba(255,255,255,.1); }
+    .stats-section .wrap { display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; }
+    .stat { text-align: center; padding: 10px 8px; }
+    .stat .num { font-family: var(--serif); font-size: clamp(38px, 4.5vw, 56px); font-weight: 700; line-height: 1; color: #f1b68f; }
+    .stat .num em { font-style: normal; font-size: .55em; margin-left: 2px; color: rgba(255,255,255,.65); }
+    .stat .label { margin-top: 12px; color: rgba(255,255,255,.72); font-size: 13px; }
+
+    .cases-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+    .case-card {
+      display: flex;
+      flex-direction: column;
+      padding: 28px;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+    }
+    .case-tag { color: var(--orange); font-size: 12px; font-weight: 800; letter-spacing: .08em; }
+    .case-card h3 { margin-top: 16px; font-size: 19px; }
+    .case-card p { margin-top: 10px; color: var(--muted); font-size: 13px; line-height: 1.6; }
+    .case-path {
+      display: grid;
+      gap: 6px;
+      margin: 18px 0 0;
+      padding: 14px 15px;
+      background: #f4eee4;
+      border-radius: 8px;
+      font-size: 12px;
+      color: #435363;
+      line-height: 1.5;
+    }
+    .case-path b { color: var(--teal-deep); }
+    .soon-badge {
+      display: inline-block;
+      align-self: flex-start;
+      margin-top: 16px;
+      padding: 3px 10px;
+      color: var(--teal-deep);
+      background: #deefea;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+    .case-card .button { margin-top: auto; align-self: flex-start; margin-top: 18px; min-height: 40px; }
+
+    .global-section { background: var(--cream); }
+    .global-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+    .region {
+      padding: 14px 16px;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 700;
+      text-align: center;
+    }
+    .global-note {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 26px;
+      padding: 16px 20px;
+      color: var(--muted);
+      background: var(--surface);
+      border: 1px dashed #c9b98f;
+      border-radius: 8px;
+      font-size: 13px;
+    }
+    .global-note i { flex: none; width: 8px; height: 8px; background: var(--gold); border-radius: 50%; }
+    .global-note a { color: var(--teal); font-weight: 800; white-space: nowrap; }
+
+    .team-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 18px; }
+    .team-card {
+      display: flex;
+      flex-direction: column;
+      padding: 28px;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+    }
+    .team-role { color: var(--gold); font-size: 12px; font-weight: 800; letter-spacing: .08em; }
+    .team-card h3 { margin-top: 15px; }
+    .team-card > p { margin-top: 10px; color: var(--muted); font-size: 13px; line-height: 1.6; }
+    .team-list { display: grid; gap: 7px; margin: 18px 0 0; padding: 0; list-style: none; color: #435363; font-size: 13px; }
+    .team-list li { position: relative; padding-left: 16px; }
+    .team-list li::before { content: ""; position: absolute; top: 9px; left: 0; width: 5px; height: 5px; background: var(--teal); border-radius: 50%; }
+    .team-note { margin-top: 16px; color: var(--muted); font-size: 12px; }
+
+    .trust-section { background: var(--surface); }
+    .trust-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; }
+    .trust-card { padding: 26px; background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius); }
+    .trust-card i {
+      display: block;
+      width: 34px;
+      height: 34px;
+      color: var(--gold);
+      border: 1px solid #d8c9a8;
+      border-radius: 50%;
+      font-family: var(--serif);
+      font-size: 17px;
+      font-weight: 700;
+      line-height: 32px;
+      text-align: center;
+    }
+    .trust-card h3 { margin-top: 16px; font-size: 17px; }
+    .trust-card p { margin-top: 9px; color: var(--muted); font-size: 13px; line-height: 1.6; }
+    .practice-note {
+      margin-top: 30px;
+      padding: 16px 20px;
+      color: var(--muted);
+      background: var(--cream);
+      border-radius: 8px;
+      font-size: 12px;
+      line-height: 1.7;
+    }
+    .practice-note b { color: var(--teal-deep); }
+
+    .faq-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px 48px; }
+    details { padding: 18px 0; border-top: 1px solid var(--line); }
+    details:last-child, details:nth-last-child(2) { border-bottom: 1px solid var(--line); }
+    summary { display: flex; align-items: center; justify-content: space-between; gap: 18px; cursor: pointer; list-style: none; font-weight: 700; }
+    summary::-webkit-details-marker { display: none; }
+    summary::after { content: "+"; color: var(--gold); font-size: 22px; font-weight: 400; }
+    details[open] summary::after { content: "–"; }
+    details p { max-width: 490px; margin-top: 13px; color: var(--muted); font-size: 14px; }
+
+    .cta-band { padding: 96px 0; color: #f8f5ef; background: var(--teal-deep); }
+    .cta-band .wrap { text-align: center; }
+    .cta-band .eyebrow { color: #f1b68f; }
+    .cta-band .eyebrow::before { background: #f1b68f; }
+    .cta-band h2 { max-width: 760px; margin: 18px auto 0; }
+    .cta-band p { max-width: 560px; margin: 18px auto 0; color: rgba(255,255,255,.72); font-size: 16px; }
+    .cta-band .hero-actions { justify-content: center; }
+
+    .site-footer { padding: 34px 0; color: rgba(255,255,255,.72); background: #15232d; }
+    .footer-grid { display: grid; grid-template-columns: 1.2fr 1fr 1fr; gap: 32px; }
+    .footer-brand { color: #fff; font-weight: 700; }
+    .footer-brand small { display: block; margin-top: 8px; color: rgba(255,255,255,.55); font-size: 12px; font-weight: 400; line-height: 1.6; }
+    .footer-col h4 { margin: 0 0 12px; color: #fff; font-size: 13px; }
+    .footer-col a { display: block; margin-top: 8px; font-size: 13px; }
+    .footer-col a:hover { color: #fff; }
+    .footer-meta { margin-top: 28px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,.14); font-size: 11px; line-height: 1.7; color: rgba(255,255,255,.5); }
+
     .modal-backdrop {
       display: none;
       position: fixed;
@@ -397,83 +604,14 @@
       transform: translateY(0);
     }
 
-    .service-section { background: var(--paper); }
-    .service-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
-    .service-card {
-      position: relative;
-      display: flex;
-      flex-direction: column;
-      min-height: 360px;
-      padding: 30px;
-      background: var(--surface);
-      border: 1px solid var(--line);
-      border-radius: var(--radius);
-      transition: transform .2s ease, box-shadow .2s ease;
+    @media (max-width: 980px) {
+      .trust-strip .wrap { grid-template-columns: repeat(2, 1fr); }
+      .trust-item:nth-child(3) { border-left: 0; }
+      .trust-item:nth-child(1), .trust-item:nth-child(2) { border-bottom: 1px solid var(--line); }
+      .stats-section .wrap { grid-template-columns: repeat(2, 1fr); gap: 18px; }
+      .global-grid { grid-template-columns: repeat(3, 1fr); }
+      .team-grid, .trust-grid { grid-template-columns: 1fr 1fr; }
     }
-    .service-card:hover { transform: translateY(-5px); box-shadow: var(--shadow); }
-    .service-number { color: var(--orange); font-size: 13px; font-weight: 800; letter-spacing: .08em; }
-    .service-card h3 { margin-top: 22px; }
-    .service-card > p { margin-top: 13px; color: var(--muted); font-size: 14px; }
-    .service-list { display: grid; gap: 7px; margin: 23px 0 0; padding: 0; list-style: none; color: #435363; font-size: 13px; }
-    .service-list li { position: relative; padding-left: 16px; }
-    .service-list li::before { content: ""; position: absolute; top: 9px; left: 0; width: 5px; height: 5px; background: var(--orange); border-radius: 50%; }
-    .service-link { display: inline-flex; align-items: center; gap: 8px; margin-top: auto; padding-top: 28px; color: var(--teal); font-size: 13px; font-weight: 800; }
-
-    .process-section { color: #f5f2ec; background: var(--teal-deep); }
-    .process-section .eyebrow { color: #f1b68f; }
-    .process-section .section-head p { color: rgba(255,255,255,.7); }
-    .process-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0; }
-    .process-step { min-height: 230px; padding: 26px 32px 10px 0; border-top: 1px solid rgba(255,255,255,.23); }
-    .process-step + .process-step { padding-left: 32px; border-left: 1px solid rgba(255,255,255,.23); }
-    .process-step span { display: block; color: #f1b68f; font-size: 15px; font-weight: 800; }
-    .process-step h3 { margin-top: 22px; font-size: 20px; }
-    .process-step p { margin-top: 12px; color: rgba(255,255,255,.68); font-size: 14px; }
-
-    .about-section { background: var(--cream); }
-    .about-grid { display: grid; grid-template-columns: 1.1fr .9fr; gap: 80px; align-items: start; }
-    .about-copy p { max-width: 650px; margin-top: 18px; color: var(--muted); font-size: 16px; }
-    .about-points { display: grid; gap: 0; margin-top: 30px; border-top: 1px solid var(--line); }
-    .about-point { display: grid; grid-template-columns: 30px 1fr; gap: 14px; padding: 20px 0; border-bottom: 1px solid var(--line); }
-    .about-point strong { display: block; font-size: 15px; }
-    .about-point p { margin-top: 3px; font-size: 13px; }
-    .about-point .tick { color: var(--orange); font-size: 18px; font-weight: 800; }
-    .quote {
-      padding: 34px;
-      color: #f8f4eb;
-      background: var(--orange);
-      border-radius: var(--radius);
-    }
-    .quote-mark { font-size: 54px; line-height: .6; opacity: .7; }
-    .quote p { margin-top: 22px; font-size: 21px; line-height: 1.45; }
-    .quote small { display: block; margin-top: 24px; color: rgba(255,255,255,.76); font-size: 12px; }
-
-    .knowledge-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
-    .knowledge-card {
-      padding: 26px;
-      background: var(--surface);
-      border: 1px solid var(--line);
-      border-radius: var(--radius);
-    }
-    .knowledge-card .k-tag { color: var(--orange); font-size: 12px; font-weight: 800; letter-spacing: .08em; }
-    .knowledge-card h3 { margin-top: 14px; font-size: 18px; }
-    .knowledge-card p { margin-top: 10px; color: var(--muted); font-size: 13px; }
-    .knowledge-card .soon { display: inline-block; margin-top: 14px; padding: 3px 10px; color: var(--teal-deep); background: #deefea; border-radius: 12px; font-size: 12px; font-weight: 700; }
-
-    .faq-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px 48px; }
-    details { padding: 18px 0; border-top: 1px solid var(--line); }
-    details:last-child, details:nth-last-child(2) { border-bottom: 1px solid var(--line); }
-    summary { display: flex; align-items: center; justify-content: space-between; gap: 18px; cursor: pointer; list-style: none; font-weight: 700; }
-    summary::-webkit-details-marker { display: none; }
-    summary::after { content: "+"; color: var(--orange); font-size: 22px; font-weight: 400; }
-    details[open] summary::after { content: "–"; }
-    details p { max-width: 490px; margin-top: 13px; color: var(--muted); font-size: 14px; }
-
-    .site-footer { padding: 32px 0; color: rgba(255,255,255,.72); background: #15232d; }
-    .footer-row { display: flex; align-items: center; justify-content: space-between; gap: 24px; font-size: 12px; }
-    .footer-brand { color: #fff; }
-    .footer-links { display: flex; gap: 22px; }
-    .footer-links a:hover { color: #fff; }
-
     @media (max-width: 880px) {
       .nav-links { display: none; }
       .menu-button { display: inline-flex; }
@@ -485,11 +623,13 @@
       .service-card { min-height: 0; }
       .process-step, .process-step + .process-step { min-height: 0; padding: 24px 0; border-left: 0; border-top: 1px solid rgba(255,255,255,.23); }
       .process-step:first-child { border-top: 1px solid rgba(255,255,255,.23); }
-      .about-grid { grid-template-columns: 1fr; gap: 42px; }
+      .cases-grid { grid-template-columns: 1fr; }
+      .global-grid { grid-template-columns: repeat(2, 1fr); }
+      .footer-grid { grid-template-columns: 1fr 1fr; }
     }
     @media (max-width: 600px) {
       .wrap { width: min(calc(100% - 28px), var(--max)); }
-      .section { padding: 74px 0; }
+      .section { padding: 72px 0; }
       .site-header .nav { min-height: 70px; }
       .nav-cta { display: none; }
       .hero { padding: 112px 0 62px; }
@@ -505,11 +645,15 @@
       .field.full { grid-column: auto; }
       .service-grid { gap: 12px; }
       .service-card { padding: 24px; }
-      .knowledge-grid { grid-template-columns: 1fr; }
+      .trust-strip .wrap { grid-template-columns: 1fr; }
+      .trust-item { border-left: 0; border-bottom: 1px solid var(--line); }
+      .trust-item:last-child { border-bottom: 0; }
+      .stats-section .wrap { grid-template-columns: 1fr 1fr; }
+      .global-grid { grid-template-columns: 1fr 1fr; }
+      .team-grid, .trust-grid { grid-template-columns: 1fr; }
       .faq-grid { grid-template-columns: 1fr; gap: 0; }
       details:last-child, details:nth-last-child(2) { border-bottom: 0; }
-      .footer-row { align-items: flex-start; flex-direction: column; }
-      .footer-links { flex-wrap: wrap; gap: 12px 18px; }
+      .footer-grid { grid-template-columns: 1fr; gap: 22px; }
       .success-panel { padding: 24px 18px 18px; }
       .modal-wechat { grid-template-columns: 92px 1fr; gap: 12px; }
       .qr-box-large { width: 84px; gap: 3px; padding: 7px; }
@@ -521,16 +665,18 @@
 <body>
   <header class="site-header">
     <div class="wrap nav">
-      <a class="brand" href="#top" aria-label="Shenyuan Legal 首页">
-        <span class="brand-mark">P</span>
+      <a class="brand" href="#top" aria-label="Shenyuan International 首页">
+        <span class="brand-mark">深</span>
         <span class="brand-text">
-          <span>Shenyuan Legal</span>
-          <small data-zh="深远(国际)律师事务所" data-en="深远(国际)律师事务所">深远(国际)律师事务所</small>
+          <span>Shenyuan International</span>
+          <small data-zh="深远(国际)律师事务所" data-en="Shenyuan International">深远(国际)律师事务所</small>
         </span>
       </a>
       <nav class="nav-links" aria-label="主导航">
         <a href="#services" data-zh="服务范围" data-en="Services">服务范围</a>
-        <a href="#process" data-zh="如何开始" data-en="How it works">如何开始</a>
+        <a href="#results" data-zh="成果与案例" data-en="Results">成果与案例</a>
+        <a href="#global" data-zh="全球网络" data-en="Global reach">全球网络</a>
+        <a href="#team" data-zh="团队" data-en="Team">团队</a>
         <a href="#faq" data-zh="常见问题" data-en="FAQ">常见问题</a>
       </nav>
       <div class="nav-actions">
@@ -542,29 +688,30 @@
   </header>
 
   <main id="top">
+    <!-- 01 HERO -->
     <section class="hero">
       <div class="wrap hero-grid">
         <div class="hero-copy">
-          <div class="eyebrow" data-zh="跨境法律服务入口" data-en="Cross-border legal access">跨境法律服务入口</div>
+          <div class="eyebrow" data-zh="跨境争议解决与家族资产保护" data-en="Cross-border dispute resolution & family asset protection">跨境争议解决与家族资产保护</div>
           <h1>
-            <span data-zh="深远(国际)律师事务所" data-en="Shenyuan Legal">深远(国际)律师事务所</span>
-            <span class="highlight" data-zh="海外华人跨境法律服务。" data-en="Cross-border legal services.">海外华人跨境法律服务。</span>
+            <span data-zh="跨境的纠纷，" data-en="Cross-border disputes,">跨境的纠纷，</span>
+            <span class="highlight" data-zh="用母语解决。" data-en="resolved in your language.">用母语解决。</span>
           </h1>
-          <p data-zh="面向海外华人的双语法律咨询服务。我们先梳理事实、地域与目标，帮助你判断风险、材料和下一步处理路径。" data-en="Bilingual legal consultation for overseas Chinese. We clarify the facts, jurisdictions, and goals to help you understand risks, documents, and practical next steps.">面向海外华人的双语法律咨询服务。我们先梳理事实、地域与目标，帮助你判断风险、材料和下一步处理路径。</p>
+          <p data-zh="深远国际律师事务所为中国企业与家庭提供国际贸易争议、跨境债务追收、继承与家族资产法律服务——用中文理解你的处境，用全球合作律所网络在当地落地执行。" data-en="Shenyuan International helps Chinese businesses and families resolve international trade disputes, recover cross-border debts, and protect inherited family assets — understood in your language, executed through a global network of local counsel.">深远国际律师事务所为中国企业与家庭提供国际贸易争议、跨境债务追收、继承与家族资产法律服务——用中文理解你的处境，用全球合作律所网络在当地落地执行。</p>
           <div class="hero-actions">
-            <a class="button button-primary" href="#intake" data-zh="提交案件信息 →" data-en="Share your case →">提交案件信息 →</a>
+            <a class="button button-primary" href="#intake" data-zh="免费法律咨询 →" data-en="Free legal consultation →">免费法律咨询 →</a>
             <a class="button button-outline" href="#services" data-zh="查看服务范围" data-en="Explore services">查看服务范围</a>
           </div>
           <div class="hero-notes">
             <span><i></i><span data-zh="中英双语沟通" data-en="Chinese / English">中英双语沟通</span></span>
+            <span><i></i><span data-zh="覆盖 30+ 国家与地区" data-en="Coverage across 30+ jurisdictions">覆盖 30+ 国家与地区</span></span>
             <span><i></i><span data-zh="先评估，再行动" data-en="Assess first, act clearly">先评估，再行动</span></span>
-            <span><i></i><span data-zh="重视隐私与时效" data-en="Privacy-minded">重视隐私与时效</span></span>
           </div>
         </div>
 
         <form class="intake-card" id="intake" novalidate>
           <h2 data-zh="先说说发生了什么" data-en="Tell us what happened">先说说发生了什么</h2>
-          <p data-zh="留下基本信息，我们会先判断事项类型、地域与下一步。" data-en="Share the basics. We will first understand the matter, jurisdiction, and next step.">留下基本信息，我们会先判断事项类型、地域与下一步。</p>
+          <p data-zh="留下基本信息，我们会先判断事项类型、地域与下一步，24 小时内回复。紧急情况建议直接微信联系并注明“紧急”。" data-en="Share the basics. We will assess the matter type, jurisdiction, and next step, and respond within 24 hours. For urgent matters, message us on WeChat and mark it urgent.">留下基本信息，我们会先判断事项类型、地域与下一步，24 小时内回复。紧急情况建议直接微信联系并注明“紧急”。</p>
           <div class="contact-options">
             <img class="qr-img" src="/wechat-qrcode.png" alt="WeChat QR code">
             <div class="wechat-copy">
@@ -616,34 +763,23 @@
       </div>
     </section>
 
-    <div class="modal-backdrop" id="successMessage" role="dialog" aria-modal="true" aria-labelledby="successTitle">
-      <div class="success-panel">
-            <button class="modal-close" type="button" id="closeModal" aria-label="关闭">×</button>
-            <h3 id="successTitle" data-zh="已收到您的信息" data-en="We have received your information">已收到您的信息</h3>
-            <p data-zh="我们会先查看事项类型、涉及地区和你希望达成的目标，并据此判断后续沟通重点。" data-en="We will first review the matter type, relevant region, and your intended outcome to identify the next discussion points.">我们会先查看事项类型、涉及地区和你希望达成的目标，并据此判断后续沟通重点。</p>
-            <strong class="material-title" data-zh="建议先准备这些材料" data-en="Suggested documents to prepare">建议先准备这些材料</strong>
-            <ul class="material-list" id="materialList"></ul>
-            <div class="urgent-note" data-zh="如存在财产转移、诉讼或仲裁期限、海关扣货、证据灭失、家族成员失联等紧急情况，请在微信中注明“紧急”。" data-en="If there is asset transfer, a litigation or arbitration deadline, customs detention, disappearing evidence, or a missing family member, please mark the WeChat message as urgent.">如存在财产转移、诉讼或仲裁期限、海关扣货、证据灭失、家族成员失联等紧急情况，请在微信中注明“紧急”。</div>
-            <div class="modal-wechat">
-              <img class="qr-img-large" src="/wechat-qrcode.png" alt="WeChat QR code">
-              <div>
-                <strong data-zh="扫码添加微信，补充材料" data-en="Scan WeChat to share documents">扫码添加微信，补充材料</strong>
-                <p data-zh="建议发送“已提交 + 称呼 + 事项类型”，便于我们更快对应你的咨询信息。" data-en="Please send Submitted + your name + matter type so we can match your consultation information faster.">建议发送“已提交 + 称呼 + 事项类型”，便于我们更快对应你的咨询信息。</p>
-              </div>
-            </div>
-            <div class="success-actions">
-              <button class="button button-primary" type="button" id="confirmModal" data-zh="我已了解" data-en="Got it">我已了解</button>
-            </div>
+    <!-- 02 信任徽章条 -->
+    <div class="trust-strip" aria-label="Trust signals">
+      <div class="wrap">
+        <div class="trust-item"><i></i><div><strong data-zh="中英双语团队" data-en="Bilingual team">中英双语团队</strong><span data-zh="中文讲清事实，英文保留法律精度" data-en="Facts in Chinese, precision in English">中文讲清事实，英文保留法律精度</span></div></div>
+        <div class="trust-item"><i></i><div><strong data-zh="全球协作网络" data-en="Global network">全球协作网络</strong><span data-zh="30+ 国家与地区当地执业律所" data-en="Local counsel in 30+ jurisdictions">30+ 国家与地区当地执业律所</span></div></div>
+        <div class="trust-item"><i></i><div><strong data-zh="24 小时首响承诺" data-en="24-hour response">24 小时首响承诺</strong><span data-zh="收到咨询后尽快安排沟通" data-en="We get back to you quickly">收到咨询后尽快安排沟通</span></div></div>
+        <div class="trust-item"><i></i><div><strong data-zh="隐私与保密" data-en="Privacy & confidentiality">隐私与保密</strong><span data-zh="咨询信息仅用于评估与沟通" data-en="Information used solely for assessment">咨询信息仅用于评估与沟通</span></div></div>
       </div>
     </div>
-    <div class="page-toast" id="pageToast" role="status" aria-live="polite" data-zh="感谢您的信任，期待我们进一步联系。" data-en="Thank you for your trust. We look forward to further contact.">感谢您的信任，期待我们进一步联系。</div>
 
+    <!-- 03 核心服务 -->
     <section class="section service-section" id="services">
       <div class="wrap">
         <div class="section-head">
-          <div class="eyebrow" data-zh="三类高频问题" data-en="Three core pathways">三类高频问题</div>
-          <h2 data-zh="不需要先懂法律，先找到对的入口。" data-en="You do not need legal language to find the right entry.">不需要先懂法律，先找到对的入口。</h2>
-          <p data-zh="围绕海外华人最常遇到的跨境事项，把“发生了什么”整理成可判断、可沟通、可推进的法律问题。" data-en="We organize what happened into a clear legal issue that can be reviewed, discussed, and moved forward.">围绕海外华人最常遇到的跨境事项，把“发生了什么”整理成可判断、可沟通、可推进的法律问题。</p>
+          <div class="eyebrow" data-zh="核心业务" data-en="Core practice">核心业务</div>
+          <h2 data-zh="三类高频跨境事项，一条清晰的解决路径。" data-en="Three core practice lines, one clear path forward.">三类高频跨境事项，一条清晰的解决路径。</h2>
+          <p data-zh="围绕中国企业与家庭在海外最常遇到的问题，从欠款事实与证据入手，判断协商、追收、诉讼或执行路径。" data-en="Built around the issues Chinese businesses and families face abroad — we assess the facts and evidence, then map negotiation, recovery, litigation, or enforcement.">围绕中国企业与家庭在海外最常遇到的问题，从欠款事实与证据入手，判断协商、追收、诉讼或执行路径。</p>
         </div>
         <div class="service-grid">
           <article class="service-card">
@@ -652,8 +788,9 @@
             <p data-zh="处理交易履行、货款、代理与跨境合同之间的纠纷。" data-en="For disputes involving performance, payment, agencies, distribution, and cross-border contracts.">处理交易履行、货款、代理与跨境合同之间的纠纷。</p>
             <ul class="service-list">
               <li data-zh="拖欠货款 / 供应商违约" data-en="Unpaid invoices / supplier breach">拖欠货款 / 供应商违约</li>
-              <li data-zh="代理、经销、跨境合同" data-en="Agency, distribution, cross-border contracts">代理、经销、跨境合同</li>
+              <li data-zh="代理、经销、跨境合同审查" data-en="Agency, distribution, contract review">代理、经销、跨境合同审查</li>
               <li data-zh="海关、物流、质量争议" data-en="Customs, logistics, quality issues">海关、物流、质量争议</li>
+              <li data-zh="国际贸易诈骗识别与应对" data-en="Trade fraud identification & response">国际贸易诈骗识别与应对</li>
             </ul>
             <a class="service-link" href="/services/trade" data-zh="了解贸易争议服务 →" data-en="Trade dispute services →">了解贸易争议服务 →</a>
           </article>
@@ -662,10 +799,10 @@
             <h3 data-zh="诉讼与债务追收" data-en="Litigation & debt recovery">诉讼与债务追收</h3>
             <p data-zh="从欠款事实与资产线索出发，判断追收、诉讼或执行路径。" data-en="Assess recovery, litigation, and enforcement options from the facts and asset trail.">从欠款事实与资产线索出发，判断追收、诉讼或执行路径。</p>
             <ul class="service-list">
-              <li data-zh="海外客户欠款" data-en="Overseas customer debt">海外客户欠款</li>
-              <li data-zh="中国境内资产调查" data-en="Asset tracing in mainland China">中国境内资产调查</li>
-              <li data-zh="判决、仲裁裁决执行" data-en="Judgment and award enforcement">判决、仲裁裁决执行</li>
-              <li data-zh="商业欺诈和合作纠纷" data-en="Commercial fraud and partner disputes">商业欺诈和合作纠纷</li>
+              <li data-zh="海外客户欠款追收" data-en="Overseas customer debt recovery">海外客户欠款追收</li>
+              <li data-zh="中国境内与海外资产调查" data-en="Asset tracing in China and abroad">中国境内与海外资产调查</li>
+              <li data-zh="判决、仲裁裁决跨境执行" data-en="Cross-border judgment & award enforcement">判决、仲裁裁决跨境执行</li>
+              <li data-zh="商业欺诈调查" data-en="Commercial fraud investigation">商业欺诈调查</li>
             </ul>
             <a class="service-link" href="/services/recovery" data-zh="了解追收服务 →" data-en="Recovery services →">了解追收服务 →</a>
           </article>
@@ -676,15 +813,20 @@
             <ul class="service-list">
               <li data-zh="中国大陆与海外多地继承" data-en="Mainland China and multi-country inheritance">中国大陆与海外多地继承</li>
               <li data-zh="房产、股权、存款继承" data-en="Property, equity, and deposit inheritance">房产、股权、存款继承</li>
-              <li data-zh="遗嘱、遗产分割" data-en="Wills and estate division">遗嘱、遗产分割</li>
+              <li data-zh="遗嘱效力与遗产分割" data-en="Wills and estate division">遗嘱效力与遗产分割</li>
               <li data-zh="家族成员失联或争议" data-en="Missing or disputed family members">家族成员失联或争议</li>
             </ul>
             <a class="service-link" href="/services/legacy" data-zh="了解继承服务 →" data-en="Legacy services →">了解继承服务 →</a>
           </article>
         </div>
+        <div class="service-cta-row">
+          <p data-zh="不确定属于哪一类？先提交你的情况，我们帮你判断入口。" data-en="Not sure which category fits? Share your situation and we will help you find the right entry point.">不确定属于哪一类？先提交你的情况，我们帮你判断入口。</p>
+          <a class="button button-primary" href="#intake" data-zh="提交案件信息 →" data-en="Share your case →">提交案件信息 →</a>
+        </div>
       </div>
     </section>
 
+    <!-- 04 处理路径 -->
     <section class="section process-section" id="process">
       <div class="wrap">
         <div class="section-head">
@@ -695,82 +837,160 @@
         <div class="process-grid">
           <div class="process-step">
             <span>01</span>
-            <h3 data-zh="填写基本情况" data-en="Share the essentials">填写基本情况</h3>
-            <p data-zh="告诉我们人物、事项类型和当前目标。" data-en="Share the people, matter type, and your immediate goal.">告诉我们人物、事项类型和当前目标。</p>
+            <h3 data-zh="免费咨询建档" data-en="Free consultation & intake">免费咨询建档</h3>
+            <p data-zh="提交基本情况或微信联系，我们梳理人物、金额、时间线与目标。" data-en="Share the essentials via form or WeChat. We map the parties, amounts, timeline, and goals.">提交基本情况或微信联系，我们梳理人物、金额、时间线与目标。</p>
           </div>
           <div class="process-step">
             <span>02</span>
-            <h3 data-zh="梳理事实与法域" data-en="Clarify facts and jurisdictions">梳理事实与法域</h3>
-            <p data-zh="初步识别时效、证据、资产位置与可能涉及的法域。" data-en="Identify timing, evidence, asset location, and potentially relevant jurisdictions.">初步识别时效、证据、资产位置与可能涉及的法域。</p>
+            <h3 data-zh="事实、证据与法域评估" data-en="Facts, evidence & jurisdiction review">事实、证据与法域评估</h3>
+            <p data-zh="初步识别时效、证据、资产位置与可能涉及的法域，判断可行路径。" data-en="Identify timing, evidence, asset location, and potentially relevant jurisdictions.">初步识别时效、证据、资产位置与可能涉及的法域，判断可行路径。</p>
           </div>
           <div class="process-step">
             <span>03</span>
-            <h3 data-zh="制定处理路径" data-en="Build the action path">制定处理路径</h3>
-            <p data-zh="根据事项特点，明确沟通重点、材料清单、风险边界与可行处理方案。" data-en="Define priorities, document needs, risk boundaries, and practical handling options.">根据事项特点，明确沟通重点、材料清单、风险边界与可行处理方案。</p>
+            <h3 data-zh="策略、报价与执行" data-en="Strategy, engagement & execution">策略、报价与执行</h3>
+            <p data-zh="根据事项特点确定谈判、追收或诉讼策略，明确材料、风险与里程碑。" data-en="Define the strategy — negotiation, recovery, or litigation — with clear milestones and risk boundaries.">根据事项特点确定谈判、追收或诉讼策略，明确材料、风险与里程碑。</p>
           </div>
         </div>
       </div>
     </section>
 
-    <section class="section about-section">
-      <div class="wrap about-grid">
-        <div class="about-copy">
-          <div class="eyebrow" data-zh="这个入口适合谁" data-en="Who this is for">这个入口适合谁</div>
-          <h2 data-zh="你可能只需要一个可靠的团队，先帮你把局面理清。" data-en="Sometimes you first need someone who understands the cross-border context.">你可能只需要一个可靠的团队，先帮你把局面理清。</h2>
-          <p data-zh="很多纠纷的难点不只是法律条文，而是不知道证据是否够用、资产在哪里、应该从哪个国家或地区启动。这个服务的任务，就是把第一次沟通变得更有方向。" data-en="Many disputes are not only about legal rules. They are about evidence, asset location, and where the matter should begin. This service gives the first conversation direction.">很多纠纷的难点不只是法律条文，而是不知道证据是否够用、资产在哪里、应该从哪个国家或地区启动。这个服务的任务，就是把第一次沟通变得更有方向。</p>
-          <div class="about-points">
-            <div class="about-point">
-              <div class="tick">✓</div>
-              <div><strong data-zh="面向海外华人的表达方式" data-en="Built for overseas Chinese">面向海外华人的表达方式</strong><p data-zh="中文讲清事实，英文保留法律沟通的准确性。" data-en="Explain facts in Chinese, preserve legal precision in English.">中文讲清事实，英文保留法律沟通的准确性。</p></div>
-            </div>
-            <div class="about-point">
-              <div class="tick">✓</div>
-              <div><strong data-zh="适合多法域事项" data-en="Designed for multi-jurisdiction matters">适合多法域事项</strong><p data-zh="把中国大陆与海外的连接点先标出来。" data-en="Surface the China-to-overseas connections early.">把中国大陆与海外的连接点先标出来。</p></div>
-            </div>
-            <div class="about-point">
-              <div class="tick">✓</div>
-              <div><strong data-zh="先给方向，不做过度承诺" data-en="Direction without overpromising">先给方向，不做过度承诺</strong><p data-zh="初步沟通是为了判断下一步，不替代正式法律意见。" data-en="The initial discussion helps identify next steps; it is not formal legal advice.">初步沟通是为了判断下一步，不替代正式法律意见。</p></div>
-            </div>
-          </div>
-        </div>
-        <aside class="quote">
-          <div class="quote-mark">“</div>
-          <p data-zh="我不知道这算不算一个能打的案子，但我知道不能再等了。" data-en="I do not know if this is a case worth pursuing. I do know I cannot wait any longer.">我不知道这算不算一个能打的案子，但我知道不能再等了。</p>
-          <small data-zh="这类真实的第一句话，值得一个清楚、稳妥的下一步。" data-en="A real first sentence deserves a clear and measured next step.">这类真实的第一句话，值得一个清楚、稳妥的下一步。</small>
-        </aside>
+    <!-- 05 数据成果 -->
+    <section class="section stats-section" id="results">
+      <div class="wrap">
+        <div class="stat"><div class="num">30<em>+</em></div><div class="label" data-zh="协作国家与地区" data-en="jurisdictions covered">协作国家与地区</div></div>
+        <div class="stat"><div class="num">3</div><div class="label" data-zh="大跨境业务线" data-en="core practice lines">大跨境业务线</div></div>
+        <div class="stat"><div class="num">24<em>h</em></div><div class="label" data-zh="咨询首响承诺" data-en="first-response commitment">咨询首响承诺</div></div>
+        <div class="stat"><div class="num">2</div><div class="label" data-zh="种语言·中 / EN" data-en="languages: 中文 / English">种语言·中 / EN</div></div>
       </div>
     </section>
 
-    <section class="section knowledge-section" id="knowledge">
+    <!-- 06 案例展示 -->
+    <section class="section cases-section" id="cases">
       <div class="wrap">
         <div class="section-head">
-          <div class="eyebrow" data-zh="知识与案例" data-en="Knowledge & cases">知识与案例</div>
-          <h2 data-zh="专业内容，持续更新中。" data-en="Professional content, coming soon.">专业内容，持续更新中。</h2>
-          <p data-zh="我们将陆续发布跨境法律实务解读、脱敏案例分析（已隐去身份信息）与常见问题指南，帮助您理解跨境事项的处理思路。" data-en="We are publishing practical guides on cross-border matters, anonymized case analyses, and FAQs to help you understand how such matters are handled.">我们将陆续发布跨境法律实务解读、脱敏案例分析（已隐去身份信息）与常见问题指南，帮助您理解跨境事项的处理思路。</p>
+          <div class="eyebrow" data-zh="案例与成果" data-en="Cases & outcomes">案例与成果</div>
+          <h2 data-zh="我们处理的，都是真实生意里的难题。" data-en="We handle the hard problems of real business.">我们处理的，都是真实生意里的难题。</h2>
+          <p data-zh="以下是典型情形与处理路径示例；脱敏案例复盘（已隐去身份信息）整理完成后将陆续发布。每一件案子，都从一次免费咨询开始。" data-en="Below are typical scenarios and the pathways we take. Anonymized case walkthroughs will be published as they are finalized. Every engagement starts with a free consultation.">以下是典型情形与处理路径示例；脱敏案例复盘（已隐去身份信息）整理完成后将陆续发布。每一件案子，都从一次免费咨询开始。</p>
         </div>
-        <div class="knowledge-grid">
-          <article class="knowledge-card">
-            <div class="k-tag">PRACTICE</div>
-            <h3 data-zh="跨境法律实务解读" data-en="Practice guides">跨境法律实务解读</h3>
-            <p data-zh="关于欠款追收、合同履行、继承程序的实务要点。" data-en="Practical notes on debt recovery, contract performance, and inheritance procedure.">关于欠款追收、合同履行、继承程序的实务要点。</p>
-            <span class="soon" data-zh="内容整理中" data-en="Coming soon">内容整理中</span>
+        <div class="cases-grid">
+          <article class="case-card">
+            <div class="case-tag">TRADE</div>
+            <h3 data-zh="海外客户收货后拖欠尾款" data-en="Buyer received goods, refused final payment">海外客户收货后拖欠尾款</h3>
+            <p data-zh="典型情形：货已交付，客户以质量问题、汇率波动等理由拖延付款数月。" data-en="Typical scenario: goods delivered, buyer delays payment for months citing quality, FX, or other reasons.">典型情形：货已交付，客户以质量问题、汇率波动等理由拖延付款数月。</p>
+            <div class="case-path"><b data-zh="处理路径" data-en="Pathway">处理路径</b><span data-zh="证据梳理 → 律师函与协商 → 诉讼 / 仲裁 → 判决执行" data-en="Evidence review → demand & negotiation → litigation / arbitration → enforcement">证据梳理 → 律师函与协商 → 诉讼 / 仲裁 → 判决执行</span></div>
+            <span class="soon-badge" data-zh="脱敏案例复盘整理中" data-en="Anonymized case study coming soon">脱敏案例复盘整理中</span>
+            <a class="button button-outline" style="color:var(--teal);border-color:rgba(13,108,107,.35)" href="#intake" data-zh="类似案件，免费咨询 →" data-en="Free consultation →">类似案件，免费咨询 →</a>
           </article>
-          <article class="knowledge-card">
-            <div class="k-tag">CASES</div>
-            <h3 data-zh="脱敏案例分析" data-en="Anonymized cases">脱敏案例分析</h3>
-            <p data-zh="经客户同意并隐去身份信息后的处理思路复盘。" data-en="Anonymized walkthroughs of how matters were assessed and handled.">经客户同意并隐去身份信息后的处理思路复盘。</p>
-            <span class="soon" data-zh="内容整理中" data-en="Coming soon">内容整理中</span>
+          <article class="case-card">
+            <div class="case-tag">RECOVERY</div>
+            <h3 data-zh="判决赢了，钱却拿不回来" data-en="Won the judgment, still no payment">判决赢了，钱却拿不回来</h3>
+            <p data-zh="典型情形：中国境内或境外已有生效判决 / 仲裁裁决，但债务人转移资产或下落不明。" data-en="Typical scenario: a judgment or award exists in China or abroad, but the debtor has moved assets or disappeared.">典型情形：中国境内或境外已有生效判决 / 仲裁裁决，但债务人转移资产或下落不明。</p>
+            <div class="case-path"><b data-zh="处理路径" data-en="Pathway">处理路径</b><span data-zh="资产调查 → 财产保全 → 承认与执行申请 → 执行和解" data-en="Asset tracing → preservation orders → recognition & enforcement → settlement">资产调查 → 财产保全 → 承认与执行申请 → 执行和解</span></div>
+            <span class="soon-badge" data-zh="脱敏案例复盘整理中" data-en="Anonymized case study coming soon">脱敏案例复盘整理中</span>
+            <a class="button button-outline" style="color:var(--teal);border-color:rgba(13,108,107,.35)" href="#intake" data-zh="类似案件，免费咨询 →" data-en="Free consultation →">类似案件，免费咨询 →</a>
           </article>
-          <article class="knowledge-card">
-            <div class="k-tag">GUIDES</div>
-            <h3 data-zh="常见问题指南" data-en="FAQ guides">常见问题指南</h3>
-            <p data-zh="证据准备、时效判断、跨境沟通的实用清单。" data-en="Checklists for evidence, deadlines, and cross-border communication.">证据准备、时效判断、跨境沟通的实用清单。</p>
-            <span class="soon" data-zh="内容整理中" data-en="Coming soon">内容整理中</span>
+          <article class="case-card">
+            <div class="case-tag">LEGACY</div>
+            <h3 data-zh="亲属在海外去世，遗产横跨两国" data-en="Relative passed away abroad, estate spans two countries">亲属在海外去世，遗产横跨两国</h3>
+            <p data-zh="典型情形：继承人身在国内，需处理海外房产、存款与公司股权，涉及遗嘱、认证与外汇。" data-en="Typical scenario: heirs in China must handle overseas property, deposits, and equity — with wills, probate, and FX compliance involved.">典型情形：继承人身在国内，需处理海外房产、存款与公司股权，涉及遗嘱、认证与外汇。</p>
+            <div class="case-path"><b data-zh="处理路径" data-en="Pathway">处理路径</b><span data-zh="亲属关系与文件公证 → 遗嘱认证 → 资产清单与继承 → 资金合规汇回" data-en="Notarization → probate → asset list & inheritance → compliant fund transfer">亲属关系与文件公证 → 遗嘱认证 → 资产清单与继承 → 资金合规汇回</span></div>
+            <span class="soon-badge" data-zh="脱敏案例复盘整理中" data-en="Anonymized case study coming soon">脱敏案例复盘整理中</span>
+            <a class="button button-outline" style="color:var(--teal);border-color:rgba(13,108,107,.35)" href="#intake" data-zh="类似案件，免费咨询 →" data-en="Free consultation →">类似案件，免费咨询 →</a>
           </article>
         </div>
       </div>
     </section>
 
+    <!-- 07 国家覆盖 -->
+    <section class="section global-section" id="global">
+      <div class="wrap">
+        <div class="section-head">
+          <div class="eyebrow" data-zh="全球网络" data-en="Global reach">全球网络</div>
+          <h2 data-zh="客户在哪里，协作网络就在哪里。" data-en="Where our clients are, our network follows.">客户在哪里，协作网络就在哪里。</h2>
+          <p data-zh="通过与当地执业律所的合作，覆盖中国企业出海与海外华人集中的主要市场。具体地区以当次评估为准，一案一议。" data-en="Through partnerships with locally licensed counsel, we cover the markets where Chinese businesses and overseas Chinese communities are concentrated. Every matter is assessed on its own facts.">通过与当地执业律所的合作，覆盖中国企业出海与海外华人集中的主要市场。具体地区以当次评估为准，一案一议。</p>
+        </div>
+        <div class="global-grid">
+          <div class="region">美国</div><div class="region">加拿大</div><div class="region">澳大利亚</div><div class="region">新西兰</div>
+          <div class="region">新加坡</div><div class="region">英国</div><div class="region">德国</div><div class="region">法国</div>
+          <div class="region">日本</div><div class="region">韩国</div><div class="region">阿联酋</div><div class="region">沙特</div>
+          <div class="region">泰国</div><div class="region">越南</div><div class="region">马来西亚</div><div class="region">印尼</div>
+          <div class="region">香港</div><div class="region">澳门</div><div class="region">巴西</div><div class="region">墨西哥</div>
+        </div>
+        <div class="global-note"><i></i><span data-zh="合作律所网络覆盖 30+ 国家与地区。未列出的地区，也欢迎先提交咨询，我们会判断当地是否有可落地路径。" data-en="Our partner network spans 30+ jurisdictions. Not on the list? Submit your matter and we will assess whether a viable local pathway exists.">合作律所网络覆盖 30+ 国家与地区。未列出的地区，也欢迎先提交咨询，我们会判断当地是否有可落地路径。</span><a href="#intake" data-zh="提交咨询 →" data-en="Consult us →">提交咨询 →</a></div>
+      </div>
+    </section>
+
+    <!-- 08 律师团队 -->
+    <section class="section team-section" id="team">
+      <div class="wrap">
+        <div class="section-head">
+          <div class="eyebrow" data-zh="律师团队" data-en="Our team">律师团队</div>
+          <h2 data-zh="懂中国法律，也懂海外规则。" data-en="Trained in Chinese law, fluent in foreign rules.">懂中国法律，也懂海外规则。</h2>
+          <p data-zh="团队以中国大陆执业律师为核心，专注跨境业务；境外程序通过与当地执业律所协作完成，确保每个环节程序合规。" data-en="Our core team consists of mainland China licensed lawyers focused on cross-border matters; foreign procedures are handled with locally licensed counsel to ensure procedural compliance at every step.">团队以中国大陆执业律师为核心，专注跨境业务；境外程序通过与当地执业律所协作完成，确保每个环节程序合规。</p>
+        </div>
+        <div class="team-grid">
+          <div class="team-card">
+            <div class="team-role">CROSS-BORDER DISPUTES</div>
+            <h3 data-zh="跨境争议解决" data-en="Cross-border disputes">跨境争议解决</h3>
+            <p data-zh="国际贸易与合同争议、跨境诉讼与仲裁、争议解决条款设计。" data-en="International trade and contract disputes, cross-border litigation and arbitration, and dispute resolution clause design.">国际贸易与合同争议、跨境诉讼与仲裁、争议解决条款设计。</p>
+            <ul class="team-list">
+              <li data-zh="中国大陆执业律师" data-en="Licensed in mainland China">中国大陆执业律师</li>
+              <li data-zh="中英双语工作" data-en="Bilingual practice (Chinese / English)">中英双语工作</li>
+            </ul>
+            <p class="team-note" data-zh="团队成员及详细简历更新中。" data-en="Team member profiles coming soon.">团队成员及详细简历更新中。</p>
+          </div>
+          <div class="team-card">
+            <div class="team-role">RECOVERY & ENFORCEMENT</div>
+            <h3 data-zh="追收与执行" data-en="Recovery & enforcement">追收与执行</h3>
+            <p data-zh="跨境债务追收、境内与海外资产调查、判决与仲裁裁决执行。" data-en="Cross-border debt recovery, asset tracing at home and abroad, and enforcement of judgments and awards.">跨境债务追收、境内与海外资产调查、判决与仲裁裁决执行。</p>
+            <ul class="team-list">
+              <li data-zh="中国境内资产调查专长" data-en="Specialized in China asset tracing">中国境内资产调查专长</li>
+              <li data-zh="与海外执行律师协作" data-en="Collaboration with overseas enforcement counsel">与海外执行律师协作</li>
+            </ul>
+            <p class="team-note" data-zh="团队成员及详细简历更新中。" data-en="Team member profiles coming soon.">团队成员及详细简历更新中。</p>
+          </div>
+          <div class="team-card">
+            <div class="team-role">INHERITANCE & FAMILY</div>
+            <h3 data-zh="继承与家族资产" data-en="Inheritance & family assets">继承与家族资产</h3>
+            <p data-zh="跨境继承、遗嘱规划与效力争议、家族企业传承与纠纷。" data-en="Cross-border inheritance, will planning and validity disputes, and family business succession.">跨境继承、遗嘱规划与效力争议、家族企业传承与纠纷。</p>
+            <ul class="team-list">
+              <li data-zh="多法域继承程序衔接" data-en="Multi-jurisdiction probate coordination">多法域继承程序衔接</li>
+              <li data-zh="照顾家庭沟通场景" data-en="Sensitive to family dynamics">照顾家庭沟通场景</li>
+            </ul>
+            <p class="team-note" data-zh="团队成员及详细简历更新中。" data-en="Team member profiles coming soon.">团队成员及详细简历更新中。</p>
+          </div>
+          <div class="team-card">
+            <div class="team-role">GLOBAL PARTNERS</div>
+            <h3 data-zh="全球合作律所网络" data-en="Global partner network">全球合作律所网络</h3>
+            <p data-zh="覆盖 30+ 国家与地区的当地执业律所与追收机构，按案件类型与地区匹配。" data-en="Locally licensed law firms and collection partners in 30+ jurisdictions, matched by matter type and region.">覆盖 30+ 国家与地区的当地执业律所与追收机构，按案件类型与地区匹配。</p>
+            <ul class="team-list">
+              <li data-zh="按案件严格筛选与匹配" data-en="Carefully vetted and matched per matter">按案件严格筛选与匹配</li>
+              <li data-zh="程序合规与本地化执行" data-en="Procedurally compliant, locally executed">程序合规与本地化执行</li>
+            </ul>
+            <p class="team-note" data-zh="合作网络名录更新中。" data-en="Partner directory coming soon.">合作网络名录更新中。</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 09 客户信任体系 -->
+    <section class="section trust-section" id="trust">
+      <div class="wrap">
+        <div class="section-head">
+          <div class="eyebrow" data-zh="客户信任体系" data-en="Why clients trust us">客户信任体系</div>
+          <h2 data-zh="专业、可信、安全——跨境法律服务的底线。" data-en="Professional, trustworthy, secure — the baseline of cross-border legal service.">专业、可信、安全——跨境法律服务的底线。</h2>
+        </div>
+        <div class="trust-grid">
+          <div class="trust-card"><i>秘</i><h3 data-zh="保密承诺" data-en="Confidentiality">保密承诺</h3><p data-zh="咨询信息仅用于初步评估与后续沟通，受律师保密义务约束；数据处理遵循中国《个人信息保护法》与 GDPR 合规要求。" data-en="Consultation information is used solely for assessment and follow-up, protected by professional confidentiality and handled in line with PIPL and GDPR expectations.">咨询信息仅用于初步评估与后续沟通，受律师保密义务约束；数据处理遵循中国《个人信息保护法》与 GDPR 合规要求。</p></div>
+          <div class="trust-card"><i>评</i><h3 data-zh="先评估，再行动" data-en="Assess first">先评估，再行动</h3><p data-zh="初步咨询用于判断事项类型、时效、证据与可行路径，不收费、不构成委托关系，也不会劝你做不必要的程序。" data-en="Initial consultation assesses matter type, deadlines, evidence, and viable paths — free, non-binding, and never pushing unnecessary proceedings.">初步咨询用于判断事项类型、时效、证据与可行路径，不收费、不构成委托关系，也不会劝你做不必要的程序。</p></div>
+          <div class="trust-card"><i>诚</i><h3 data-zh="诚实评估，不承诺结果" data-en="Honest assessment">诚实评估，不承诺结果</h3><p data-zh="我们如实说明可行性与风险边界。法律程序的结果取决于事实、证据与当地规则，任何承诺办案结果的说法都不可信。" data-en="We are candid about prospects and risks. Outcomes depend on facts, evidence, and local rules — anyone promising a specific result is not to be trusted.">我们如实说明可行性与风险边界。法律程序的结果取决于事实、证据与当地规则，任何承诺办案结果的说法都不可信。</p></div>
+          <div class="trust-card"><i>规</i><h3 data-zh="跨境协作规范" data-en="Cross-border compliance">跨境协作规范</h3><p data-zh="境外法律程序通过与当地执业律所合作提供，确保在当地执业规则下合规推进，绝不越界出具当地法律意见。" data-en="Foreign proceedings are handled with locally licensed counsel under local rules — we never step outside our license to give local-law opinions.">境外法律程序通过与当地执业律所合作提供，确保在当地执业规则下合规推进，绝不越界出具当地法律意见。</p></div>
+        </div>
+        <div class="practice-note"><b data-zh="执业声明：" data-en="Practice statement: ">执业声明：</b><span data-zh="深远(国际)律师事务所在中国大陆执业；境外法律程序通过与当地执业律所合作完成。初步咨询不构成委托关系或正式法律意见。" data-en="Shenyuan International practices in mainland China; foreign legal proceedings are conducted through locally licensed counsel. An initial consultation does not create an attorney-client relationship or formal legal advice.">深远(国际)律师事务所在中国大陆执业；境外法律程序通过与当地执业律所合作完成。初步咨询不构成委托关系或正式法律意见。</span></div>
+      </div>
+    </section>
+
+    <!-- 10 FAQ -->
     <section class="section" id="faq">
       <div class="wrap">
         <div class="section-head">
@@ -780,7 +1000,7 @@
         <div class="faq-grid">
           <details open>
             <summary data-zh="提交咨询后，多久会有回复？" data-en="How soon will I hear back?">提交咨询后，多久会有回复？</summary>
-            <p data-zh="收到信息后，我们会结合事项紧急程度、所在地区和材料完整度安排后续沟通。" data-en="After receiving your information, we will consider urgency, region, and document readiness before arranging the next conversation.">收到信息后，我们会结合事项紧急程度、所在地区和材料完整度安排后续沟通。</p>
+            <p data-zh="我们承诺 24 小时内首响。收到信息后，会结合事项紧急程度、所在地区和材料完整度安排后续沟通。" data-en="We commit to a first response within 24 hours, then arrange the next conversation based on urgency, region, and document readiness.">我们承诺 24 小时内首响。收到信息后，会结合事项紧急程度、所在地区和材料完整度安排后续沟通。</p>
           </details>
           <details>
             <summary data-zh="我还没有整理好全部材料，可以提交吗？" data-en="Can I submit before I have all documents?">我还没有整理好全部材料，可以提交吗？</summary>
@@ -797,18 +1017,66 @@
         </div>
       </div>
     </section>
+
+    <!-- 11 咨询入口 CTA -->
+    <section class="cta-band" id="contact">
+      <div class="wrap">
+        <div class="eyebrow" data-zh="免费法律咨询" data-en="Free consultation">免费法律咨询</div>
+        <h2 data-zh="你的跨境纠纷，值得一个用母语讲清的起点。" data-en="Your cross-border dispute deserves a starting point in your own language.">你的跨境纠纷，值得一个用母语讲清的起点。</h2>
+        <p data-zh="提交基本情况，或扫码添加微信。我们会先判断时效、证据与可行路径——不收费，不承诺结果，只给方向。" data-en="Submit the basics or scan our WeChat. We will assess deadlines, evidence, and viable paths — free, honest, and directional.">提交基本情况，或扫码添加微信。我们会先判断时效、证据与可行路径——不收费，不承诺结果，只给方向。</p>
+        <div class="hero-actions">
+          <a class="button button-primary" href="#intake" data-zh="免费法律咨询 →" data-en="Free legal consultation →">免费法律咨询 →</a>
+          <a class="button button-outline" href="#services" data-zh="再看一遍服务范围" data-en="Review our services">再看一遍服务范围</a>
+        </div>
+      </div>
+    </section>
   </main>
 
   <footer class="site-footer">
-    <div class="wrap footer-row">
-      <div class="footer-brand">© 2026 Shenyuan Legal · <span data-zh="海外华人法律服务" data-en="Cross-border legal services">海外华人法律服务</span></div>
-      <div class="footer-links">
-        <a href="#intake" data-zh="咨询入口" data-en="Consultation">咨询入口</a>
-        <a href="#services" data-zh="服务范围" data-en="Services">服务范围</a>
-        <a href="#faq" data-zh="免责声明" data-en="Disclaimer">免责声明</a>
+    <div class="wrap">
+      <div class="footer-grid">
+        <div class="footer-brand">Shenyuan International<small data-zh="深远(国际)律师事务所 · 跨境争议解决与家族资产保护" data-en="Shenyuan International · Cross-border dispute resolution & family asset protection">深远(国际)律师事务所 · 跨境争议解决与家族资产保护</small></div>
+        <div class="footer-col">
+          <h4 data-zh="服务范围" data-en="Services">服务范围</h4>
+          <a href="/services/trade" data-zh="国际贸易争议" data-en="International trade disputes">国际贸易争议</a>
+          <a href="/services/recovery" data-zh="诉讼与债务追收" data-en="Litigation & debt recovery">诉讼与债务追收</a>
+          <a href="/services/legacy" data-zh="继承与家族资产纠纷" data-en="Inheritance & family assets">继承与家族资产纠纷</a>
+        </div>
+        <div class="footer-col">
+          <h4 data-zh="快速入口" data-en="Quick links">快速入口</h4>
+          <a href="#intake" data-zh="免费法律咨询" data-en="Free consultation">免费法律咨询</a>
+          <a href="#faq" data-zh="常见问题" data-en="FAQ">常见问题</a>
+          <a href="#privacy" data-zh="隐私说明" data-en="Privacy notice">隐私说明</a>
+        </div>
+      </div>
+      <div class="footer-meta">
+        © 2026 Shenyuan International · 深远(国际)律师事务所<br>
+        <span data-zh="本网站内容仅供一般信息参考，不构成法律意见。境外法律程序通过与当地执业律所合作提供。" data-en="This website provides general information only and does not constitute legal advice. Foreign legal proceedings are conducted through locally licensed counsel.">本网站内容仅供一般信息参考，不构成法律意见。境外法律程序通过与当地执业律所合作提供。</span>
       </div>
     </div>
   </footer>
+
+  <div class="modal-backdrop" id="successMessage" role="dialog" aria-modal="true" aria-labelledby="successTitle">
+    <div class="success-panel">
+      <button class="modal-close" type="button" id="closeModal" aria-label="关闭">×</button>
+      <h3 id="successTitle" data-zh="已收到您的信息" data-en="We have received your information">已收到您的信息</h3>
+      <p data-zh="我们会先查看事项类型、涉及地区和你希望达成的目标，并据此判断后续沟通重点。" data-en="We will first review the matter type, relevant region, and your intended outcome to identify the next discussion points.">我们会先查看事项类型、涉及地区和你希望达成的目标，并据此判断后续沟通重点。</p>
+      <strong class="material-title" data-zh="建议先准备这些材料" data-en="Suggested documents to prepare">建议先准备这些材料</strong>
+      <ul class="material-list" id="materialList"></ul>
+      <div class="urgent-note" data-zh="如存在财产转移、诉讼或仲裁期限、海关扣货、证据灭失、家族成员失联等紧急情况，请在微信中注明“紧急”。" data-en="If there is asset transfer, a litigation or arbitration deadline, customs detention, disappearing evidence, or a missing family member, please mark the WeChat message as urgent.">如存在财产转移、诉讼或仲裁期限、海关扣货、证据灭失、家族成员失联等紧急情况，请在微信中注明“紧急”。</div>
+      <div class="modal-wechat">
+        <img class="qr-img-large" src="/wechat-qrcode.png" alt="WeChat QR code">
+        <div>
+          <strong data-zh="扫码添加微信，补充材料" data-en="Scan WeChat to share documents">扫码添加微信，补充材料</strong>
+          <p data-zh="建议发送“已提交 + 称呼 + 事项类型”，便于我们更快对应你的咨询信息。" data-en="Please send Submitted + your name + matter type so we can match your consultation information faster.">建议发送“已提交 + 称呼 + 事项类型”，便于我们更快对应你的咨询信息。</p>
+        </div>
+      </div>
+      <div class="success-actions">
+        <button class="button button-primary" type="button" id="confirmModal" data-zh="我已了解" data-en="Got it">我已了解</button>
+      </div>
+    </div>
+  </div>
+  <div class="page-toast" id="pageToast" role="status" aria-live="polite" data-zh="感谢您的信任，期待我们进一步联系。" data-en="Thank you for your trust. We look forward to further contact.">感谢您的信任，期待我们进一步联系。</div>
 
   <script>
     (function () {
