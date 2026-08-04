@@ -976,6 +976,131 @@ def test_sitemap_includes_countries(tmp_db):
         assert "/en/countries/united-states" in text
 
 
+# --- AI 咨询助手 (chat intake) ---------------------------------------------
+
+
+def test_chat_widget_static_file(tmp_db):
+    with TestClient(m.app) as client:
+        resp = client.get("/static/chat.js")
+        assert resp.status_code == 200
+        assert "cw-launcher" in resp.text
+        assert "/api/intakes/chat" in resp.text
+
+
+def test_chat_intake_stores_and_classifies(tmp_db):
+    with TestClient(m.app) as client:
+        resp = client.post(
+            "/api/intakes/chat",
+            json={
+                "name": "王工",
+                "contact": "13800000000",
+                "matter": "trade",
+                "summary": "美国客户拖欠货款，希望追回欠款",
+                "parties": "我方工厂，对方美国采购商",
+                "amount": "50万以上",
+                "timeline": "2年以上",
+                "evidence": "合同、发票",
+                "goal": "追回欠款",
+                "country": "美国",
+                "language": "zh",
+                "consent": True,
+                "transcript": "bot: hi\nuser: 美国客户欠款",
+            },
+        )
+        assert resp.status_code == 201
+        assert resp.json()["id"] == 1
+        conn = sqlite3.connect(tmp_db)
+        conn.row_factory = sqlite3.Row
+        row = conn.execute("SELECT * FROM intakes").fetchone()
+        conn.close()
+        # 追收/欠款 keywords override the visitor's "trade" pick -> recovery
+        assert row["matter"] == "诉讼与债务追收"
+        assert row["phone"] == "13800000000"
+        assert row["email"] == ""
+        assert row["country_or_region"] == "美国"
+        assert row["consent_at"] == row["created_at"]
+        assert "来源：AI 咨询助手" in row["note"]
+        assert "对话记录" in row["note"]
+
+
+def test_chat_intake_contact_email_split(tmp_db):
+    with TestClient(m.app) as client:
+        resp = client.post(
+            "/api/intakes/chat",
+            json={
+                "name": "李女士",
+                "contact": "li@example.com",
+                "matter": "legacy",
+                "summary": "父亲在加拿大去世，留下房产需要继承",
+                "consent": True,
+            },
+        )
+        assert resp.status_code == 201
+        conn = sqlite3.connect(tmp_db)
+        conn.row_factory = sqlite3.Row
+        row = conn.execute("SELECT * FROM intakes").fetchone()
+        conn.close()
+        assert row["email"] == "li@example.com"
+        assert row["matter"] == "继承与家族资产纠纷"
+
+
+def test_chat_intake_classification_trade(tmp_db):
+    with TestClient(m.app) as client:
+        resp = client.post(
+            "/api/intakes/chat",
+            json={
+                "name": "赵经理",
+                "contact": "zhao@example.com",
+                "matter": "recovery",
+                "summary": "供应商延期交货，质量不合格，合同违约",
+                "consent": True,
+            },
+        )
+        assert resp.status_code == 201
+        conn = sqlite3.connect(tmp_db)
+        conn.row_factory = sqlite3.Row
+        row = conn.execute("SELECT * FROM intakes").fetchone()
+        conn.close()
+        assert row["matter"] == "国际贸易争议"
+
+
+def test_chat_intake_requires_consent(tmp_db):
+    with TestClient(m.app) as client:
+        resp = client.post(
+            "/api/intakes/chat",
+            json={
+                "name": "陈先生",
+                "contact": "chen@example.com",
+                "summary": "需要咨询",
+                "consent": False,
+            },
+        )
+        assert resp.status_code == 400
+
+
+def test_chat_intake_dedupe_by_phone(tmp_db):
+    with TestClient(m.app) as client:
+        first = client.post(
+            "/api/intakes/chat",
+            json={"name": "刘", "contact": "13900000000", "summary": "客户拖欠货款", "consent": True},
+        )
+        assert first.status_code == 201
+        second = client.post(
+            "/api/intakes/chat",
+            json={"name": "刘", "contact": "13900000000", "summary": "客户拖欠货款", "consent": True},
+        )
+        assert second.status_code == 409
+
+
+def test_chat_widget_mounted_on_all_pages(tmp_db):
+    with TestClient(m.app) as client:
+        for url in ("/", "/services/trade", "/articles", "/articles/trade-payment-recovery-5-steps",
+                    "/countries", "/countries/united-states", "/en/", "/en/services/recovery"):
+            html = client.get(url).text
+            assert 'id="chat-widget-root"' in html, url
+            assert '/static/chat.js' in html, url
+
+
 def test_dockerfile_ships_content_dir():
     # Regression: articles are served from content/, so the image must copy
     # the directory — otherwise /articles/{slug} 404s in production only.
