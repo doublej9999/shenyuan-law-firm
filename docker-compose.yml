@@ -19,6 +19,8 @@ services:
       RESEND_FROM: ${RESEND_FROM:-no-reply@shenyuanlegal.com}
       # Public base URL for canonical/OG/sitemap links.
       SITE_URL: ${SITE_URL:-https://your-domain.example.com}
+      # Google Analytics 4 measurement ID (G-XXXXXXX). Empty/unset = no tag.
+      GA_MEASUREMENT_ID: ${GA_MEASUREMENT_ID:-}
     volumes:
       # 生产本地定制：bind mount，数据在 /opt/shenyuan-law-firm/data，便于备份。
       - ./data:/app/data

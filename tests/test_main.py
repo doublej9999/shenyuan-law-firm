@@ -885,3 +885,39 @@ def test_dockerfile_ships_content_dir():
         encoding="utf-8"
     )
     assert "COPY content ./content" in dockerfile
+
+
+# --- SEO / analytics plumbing --------------------------------------------
+
+
+def test_robots_txt_points_to_sitemap(tmp_db):
+    with TestClient(m.app) as client:
+        resp = client.get("/robots.txt")
+        assert resp.status_code == 200
+        assert "Sitemap: http://localhost:8000/sitemap.xml" in resp.text
+
+
+def test_ga_tag_absent_without_config(tmp_db):
+    monkeypatch = pytest.MonkeyPatch()
+    monkeypatch.delenv("GA_MEASUREMENT_ID", raising=False)
+    try:
+        with TestClient(m.app) as client:
+            assert "gtag" not in client.get("/").text
+            assert "gtag" not in client.get("/services/trade").text
+            assert "gtag" not in client.get("/articles").text
+            assert "gtag" not in client.get("/articles/trade-payment-recovery-5-steps").text
+    finally:
+        monkeypatch.undo()
+
+
+def test_ga_tag_injected_when_configured(tmp_db):
+    monkeypatch = pytest.MonkeyPatch()
+    monkeypatch.setenv("GA_MEASUREMENT_ID", "G-TEST123")
+    try:
+        with TestClient(m.app) as client:
+            for path in ("/", "/services/trade", "/articles", "/articles/trade-payment-recovery-5-steps"):
+                text = client.get(path).text
+                assert "gtag/js?id=G-TEST123" in text, path
+                assert "gtag('config','G-TEST123')" in text, path
+    finally:
+        monkeypatch.undo()

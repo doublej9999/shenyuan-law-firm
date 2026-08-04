@@ -37,6 +37,23 @@ SCHEMA_VERSION = 3
 # Public base URL used for canonical/OG/sitemap links. Override in prod.
 SITE_URL = os.environ.get("SITE_URL", "http://localhost:8000").rstrip("/")
 
+
+def _ga_tag() -> str:
+    """Google Analytics 4 snippet, injected into HTML heads.
+
+    Read per-request (like the admin token) so tests can toggle it via the
+    environment. Empty/unset = analytics disabled and no tag is rendered.
+    """
+    ga_id = os.environ.get("GA_MEASUREMENT_ID", "").strip()
+    if not ga_id:
+        return ""
+    return (
+        '<script async src="https://www.googletagmanager.com/gtag/js?id={id}"></script>\n'
+        '<script>window.dataLayer=window.dataLayer||[];'
+        "function gtag(){{dataLayer.push(arguments);}}"
+        "gtag('js',new Date());gtag('config','{id}');</script>"
+    ).format(id=ga_id)
+
 # Per-IP limit for the public intake form. Prevents spam bots from flooding
 # the SQLite database. Humans rarely submit more than a few times a minute.
 INTAKE_RATE_LIMIT = "5/minute"
@@ -565,6 +582,7 @@ def _render_service_page(svc: dict) -> str:
     zh_intro = svc["zh_intro"]
     en_intro = svc["en_intro"]
     number = svc["number"]
+    ga_tag = _ga_tag()
     return f"""<!doctype html>
 <html lang="zh-CN">
 <head>
@@ -577,6 +595,7 @@ def _render_service_page(svc: dict) -> str:
   <meta property="og:description" content="{zh_intro}">
   <meta property="og:url" content="{url}">
   <link rel="canonical" href="{url}">
+  {ga_tag}
   <title>{zh_title} | Shenyuan International 深远(国际)律师事务所</title>
   <script type="application/ld+json">
   {{
@@ -731,8 +750,16 @@ def read_index() -> Response:
     _record_page_view()
     html = (ROOT_DIR / "index.html").read_text(encoding="utf-8")
     return Response(
-        content=html.replace("{{SITE_URL}}", SITE_URL),
+        content=html.replace("{{SITE_URL}}", SITE_URL).replace("{{GA_TAG}}", _ga_tag()),
         media_type="text/html; charset=utf-8",
+    )
+
+
+@app.get("/robots.txt", include_in_schema=False)
+def robots() -> Response:
+    return Response(
+        content=f"User-agent: *\nAllow: /\nSitemap: {SITE_URL}/sitemap.xml\n",
+        media_type="text/plain",
     )
 
 
@@ -819,6 +846,7 @@ _ARTICLE_INDEX_TEMPLATE = """<!doctype html>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="跨境法律实务指南：国际贸易争议、债务追收、继承与家族资产。深远国际律师事务所律师团队撰写。">
   <link rel="canonical" href="{site_url}/articles">
+  {ga_tag}
   <title>法律专栏 | Shenyuan International 深远(国际)律师事务所</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -894,6 +922,7 @@ _ARTICLE_PAGE_TEMPLATE = """<!doctype html>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="{description_zh}">
   <link rel="canonical" href="{site_url}/articles/{slug}">
+  {ga_tag}
   <title>{title_zh} | Shenyuan International</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -998,7 +1027,9 @@ def articles_index() -> Response:
             f'<a class="a-more" href="/articles/{html.escape(meta["slug"])}" data-zh="阅读全文 →" data-en="Read more →">阅读全文 →</a>'
             "</article>"
         )
-    content = _ARTICLE_INDEX_TEMPLATE.format(site_url=SITE_URL, cards="\n".join(cards))
+    content = _ARTICLE_INDEX_TEMPLATE.format(
+        site_url=SITE_URL, cards="\n".join(cards), ga_tag=_ga_tag()
+    )
     return Response(content=content, media_type="text/html; charset=utf-8")
 
 
@@ -1023,6 +1054,7 @@ def article_page(slug: str) -> Response:
         description_en=html.escape(meta.get("description_en", "")),
         body_zh=body_zh,
         body_en=body_en,
+        ga_tag=_ga_tag(),
     )
     return Response(content=content, media_type="text/html; charset=utf-8")
 
