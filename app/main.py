@@ -266,7 +266,7 @@ async def lifespan(app: FastAPI):
 
 _production = os.environ.get("APP_ENV") == "production"
 app = FastAPI(
-    title="Profound Law Firm",
+    title="Shenyuan Legal",
     version="0.1.0",
     lifespan=lifespan,
     # Interactive docs expose the API schema; hide them in production.
@@ -537,11 +537,11 @@ def _render_service_page(svc: dict) -> str:
   <meta name="robots" content="index, follow">
   <meta name="description" content="{svc['en_intro']}">
   <meta property="og:type" content="website">
-  <meta property="og:title" content="{svc['zh_title']} | Profound Law Firm">
+  <meta property="og:title" content="{svc['zh_title']} | Shenyuan Legal">
   <meta property="og:description" content="{svc['zh_intro']}">
   <meta property="og:url" content="{url}">
   <link rel="canonical" href="{url}">
-  <title>{svc['zh_title']} | Profound Law Firm 深远(国际)律师事务所</title>
+  <title>{svc['zh_title']} | Shenyuan Legal 深远(国际)律师事务所</title>
   <style>
     :root {{ --ink:#172433; --muted:#627180; --paper:#f6f3ed; --surface:#fffdf9; --line:#d9d9d2; --teal:#0d6c6b; --teal-deep:#084d50; --orange:#d76e39; }}
     * {{ box-sizing:border-box; }}
@@ -570,7 +570,7 @@ def _render_service_page(svc: dict) -> str:
 </head>
 <body>
   <div class="top"><div class="wrap">
-    <strong>PROFOUND LAW FIRM</strong>
+    <strong>Shenyuan Legal</strong>
     <a href="/">← 返回首页</a>
   </div></div>
   <div class="wrap hero">
@@ -586,7 +586,7 @@ def _render_service_page(svc: dict) -> str:
   <div class="wrap cta">
     <a class="button" href="/#intake">提交案件信息，获取下一步建议 →</a>
   </div>
-  <footer>© 2026 Profound Law Firm · 深远(国际)律师事务所</footer>
+  <footer>© 2026 Shenyuan Legal · 深远(国际)律师事务所</footer>
 </body>
 </html>"""
 
