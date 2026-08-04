@@ -577,6 +577,7 @@ def _render_service_page(svc: dict) -> str:
         for z, e in zip(svc["materials_zh"], svc["materials_en"])
     )
     url = f"{SITE_URL}/services/{svc['slug']}"
+    en_url = f"{SITE_URL}/en/services/{svc['slug']}"
     zh_title = svc["zh_title"]
     en_title = svc["en_title"]
     zh_intro = svc["zh_intro"]
@@ -595,6 +596,9 @@ def _render_service_page(svc: dict) -> str:
   <meta property="og:description" content="{zh_intro}">
   <meta property="og:url" content="{url}">
   <link rel="canonical" href="{url}">
+  <link rel="alternate" hreflang="zh-CN" href="{url}">
+  <link rel="alternate" hreflang="en" href="{en_url}">
+  <link rel="alternate" hreflang="x-default" href="{url}">
   {ga_tag}
   <title>{zh_title} | Shenyuan International 深远(国际)律师事务所</title>
   <script type="application/ld+json">
@@ -755,6 +759,24 @@ def read_index() -> Response:
     )
 
 
+@app.api_route("/en", methods=["GET", "HEAD"], include_in_schema=False)
+@app.api_route("/en/", methods=["GET", "HEAD"], include_in_schema=False)
+def read_index_en() -> Response:
+    _record_page_view()
+    html = (ROOT_DIR / "index.html").read_text(encoding="utf-8")
+    html = html.replace("{{SITE_URL}}", SITE_URL).replace("{{GA_TAG}}", _ga_tag())
+    html = _en_variant(html)
+    html = _swap_meta(html, "meta name=\"description\"", _EN_HOME_DESC)
+    html = _swap_meta(html, "meta property=\"og:title\"", _EN_HOME_TITLE)
+    html = _swap_meta(html, "meta property=\"og:description\"", _EN_HOME_DESC)
+    html = re.sub(r"(<title>)[^<]*(</title>)", rf"\g<1>{_EN_HOME_TITLE}\g<2>", html, count=1)
+    html = html.replace(
+        f'<link rel="canonical" href="{SITE_URL}/">',
+        f'<link rel="canonical" href="{SITE_URL}/en/">',
+    )
+    return Response(content=html, media_type="text/html; charset=utf-8")
+
+
 @app.api_route("/robots.txt", methods=["GET", "HEAD"], include_in_schema=False)
 def robots() -> Response:
     return Response(
@@ -763,11 +785,56 @@ def robots() -> Response:
     )
 
 
+# ---------- English variants (/en/ URLs) ----------
+
+_EN_HOME_TITLE = (
+    "Shenyuan International | Cross-Border Dispute Resolution & Family Asset Protection"
+)
+_EN_HOME_DESC = (
+    "Bilingual legal services for Chinese businesses and families: international trade "
+    "disputes, cross-border debt recovery, inheritance and family assets. A local "
+    "counsel network across 30+ jurisdictions."
+)
+
+# Swap the visible text of every `data-zh="..." data-en="..."` leaf node to its
+# English value. All translatable nodes in our templates are plain-text leaves
+# with attributes in exactly this order, so the regex is safe and dependency-free.
+_SWAP_TO_EN_RE = re.compile(r'(data-zh=")([^"]*)(" data-en=")([^"]*)(">)([^<]*)(<)')
+
+
+def _en_variant(html: str) -> str:
+    """Turn a bilingual (zh-default) page into an English-default variant.
+
+    Three changes: the visible leaf text is pre-swapped server-side (so even
+    no-JS crawlers see English), the document language is set to en, and the
+    in-page toggle initializes to English.
+    """
+    html = _SWAP_TO_EN_RE.sub(
+        lambda m: f"{m.group(1)}{m.group(2)}{m.group(3)}{m.group(4)}{m.group(5)}{m.group(4)}{m.group(7)}",
+        html,
+    )
+    html = html.replace('<html lang="zh-CN">', '<html lang="en">')
+    html = html.replace('var currentLang = "zh";', 'var currentLang = "en";')
+    html = html.replace(
+        "}());\n  </script>",
+        # Guarded: only the homepage/service-page scripts define updateLanguage();
+        # article pages apply the EN state server-side already.
+        "    if (typeof updateLanguage === \"function\") updateLanguage();\n    }());\n  </script>",
+    )
+    return html
+
+
+def _swap_meta(html: str, tag: str, value: str) -> str:
+    return re.sub(rf'(<{tag} content=")[^"]*(")', rf"\g<1>{value}\g<2>", html, count=1)
+
+
 @app.api_route("/sitemap.xml", methods=["GET", "HEAD"], include_in_schema=False)
 def sitemap() -> Response:
-    urls = [f"{SITE_URL}/", f"{SITE_URL}/articles"] + [
+    urls = [f"{SITE_URL}/", f"{SITE_URL}/articles", f"{SITE_URL}/en/", f"{SITE_URL}/en/articles"] + [
         f"{SITE_URL}/services/{slug}" for slug in SERVICES
-    ] + [f"{SITE_URL}/articles/{a['meta']['slug']}" for a in _load_articles()]
+    ] + [f"{SITE_URL}/en/services/{slug}" for slug in SERVICES] + [
+        f"{SITE_URL}/articles/{a['meta']['slug']}" for a in _load_articles()
+    ] + [f"{SITE_URL}/en/articles/{a['meta']['slug']}" for a in _load_articles()]
     xml = (
         '<?xml version="1.0" encoding="UTF-8"?>\n'
         '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
@@ -786,6 +853,28 @@ def service_page(slug: str) -> Response:
         content=_render_service_page(svc),
         media_type="text/html; charset=utf-8",
     )
+
+
+@app.api_route("/en/services/{slug}", methods=["GET", "HEAD"], include_in_schema=False)
+def service_page_en(slug: str) -> Response:
+    svc = SERVICES.get(slug)
+    if svc is None:
+        raise HTTPException(status_code=404, detail="Not found")
+    page = _en_variant(_render_service_page(svc))
+    page = _swap_meta(page, "meta name=\"description\"", html.escape(svc["en_intro"]))
+    page = _swap_meta(page, "meta property=\"og:title\"", html.escape(svc["en_title"]) + " | Shenyuan International")
+    page = _swap_meta(page, "meta property=\"og:description\"", html.escape(svc["en_intro"]))
+    page = re.sub(
+        r"(<title>)[^<]*(</title>)",
+        rf"\g<1>{html.escape(svc['en_title'])} | Shenyuan International\g<2>",
+        page,
+        count=1,
+    )
+    page = page.replace(
+        f'<link rel="canonical" href="{SITE_URL}/services/{slug}">',
+        f'<link rel="canonical" href="{SITE_URL}/en/services/{slug}">',
+    )
+    return Response(content=page, media_type="text/html; charset=utf-8")
 
 
 # ---------- Articles (content factory) ----------
@@ -846,6 +935,9 @@ _ARTICLE_INDEX_TEMPLATE = """<!doctype html>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="跨境法律实务指南：国际贸易争议、债务追收、继承与家族资产。深远国际律师事务所律师团队撰写。">
   <link rel="canonical" href="{site_url}/articles">
+  <link rel="alternate" hreflang="zh-CN" href="{site_url}/articles">
+  <link rel="alternate" hreflang="en" href="{site_url}/en/articles">
+  <link rel="alternate" hreflang="x-default" href="{site_url}/articles">
   {ga_tag}
   <title>法律专栏 | Shenyuan International 深远(国际)律师事务所</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -922,6 +1014,9 @@ _ARTICLE_PAGE_TEMPLATE = """<!doctype html>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="{description_zh}">
   <link rel="canonical" href="{site_url}/articles/{slug}">
+  <link rel="alternate" hreflang="zh-CN" href="{site_url}/articles/{slug}">
+  <link rel="alternate" hreflang="en" href="{site_url}/en/articles/{slug}">
+  <link rel="alternate" hreflang="x-default" href="{site_url}/articles/{slug}">
   {ga_tag}
   <title>{title_zh} | Shenyuan International</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -1013,8 +1108,7 @@ _ARTICLE_PAGE_TEMPLATE = """<!doctype html>
 </html>"""
 
 
-@app.get("/articles", include_in_schema=False)
-def articles_index() -> Response:
+def _articles_index_html() -> str:
     cards = []
     for article in _load_articles():
         meta = article["meta"]
@@ -1027,10 +1121,30 @@ def articles_index() -> Response:
             f'<a class="a-more" href="/articles/{html.escape(meta["slug"])}" data-zh="阅读全文 →" data-en="Read more →">阅读全文 →</a>'
             "</article>"
         )
-    content = _ARTICLE_INDEX_TEMPLATE.format(
+    return _ARTICLE_INDEX_TEMPLATE.format(
         site_url=SITE_URL, cards="\n".join(cards), ga_tag=_ga_tag()
     )
-    return Response(content=content, media_type="text/html; charset=utf-8")
+
+
+@app.get("/articles", include_in_schema=False)
+def articles_index() -> Response:
+    return Response(content=_articles_index_html(), media_type="text/html; charset=utf-8")
+
+
+@app.api_route("/en/articles", methods=["GET", "HEAD"], include_in_schema=False)
+def articles_index_en() -> Response:
+    page = _en_variant(_articles_index_html())
+    page = _swap_meta(
+        page,
+        "meta name=\"description\"",
+        "Cross-border legal guides: international trade disputes, debt recovery, "
+        "inheritance and family assets — written by the Shenyuan International team.",
+    )
+    page = page.replace(
+        f'<link rel="canonical" href="{SITE_URL}/articles">',
+        f'<link rel="canonical" href="{SITE_URL}/en/articles">',
+    )
+    return Response(content=page, media_type="text/html; charset=utf-8")
 
 
 @app.get("/articles/{slug}", include_in_schema=False)
@@ -1057,6 +1171,38 @@ def article_page(slug: str) -> Response:
         ga_tag=_ga_tag(),
     )
     return Response(content=content, media_type="text/html; charset=utf-8")
+
+
+@app.api_route("/en/articles/{slug}", methods=["GET", "HEAD"], include_in_schema=False)
+def article_page_en(slug: str) -> Response:
+    if not _SLUG_RE.match(slug):
+        raise HTTPException(status_code=404, detail="Not found")
+    article = next((a for a in _load_articles() if a["meta"]["slug"] == slug), None)
+    if article is None:
+        raise HTTPException(status_code=404, detail="Not found")
+    # Reuse the zh page and flip it to English (text swap + body visibility).
+    page = _en_variant(bytes(article_page(slug).body).decode("utf-8"))
+    meta = article["meta"]
+    page = _swap_meta(page, "meta name=\"description\"", html.escape(meta.get("description_en", "")))
+    page = re.sub(
+        r"(<title>)[^<]*(</title>)",
+        rf"\g<1>{html.escape(meta.get('title_en', ''))} | Shenyuan International\g<2>",
+        page,
+        count=1,
+    )
+    page = page.replace(
+        f'<link rel="canonical" href="{SITE_URL}/articles/{slug}">',
+        f'<link rel="canonical" href="{SITE_URL}/en/articles/{slug}">',
+    )
+    page = page.replace(
+        '<div class="wrap article-body" id="bodyZh">',
+        '<div class="wrap article-body" id="bodyZh" hidden>',
+    )
+    page = page.replace(
+        '<div class="wrap article-body" id="bodyEn" hidden>',
+        '<div class="wrap article-body" id="bodyEn">',
+    )
+    return Response(content=page, media_type="text/html; charset=utf-8")
 
 
 @app.get("/wechat-qrcode.png", include_in_schema=False)
