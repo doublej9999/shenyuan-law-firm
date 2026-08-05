@@ -893,6 +893,24 @@ def test_sitemap_includes_new_countries(tmp_db):
         assert "/articles/trade-payment-recovery-5-steps" in resp.text
 
 
+def test_sitemap_lastmod_on_articles_only(tmp_db):
+    with TestClient(m.app) as client:
+        text = client.get("/sitemap.xml").text
+        # Articles carry lastmod from their frontmatter date.
+        assert "<lastmod>2026-08-10</lastmod>" in text
+        assert '<loc>http://localhost:8000/articles/trade-payment-recovery-5-steps</loc><lastmod>' in text
+        # Static pages (home, indexes, country/service pages) omit lastmod.
+        assert "<loc>http://localhost:8000/</loc><lastmod>" not in text
+        assert "<loc>http://localhost:8000/countries/united-states</loc><lastmod>" not in text
+        assert "<loc>http://localhost:8000/services/trade</loc><lastmod>" not in text
+        # Every article URL has a lastmod (all articles carry dates).
+        import re as _re
+        article_locs = _re.findall(r"<loc>(http://localhost:8000/(?:en/)?articles/[^<]+)</loc>", text)
+        assert article_locs, "no article locs found"
+        for loc in article_locs:
+            assert "<lastmod>" in text.split(loc)[1].split("</url>")[0], loc
+
+
 # --- English variants (/en/ URLs) -----------------------------------------
 
 
