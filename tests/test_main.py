@@ -1295,8 +1295,32 @@ def test_marketing_bundle_for_article(tmp_db):
     # UTM links carry channel params
     assert "utm_source=xiaohongshu" in bundle["utm"]["xiaohongshu"]
     assert "utm_medium=cpc" in bundle["utm"]["ads"]
+    assert "utm_source=facebook" in bundle["utm"]["facebook"]
+    assert "utm_source=x" in bundle["utm"]["x"]
+    assert "utm_source=tiktok" in bundle["utm"]["tiktok"]
     # weekly schedule
     assert bundle["schedule"][0][0] == "周一"
+
+
+def test_marketing_social_bundle_sections(tmp_db):
+    """Facebook / X / TikTok / 小红书增强 sections are present and sane."""
+    article = next(a for a in m._load_articles() if a["meta"]["slug"] == "trade-payment-recovery-5-steps")
+    biz = m._business_key(article["meta"].get("business", ""))
+    bundle = m._marketing_bundle(article, biz, "https://shenyuanlegal.com/articles/trade-payment-recovery-5-steps")
+    # Facebook: EN post + ad pack with targeting
+    assert "free initial assessment" in bundle["facebook"]["post_en"].lower()
+    assert len(bundle["facebook"]["ad"]["primary_text_en"]) <= 500  # FB platform limit
+    assert "interests" in bundle["facebook"]["ad"]["targeting"]
+    # X: tweets within 280 chars, thread exists
+    assert len(bundle["x"]["tweet_en"]) <= 280
+    assert len(bundle["x"]["tweet_zh"]) <= 280
+    assert "1/" in bundle["x"]["thread_en"] and "5/" in bundle["x"]["thread_en"]
+    # TikTok: dual-language scripts with time-coded segments + production tips
+    assert "[0-3s" in bundle["tiktok"]["script_zh"]
+    assert "[0-3s" in bundle["tiktok"]["script_en"]
+    assert "on_screen_captions" in bundle["tiktok"] and "ad_spark" in bundle["tiktok"]
+    # 小红书: three angles
+    assert set(bundle["xiaohongshu"]["angles"]) == {"干货型", "避坑型", "故事型"}
 
 
 def test_marketing_generate_endpoint(tmp_db, monkeypatch):

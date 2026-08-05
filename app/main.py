@@ -1173,7 +1173,9 @@ _MARKETING_KW = {
         "zh": ["国际贸易争议", "跨境合同", "外贸货款", "供应商违约", "国际仲裁"],
         "en": ["international trade dispute", "cross-border contract", "export payment", "supplier breach", "trade arbitration"],
         "tags": ["#国际贸易", "#外贸", "#跨境法律", "#货款追收", "#合同纠纷"],
+        "tags_en": ["#TradeLaw", "#ExportRecovery", "#CrossBorder", "#InvoiceDisputes"],
         "hook": "外贸生意最怕的不是没订单，而是货发了、款收不回来。",
+        "hook_en": "Your goods shipped. The invoice went unpaid. Here is what to do next.",
         "ads_zh": ["跨境贸易纠纷 专业律师", "外贸货款追收 律师团队", "国际合同审查 免费评估"],
         "ads_en": ["Cross-border trade lawyers", "Export debt recovery experts", "International contract review"],
     },
@@ -1181,7 +1183,9 @@ _MARKETING_KW = {
         "zh": ["债务追收", "欠款催收", "判决执行", "资产调查", "商业欺诈"],
         "en": ["debt collection", "judgment enforcement", "asset tracing", "commercial fraud", "arbitral award"],
         "tags": ["#债务追收", "#欠款催收", "#跨境维权", "#判决执行", "#法律"],
+        "tags_en": ["#DebtRecovery", "#JudgmentEnforcement", "#AssetTracing", "#CommercialLaw"],
         "hook": "欠款拖一天，追回难一分。对方的耐心，就是你坏账的成本。",
+        "hook_en": "Every day a debt goes unchased, the harder it becomes to recover.",
         "ads_zh": ["债务追收 专业律师", "欠款催收 律师出面", "判决执行 跨境协作"],
         "ads_en": ["Cross-border debt recovery", "Judgment enforcement China", "Asset tracing lawyers"],
     },
@@ -1189,7 +1193,9 @@ _MARKETING_KW = {
         "zh": ["跨境继承", "遗嘱效力", "房产继承", "遗产规划", "家族资产"],
         "en": ["cross-border inheritance", "probate", "estate planning", "family assets", "will dispute"],
         "tags": ["#跨境继承", "#遗嘱", "#遗产规划", "#家族资产", "#法律"],
+        "tags_en": ["#Probate", "#EstatePlanning", "#Inheritance", "#FamilyAssets"],
         "hook": "海外亲人的遗产，拖着拖着，就成了别人的。",
+        "hook_en": "Inheritance abroad doesn't wait — and neither should you.",
         "ads_zh": ["跨境继承 专业律师", "海外房产继承 咨询", "遗嘱规划 提前安排"],
         "ads_en": ["Cross-border inheritance", "Probate for Chinese heirs", "Estate planning lawyers"],
     },
@@ -1197,7 +1203,9 @@ _MARKETING_KW = {
         "zh": ["跨境法律咨询", "涉外纠纷", "律师咨询"],
         "en": ["cross-border legal advice", "international dispute", "legal consultation"],
         "tags": ["#跨境法律", "#法律咨询", "#律师"],
+        "tags_en": ["#CrossBorder", "#LegalAdvice", "#BusinessLaw"],
         "hook": "跨境的法律问题，最贵的是“等等再说”。",
+        "hook_en": "Cross-border legal issues cost the most when you wait.",
         "ads_zh": ["跨境法律 免费咨询", "涉外纠纷 专业律师"],
         "ads_en": ["Cross-border legal advice", "International dispute lawyers"],
     },
@@ -1253,6 +1261,80 @@ def _marketing_bundle(article: dict | None, business: str, article_url: str) -> 
 
     moments = "\n".join([biz["hook"], f"——{title_zh}", "有类似问题？欢迎私信评估（免费，不承诺结果）。", f"🔗 {utm('wechat', 'moments')}"])
 
+    # --- Facebook: story-style post (EN) + ad pack ---
+    facebook_post_en = "\n".join(
+        [biz["hook_en"]]
+        + [f"📌 {title_en}"]
+        + [f"• {p}" for p in points_en[:3]]
+        + [
+            "",
+            "💬 Need help with a similar situation? We work with local counsel in 30+ jurisdictions — free initial assessment, no promise of results.",
+            f"🔗 {utm('facebook', 'post')}",
+            "#ShenyuanInternational " + " ".join(biz["tags_en"]),
+        ]
+    )
+    facebook_ad = {
+        "primary_text_en": f"{biz['hook_en']} We help Chinese businesses recover unpaid invoices and resolve disputes overseas — bilingual, with local counsel in 30+ jurisdictions. Free initial assessment.",
+        "headline_en": f"{title_en[:38]}",
+        "description_en": "Free assessment · Bilingual · 30+ countries",
+        "cta": "Learn More",
+        "targeting": {
+            "geo": ["目标国家", "中国大陆（出海企业主）"],
+            "age": "30-55",
+            "interests": ["International trade", "Import/export business", "Small business owner", "Real estate investor"],
+        },
+    }
+
+    # --- X: short tweets (EN + ZH) + thread ---
+    # Keep tweets under 280: use "link in bio" (X profile link carries the UTM);
+    # the full link goes in the last thread post.
+    tweet_en = f"{biz['hook_en']} {title_en[:60]} — Free assessment, link in bio. {' '.join(biz['tags_en'][:2])}"
+    tweet_zh = f"{biz['hook']} {title_zh[:40]} — 免费初步评估，链接见简介。{' '.join(biz['tags'][:2])}"
+    thread_en = "\n\n".join(
+        [
+            f"1/ {biz['hook_en']}",
+            f"2/ {desc_en[:200]}",
+            f"3/ {points_en[0]}",
+            f"4/ {points_en[1] if len(points_en) > 1 else ''}",
+            f"5/ Free initial assessment — {utm('x', 'thread')} {' '.join(biz['tags_en'][:3])}",
+        ]
+    )
+
+    # --- TikTok: 15-30s vertical script (ZH + EN) ---
+    tiktok_script_zh = "\n".join(
+        [
+            f"[0-3s 钩子·竖屏大字] {biz['hook']}",
+            f"[3-8s] 今天讲一个很多老板都遇到过的问题：{title_zh}",
+            *[f"[{8 + i * 6}-{14 + i * 6}s] {p}。" for i, p in enumerate(points[:3])],
+            "[结尾 3s] 评论区扣「咨询」，或点主页链接。跨境法律问题，交给专业的人。（不构成法律意见）",
+        ]
+    )
+    tiktok_script_en = "\n".join(
+        [
+            f"[0-3s hook] {biz['hook_en']}",
+            f"[3-8s] Today: {title_en}",
+            *[f"[{8 + i * 6}-{14 + i * 6}s] {p}." for i, p in enumerate(points_en[:3])],
+            "[end 3s] Comment 'help' or tap the link. Free initial assessment. (Not legal advice)",
+        ]
+    )
+    tiktok = {
+        "script_zh": tiktok_script_zh,
+        "script_en": tiktok_script_en,
+        "caption_en": f"{desc_en[:200]}\n\nFree assessment — link in bio.\n\n{' '.join(biz['tags_en'])} #ShenyuanInternational",
+        "hashtags_zh": biz["tags"] + ["#跨境法律"],
+        "on_screen_captions": "每句配屏幕字幕（大字白底黑边），hook 句用红色强调词",
+        "sound": "建议原声口播（专业感强）或 trending business 类背景音；15-30s 竖屏 9:16",
+        "cover": "封面大字：痛点问题（如『客户拖欠货款怎么办？』）+ 律师形象或场景图",
+        "ad_spark": "投 Spark Ads 时用原生账号发帖加热度再投放，成本低于冷启动",
+    }
+
+    # --- 小红书增强：三种选题角度 ---
+    xhs_angles = {
+        "干货型": f"跨境法律干货｜{title_zh[:24]}",
+        "避坑型": f"外贸人注意！{title_zh[:22]}（附避坑清单）",
+        "故事型": f"客户被拖款 8 个月后，我们做了什么｜{title_zh[:18]}",
+    }
+
     return {
         "slug": meta.get("slug", ""),
         "business": business,
@@ -1265,6 +1347,9 @@ def _marketing_bundle(article: dict | None, business: str, article_url: str) -> 
             "video": utm("youtube", "video"),
             "ads": utm("google", "cpc"),
             "moments": utm("wechat", "moments"),
+            "facebook": utm("facebook", "post"),
+            "x": utm("x", "post"),
+            "tiktok": utm("tiktok", "video"),
         },
         "wechat_mp": {
             "titles": [title_zh, f"律师提醒：{title_zh}", f"一文讲透：{title_zh}"],
@@ -1272,6 +1357,7 @@ def _marketing_bundle(article: dict | None, business: str, article_url: str) -> 
         },
         "xiaohongshu": {
             "title": f"跨境法律干货｜{title_zh[:28]}",
+            "angles": xhs_angles,
             "body": "\n".join(
                 [biz["hook"], ""]
                 + [f"✅ {p}" for p in points]
@@ -1308,6 +1394,16 @@ def _marketing_bundle(article: dict | None, business: str, article_url: str) -> 
             ],
         },
         "moments": moments,
+        "facebook": {
+            "post_en": facebook_post_en,
+            "ad": facebook_ad,
+        },
+        "x": {
+            "tweet_en": tweet_en,
+            "tweet_zh": tweet_zh,
+            "thread_en": thread_en,
+        },
+        "tiktok": tiktok,
         "linkedin": {
             "headline": title_en,
             "body_en": "\n".join(
@@ -1318,8 +1414,11 @@ def _marketing_bundle(article: dict | None, business: str, article_url: str) -> 
         },
         "schedule": [
             ("周一", "公众号推文（标题+摘要，附文章链接）"),
-            ("周三", "小红书笔记（标题/正文/标签/封面建议）"),
-            ("周五", "视频号 + YouTube（脚本+标签）"),
+            ("周二", "X 线程（英文专业向）+ 短推文 EN/ZH"),
+            ("周三", "小红书笔记（干货型，标题/正文/标签/封面）"),
+            ("周四", "Facebook 帖文（英文故事向）+ 广告组素材"),
+            ("周五", "TikTok 短视频脚本（竖屏 15-30s，中英各一）"),
+            ("周六", "小红书二发（避坑型/故事型换角度）"),
             ("周日", "朋友圈 + 社群文案"),
         ],
     }
