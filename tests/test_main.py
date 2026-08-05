@@ -675,6 +675,7 @@ def test_index_injects_site_url(tmp_db):
         assert "{{SITE_URL}}" not in resp.text
         assert 'content="http://localhost:8000/"' in resp.text  # og:url default
         assert "LegalService" in resp.text  # JSON-LD
+        assert "FAQPage" in resp.text  # homepage FAQ rich results
 
 
 def test_index_records_page_view(tmp_db):
@@ -877,6 +878,16 @@ def test_sitemap_includes_articles(tmp_db):
         resp = client.get("/sitemap.xml")
         assert resp.status_code == 200
         assert "/articles" in resp.text
+
+
+def test_sitemap_includes_new_countries(tmp_db):
+    with TestClient(m.app) as client:
+        resp = client.get("/sitemap.xml")
+        assert resp.status_code == 200
+        for slug in ("hong-kong", "germany", "japan", "united-arab-emirates",
+                     "new-zealand", "malaysia", "france", "switzerland"):
+            assert f"/countries/{slug}" in resp.text, slug
+            assert f"/en/countries/{slug}" in resp.text, slug
         assert "/articles/trade-payment-recovery-5-steps" in resp.text
 
 
@@ -952,11 +963,18 @@ def test_country_pages(tmp_db):
         index = client.get("/countries")
         assert index.status_code == 200
         assert "国家专页" in index.text
-        for slug in ("united-states", "canada", "australia", "singapore", "united-kingdom"):
+        slugs = (
+            "united-states", "canada", "australia", "singapore", "united-kingdom",
+            "hong-kong", "germany", "japan", "united-arab-emirates", "new-zealand",
+            "malaysia", "france", "switzerland",
+        )
+        for slug in slugs:
             resp = client.get(f"/countries/{slug}")
             assert resp.status_code == 200, slug
             assert 'hreflang="en"' in resp.text
             assert "LegalService" in resp.text
+            assert "FAQPage" in resp.text, slug
+            assert 'name": "中国法院的判决能' in resp.text or 'name": "内地法院的判决能' in resp.text, slug
             en = client.get(f"/en/countries/{slug}")
             assert en.status_code == 200
             assert '<html lang="en">' in en.text
