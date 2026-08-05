@@ -1166,19 +1166,31 @@ def _swap_meta(html: str, tag: str, value: str) -> str:
 
 @app.api_route("/sitemap.xml", methods=["GET", "HEAD"], include_in_schema=False)
 def sitemap() -> Response:
-    urls = [f"{SITE_URL}/", f"{SITE_URL}/articles", f"{SITE_URL}/en/", f"{SITE_URL}/en/articles"] + [
-        f"{SITE_URL}/countries", f"{SITE_URL}/en/countries"
-    ] + [f"{SITE_URL}/countries/{slug}" for slug in COUNTRIES] + [
-        f"{SITE_URL}/en/countries/{slug}" for slug in COUNTRIES
-    ] + [f"{SITE_URL}/services/{slug}" for slug in SERVICES] + [
-        f"{SITE_URL}/en/services/{slug}" for slug in SERVICES
-    ] + [
-        f"{SITE_URL}/articles/{a['meta']['slug']}" for a in _load_articles()
-    ] + [f"{SITE_URL}/en/articles/{a['meta']['slug']}" for a in _load_articles()]
+    entries = []
+    # Static pages carry no reliable modification date — omit lastmod
+    # (Google prefers an accurate lastmod over a guessed one).
+    for u in (
+        f"{SITE_URL}/", f"{SITE_URL}/articles", f"{SITE_URL}/en/", f"{SITE_URL}/en/articles",
+        f"{SITE_URL}/countries", f"{SITE_URL}/en/countries",
+    ):
+        entries.append(f"  <url><loc>{u}</loc></url>\n")
+    for slug in COUNTRIES:
+        entries.append(f"  <url><loc>{SITE_URL}/countries/{slug}</loc></url>\n")
+        entries.append(f"  <url><loc>{SITE_URL}/en/countries/{slug}</loc></url>\n")
+    for slug in SERVICES:
+        entries.append(f"  <url><loc>{SITE_URL}/services/{slug}</loc></url>\n")
+        entries.append(f"  <url><loc>{SITE_URL}/en/services/{slug}</loc></url>\n")
+    for a in _load_articles():
+        date = a["meta"].get("date", "")
+        for path in (f"/articles/{a['meta']['slug']}", f"/en/articles/{a['meta']['slug']}"):
+            if date:
+                entries.append(f"  <url><loc>{SITE_URL}{path}</loc><lastmod>{date}</lastmod></url>\n")
+            else:
+                entries.append(f"  <url><loc>{SITE_URL}{path}</loc></url>\n")
     xml = (
         '<?xml version="1.0" encoding="UTF-8"?>\n'
         '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
-        + "".join(f"  <url><loc>{u}</loc></url>\n" for u in urls)
+        + "".join(entries)
         + "</urlset>"
     )
     return Response(content=xml, media_type="application/xml")
