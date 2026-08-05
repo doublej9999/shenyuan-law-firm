@@ -885,7 +885,9 @@ def test_sitemap_includes_new_countries(tmp_db):
         resp = client.get("/sitemap.xml")
         assert resp.status_code == 200
         for slug in ("hong-kong", "germany", "japan", "united-arab-emirates",
-                     "new-zealand", "malaysia", "france", "switzerland"):
+                     "new-zealand", "malaysia", "france", "switzerland",
+                     "south-korea", "thailand", "vietnam", "netherlands", "italy",
+                     "spain", "brazil", "india", "ireland"):
             assert f"/countries/{slug}" in resp.text, slug
             assert f"/en/countries/{slug}" in resp.text, slug
         assert "/articles/trade-payment-recovery-5-steps" in resp.text
@@ -967,6 +969,8 @@ def test_country_pages(tmp_db):
             "united-states", "canada", "australia", "singapore", "united-kingdom",
             "hong-kong", "germany", "japan", "united-arab-emirates", "new-zealand",
             "malaysia", "france", "switzerland",
+            "south-korea", "thailand", "vietnam", "netherlands", "italy",
+            "spain", "brazil", "india", "ireland",
         )
         for slug in slugs:
             resp = client.get(f"/countries/{slug}")
