@@ -354,6 +354,48 @@ def _rate_limit_handler(request: Request, exc: RateLimitExceeded) -> JSONRespons
     )
 
 
+def _not_found_html() -> str:
+    """Branded 404 page (instead of the default JSON) with recovery links."""
+    ga_tag = _ga_tag()
+    return f"""<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, follow">
+  <title>404 · 页面未找到 | Shenyuan International</title>
+  {ga_tag}
+  <style>
+    :root {{ --ink:#172433; --muted:#627180; --paper:#f6f3ed; --teal:#0d6c6b; --teal-deep:#084d50; --serif:"Playfair Display","Noto Serif SC",Georgia,serif; --sans:"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif; }}
+    * {{ box-sizing:border-box; }} body {{ margin:0; background:var(--paper); color:var(--ink); font-family:var(--sans); min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:32px; text-align:center; }}
+    h1 {{ font-family:var(--serif); font-size:64px; margin:0; color:var(--teal-deep); }}
+    p {{ color:var(--muted); max-width:420px; }}
+    a {{ color:var(--teal); font-weight:700; text-decoration:none; margin:0 8px; }}
+    .links {{ margin-top:20px; }}
+  </style>
+</head>
+<body>
+  <h1>404</h1>
+  <p data-zh="您访问的页面不存在或已移动。" data-en="The page you are looking for does not exist or has moved.">您访问的页面不存在或已移动。</p>
+  <div class="links">
+    <a href="/" data-zh="返回首页" data-en="Home">返回首页</a>
+    <a href="/services/trade" data-zh="服务" data-en="Services">服务</a>
+    <a href="/articles" data-zh="法律专栏" data-en="Articles">法律专栏</a>
+    <a href="/countries" data-zh="国家专页" data-en="Countries">国家专页</a>
+  </div>
+</body>
+</html>"""
+
+
+@app.exception_handler(404)
+def _not_found_handler(request: Request, exc) -> Response:
+    """HTML 404 for browser requests, JSON for API-ish paths."""
+    accept = request.headers.get("accept", "")
+    if "text/html" in accept:
+        return Response(content=_not_found_html(), status_code=404, media_type="text/html; charset=utf-8")
+    return JSONResponse(status_code=404, content={"detail": "Not found"})
+
+
 def _admin_token() -> str:
     """Bearer token for admin endpoints. Read per-request so tests can
     override it via the environment; empty means the admin area is disabled."""
@@ -810,6 +852,7 @@ def _render_service_page(svc: dict) -> str:
     en_intro = svc["en_intro"]
     number = svc["number"]
     ga_tag = _ga_tag()
+    og_image = OG_IMAGE
     return f"""<!doctype html>
 <html lang="zh-CN">
 <head>
@@ -821,6 +864,11 @@ def _render_service_page(svc: dict) -> str:
   <meta property="og:title" content="{zh_title} | Shenyuan International">
   <meta property="og:description" content="{zh_intro}">
   <meta property="og:url" content="{url}">
+  <meta property="og:image" content="{og_image}">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="{zh_title} | Shenyuan International">
+  <meta name="twitter:description" content="{zh_intro}">
+  <meta name="twitter:image" content="{og_image}">
   <link rel="canonical" href="{url}">
   <link rel="alternate" hreflang="zh-CN" href="{url}">
   <link rel="alternate" hreflang="en" href="{en_url}">
@@ -977,7 +1025,7 @@ def _render_service_page(svc: dict) -> str:
 </html>"""
 
 
-@app.get("/")
+@app.api_route("/", methods=["GET", "HEAD"], include_in_schema=False)
 def read_index() -> Response:
     _record_page_view()
     html = (ROOT_DIR / "index.html").read_text(encoding="utf-8")
@@ -1008,9 +1056,63 @@ def read_index_en() -> Response:
 @app.api_route("/robots.txt", methods=["GET", "HEAD"], include_in_schema=False)
 def robots() -> Response:
     return Response(
-        content=f"User-agent: *\nAllow: /\nSitemap: {SITE_URL}/sitemap.xml\n",
+        content=(
+            "# Shenyuan International — shenyuanlegal.com\n"
+            "User-agent: *\n"
+            "Allow: /\n"
+            "\n"
+            "# AI / LLM crawlers are explicitly welcome (GEO):\n"
+            "User-agent: GPTBot\n"
+            "Allow: /\n"
+            "User-agent: ChatGPT-User\n"
+            "Allow: /\n"
+            "User-agent: ClaudeBot\n"
+            "Allow: /\n"
+            "User-agent: PerplexityBot\n"
+            "Allow: /\n"
+            "User-agent: Google-Extended\n"
+            "Allow: /\n"
+            "\n"
+            f"Sitemap: {SITE_URL}/sitemap.xml\n"
+            f"LLMtxt: {SITE_URL}/llms.txt\n"
+        ),
         media_type="text/plain",
     )
+
+
+@app.api_route("/llms.txt", methods=["GET", "HEAD"], include_in_schema=False)
+def llms_txt() -> Response:
+    """llms.txt (llmstxt.org): a compact, LLM-readable site map. GEO best practice —
+    gives ChatGPT/Claude/Perplexity a curated entry point instead of crawling raw HTML."""
+    articles = sorted(_load_articles(), key=lambda a: a["meta"].get("date", ""), reverse=True)
+    lines = [
+        "# Shenyuan International 深远(国际)律师事务所",
+        "",
+        "> Cross-border dispute resolution & family asset protection for Chinese businesses "
+        "and families. Bilingual (中文/EN). Trade disputes, debt recovery, judgment "
+        "enforcement, asset tracing, cross-border inheritance. Local counsel network in "
+        "30+ jurisdictions. Free initial assessment.",
+        "",
+        "## Services",
+        f"- [Trade disputes](/services/trade) — 国际贸易争议：跨境合同、货款追收",
+        f"- [Debt recovery](/services/recovery) — 诉讼与债务追收：判决执行、资产调查",
+        f"- [Inheritance & family assets](/services/legacy) — 继承与家族资产：跨境继承、遗嘱、信托",
+        "",
+        "## Country pages",
+    ]
+    for slug, c in COUNTRIES.items():
+        lines.append(f"- [{c['name_en']} ({c['name_zh']})](/countries/{slug}) — {c['en_title']}")
+    lines.append("")
+    lines.append("## Legal guides (articles)")
+    for a in articles[:25]:
+        meta = a["meta"]
+        lines.append(f"- [{meta.get('title_en', meta.get('title_zh', '?'))}](/articles/{meta['slug']}) — {meta.get('description_en', '')[:160]}")
+    lines.append("")
+    lines.append("## Contact")
+    lines.append("- Website: /")
+    lines.append("- Intake form: /#contact — free initial assessment, 24h response")
+    lines.append("- AI assistant: chat widget on every page (English/中文)")
+    return Response(content="\n".join(lines) + "\n", media_type="text/plain; charset=utf-8")
 
 
 # ---------- English variants (/en/ URLs) ----------
@@ -1082,7 +1184,7 @@ def sitemap() -> Response:
     return Response(content=xml, media_type="application/xml")
 
 
-@app.get("/services/{slug}", include_in_schema=False)
+@app.api_route("/services/{slug}", methods=["GET", "HEAD"], include_in_schema=False)
 def service_page(slug: str) -> Response:
     svc = SERVICES.get(slug)
     if svc is None:
@@ -1119,6 +1221,8 @@ def service_page_en(slug: str) -> Response:
 
 ARTICLES_DIR = ROOT_DIR / "content" / "articles"
 _SLUG_RE = re.compile(r"^[a-z0-9-]{1,80}$")
+# Shared social-card image (OG + Twitter) for generated pages.
+OG_IMAGE = "https://images.unsplash.com/photo-1526304640581-d334cdbbf45e?auto=format&fit=crop&w=1200&q=80"
 BUSINESS_LABELS = {
     "trade": ("国际贸易争议", "Trade"),
     "recovery": ("诉讼与债务追收", "Recovery"),
@@ -1539,6 +1643,16 @@ _ARTICLE_PAGE_TEMPLATE = """<!doctype html>
   <link rel="alternate" hreflang="zh-CN" href="{site_url}/articles/{slug}">
   <link rel="alternate" hreflang="en" href="{site_url}/en/articles/{slug}">
   <link rel="alternate" hreflang="x-default" href="{site_url}/articles/{slug}">
+  <meta property="og:type" content="article">
+  <meta property="og:site_name" content="Shenyuan International">
+  <meta property="og:title" content="{title_zh} | Shenyuan International">
+  <meta property="og:description" content="{description_zh}">
+  <meta property="og:url" content="{site_url}/articles/{slug}">
+  <meta property="og:image" content="{og_image}">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="{title_zh} | Shenyuan International">
+  <meta name="twitter:description" content="{description_zh}">
+  <meta name="twitter:image" content="{og_image}">
   {ga_tag}
   <title>{title_zh} | Shenyuan International</title>
   <script type="application/ld+json">
@@ -1548,6 +1662,8 @@ _ARTICLE_PAGE_TEMPLATE = """<!doctype html>
     "headline": "{json_title_zh}",
     "description": "{json_desc_zh}",
     "datePublished": "{json_date}",
+    "dateModified": "{json_date}",
+    "image": "{og_image}",
     "inLanguage": "zh-CN",
     "author": {{ "@type": "Organization", "name": "Shenyuan International 深远(国际)律师事务所" }},
     "publisher": {{ "@type": "Organization", "name": "Shenyuan International", "url": "{json_site_url}" }},
@@ -1663,7 +1779,7 @@ def _articles_index_html() -> str:
     )
 
 
-@app.get("/articles", include_in_schema=False)
+@app.api_route("/articles", methods=["GET", "HEAD"], include_in_schema=False)
 def articles_index() -> Response:
     return Response(content=_articles_index_html(), media_type="text/html; charset=utf-8")
 
@@ -1684,7 +1800,7 @@ def articles_index_en() -> Response:
     return Response(content=page, media_type="text/html; charset=utf-8")
 
 
-@app.get("/articles/{slug}", include_in_schema=False)
+@app.api_route("/articles/{slug}", methods=["GET", "HEAD"], include_in_schema=False)
 def article_page(slug: str) -> Response:
     if not _SLUG_RE.match(slug):
         raise HTTPException(status_code=404, detail="Not found")
@@ -1712,6 +1828,7 @@ def article_page(slug: str) -> Response:
         json_date=meta.get("date", ""),
         json_slug=meta["slug"],
         json_site_url=SITE_URL,
+        og_image=OG_IMAGE,
     )
     return Response(content=content, media_type="text/html; charset=utf-8")
 
@@ -2336,6 +2453,7 @@ def _render_country_page(country: dict, slug: str) -> str:
     en_url = f"{SITE_URL}/en/countries/{slug}"
     page_css = _PAGE_CSS
     ga_tag = _ga_tag()
+    og_image = OG_IMAGE
     faq_jsonld = _country_faq_jsonld(country)
     return f"""<!doctype html>
 <html lang="zh-CN">
@@ -2348,6 +2466,11 @@ def _render_country_page(country: dict, slug: str) -> str:
   <meta property="og:title" content="{country['zh_title']} | Shenyuan International">
   <meta property="og:description" content="{country['zh_intro']}">
   <meta property="og:url" content="{url}">
+  <meta property="og:image" content="{og_image}">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="{country['zh_title']} | Shenyuan International">
+  <meta name="twitter:description" content="{country['zh_intro']}">
+  <meta name="twitter:image" content="{og_image}">
   <link rel="canonical" href="{url}">
   <link rel="alternate" hreflang="zh-CN" href="{url}">
   <link rel="alternate" hreflang="en" href="{en_url}">
@@ -2530,12 +2653,12 @@ def _countries_index_html() -> str:
     return _COUNTRY_INDEX_TEMPLATE.format(site_url=SITE_URL, cards="\n".join(cards), ga_tag=_ga_tag())
 
 
-@app.get("/countries", include_in_schema=False)
+@app.api_route("/countries", methods=["GET", "HEAD"], include_in_schema=False)
 def countries_index() -> Response:
     return Response(content=_countries_index_html(), media_type="text/html; charset=utf-8")
 
 
-@app.get("/countries/{slug}", include_in_schema=False)
+@app.api_route("/countries/{slug}", methods=["GET", "HEAD"], include_in_schema=False)
 def country_page(slug: str) -> Response:
     country = COUNTRIES.get(slug)
     if country is None:
