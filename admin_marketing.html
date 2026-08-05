@@ -163,11 +163,39 @@
         result.appendChild(section("公众号（周一）",
           listHtml(mp.titles) + "<p><b>摘要：</b>" + esc(mp.summary) + "</p>",
           "公众号标题：\n" + mp.titles.join("\n") + "\n\n摘要：\n" + mp.summary));
-        result.appendChild(section("小红书（周三）",
-          "<p><b>标题：</b>" + esc(b.xiaohongshu.title) + "</p>" + esc(b.xiaohongshu.body) +
+        result.appendChild(section("小红书（周三 · 干货型）",
+          "<p><b>标题：</b>" + esc(b.xiaohongshu.title) + "</p>" +
+          "<p><b>三种选题角度：</b></p>" + listHtml([
+            "干货型：" + b.xiaohongshu.angles["干货型"],
+            "避坑型：" + b.xiaohongshu.angles["避坑型"],
+            "故事型：" + b.xiaohongshu.angles["故事型"],
+          ]) +
+          esc(b.xiaohongshu.body) +
           "<p><b>标签：</b>" + esc(b.xiaohongshu.tags.join(" ")) + "</p>" +
           "<p><b>封面：</b>" + esc(b.xiaohongshu.cover) + "</p>",
-          "标题：\n" + b.xiaohongshu.title + "\n\n正文：\n" + b.xiaohongshu.body + "\n\n标签：\n" + b.xiaohongshu.tags.join(" ")));
+          "标题：\n" + b.xiaohongshu.title + "\n\n三种角度：\n" + Object.keys(b.xiaohongshu.angles).map(function (k) { return k + "：" + b.xiaohongshu.angles[k]; }).join("\n") + "\n\n正文：\n" + b.xiaohongshu.body + "\n\n标签：\n" + b.xiaohongshu.tags.join(" ")));
+        result.appendChild(section("X / Twitter（周二 · 英文专业向）",
+          "<p><b>推文 EN（≤280）：</b></p>" + esc(b.x.tweet_en) +
+          "<p><b>推文 ZH：</b></p>" + esc(b.x.tweet_zh) +
+          "<p><b>线程 EN：</b></p>" + esc(b.x.thread_en),
+          "Tweet EN：\n" + b.x.tweet_en + "\n\nTweet ZH：\n" + b.x.tweet_zh + "\n\nThread EN：\n" + b.x.thread_en));
+        result.appendChild(section("Facebook（周四 · 英文故事向）",
+          "<p><b>帖文 EN：</b></p>" + esc(b.facebook.post_en) +
+          "<p><b>广告主文案 EN：</b></p>" + esc(b.facebook.ad.primary_text_en) +
+          "<p><b>广告标题：</b>" + esc(b.facebook.ad.headline_en) + "</p>" +
+          "<p><b>广告描述：</b>" + esc(b.facebook.ad.description_en) + "</p>" +
+          "<p><b>定向建议：</b></p>" + listHtml(b.facebook.ad.targeting.geo.concat([b.facebook.ad.targeting.age])) +
+          "<p><b>兴趣：</b></p>" + listHtml(b.facebook.ad.targeting.interests),
+          "帖文：\n" + b.facebook.post_en + "\n\n广告主文案：\n" + b.facebook.ad.primary_text_en + "\n\n广告标题：\n" + b.facebook.ad.headline_en + "\n\n广告描述：\n" + b.facebook.ad.description_en + "\n\n定向：\n" + b.facebook.ad.targeting.geo.join(" / ") + " · " + b.facebook.ad.targeting.age + "\n兴趣：\n" + b.facebook.ad.targeting.interests.join(" / ")));
+        result.appendChild(section("TikTok（周五 · 竖屏 15-30s）",
+          "<p><b>脚本 ZH：</b></p>" + esc(b.tiktok.script_zh) +
+          "<p><b>脚本 EN：</b></p>" + esc(b.tiktok.script_en) +
+          "<p><b>英文 caption：</b></p>" + esc(b.tiktok.caption_en) +
+          "<p><b>屏幕字幕：</b></p>" + esc(b.tiktok.on_screen_captions) +
+          "<p><b>音乐：</b></p>" + esc(b.tiktok.sound) +
+          "<p><b>封面：</b></p>" + esc(b.tiktok.cover) +
+          "<p><b>投放：</b></p>" + esc(b.tiktok.ad_spark),
+          "脚本 ZH：\n" + b.tiktok.script_zh + "\n\n脚本 EN：\n" + b.tiktok.script_en + "\n\nCaption EN：\n" + b.tiktok.caption_en + "\n\n屏幕字幕：\n" + b.tiktok.on_screen_captions + "\n音乐：\n" + b.tiktok.sound + "\n封面：\n" + b.tiktok.cover + "\n投放：\n" + b.tiktok.ad_spark));
         result.appendChild(section("视频（周五 · 视频号/YouTube）",
           "<p><b>标题：</b>" + esc(b.video.youtube_title) + "</p>" + esc(b.video.script_zh) +
           "<p><b>标签：</b>" + esc(b.video.hashtags.join(" ")) + "</p>" +

@@ -122,10 +122,12 @@ PATCH /admin/api/intakes/{id}  # 更新状态 / 备注，body: {"status": "...",
   `CRM_FIRST_SLA_HOURS`（默认 24）、`CRM_PROGRESS_SLA_DAYS`（默认 7）、
   `CRM_REMINDER_INTERVAL_HOURS`（默认 12）。
 - **Marketing Agent**:`GET /admin/api/marketing/generate?slug=文章slug`（或 `?business=trade|recovery|legacy`）
-  一键生成发布素材包：公众号标题×3、小红书笔记（标题/正文/标签/封面建议）、视频脚本（30-60s
-  口播+YouTube 标签）、Google Ads（标题/描述/关键词/附加链接，遵循平台字数限制）、朋友圈文案、
-  LinkedIn 英文帖、全渠道 UTM 追踪链接与每周排期建议。纯模板生成（无 LLM 依赖），内容基于文章
-  结构与业务线词库，确定性、可测试。每周二由「营销素材」定时任务拉取最新文章自动生成并投递。
+  一键生成发布素材包，覆盖 **7 个渠道**：公众号（标题×3+摘要）、X/Twitter（中英短推文≤280 +
+  英文线程）、小红书（三种选题角度：干货/避坑/故事）、Facebook（英文帖文 + 广告文案/定向）、
+  TikTok（中英竖屏脚本+字幕/音乐/封面建议）、朋友圈文案、LinkedIn 英文帖，全渠道 UTM 追踪链接
+  与每周排期（周一公众号/周二X/周三小红书/周四Facebook/周五TikTok/周六小红书二发/周日朋友圈）。
+  纯模板生成（无 LLM 依赖），内容基于文章结构与业务线词库，确定性、可测试。每周二由「营销素材」
+  定时任务拉取最新文章自动生成并投递。
   **营销素材控制台**：`/admin/marketing`（后台顶栏「📣 营销素材」入口）——选择文章或业务线
   一键生成，分区展示带「复制」按钮（写入剪贴板），支持整包下载 Markdown；`GET /admin/api/articles`
   提供文章下拉列表（按日期倒序）。
