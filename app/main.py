@@ -1727,6 +1727,16 @@ COUNTRIES = {
         "items_en": ["Debt recovery & demand letters against US buyers", "Recognition & enforcement of Chinese judgments in the US", "Tracing US property and bank accounts", "Cross-border inheritance & US probate"],
         "points_zh": ["多数州承认外国金钱判决不要求互惠，但各州规则与程序不同", "诉讼时效各州不同，常见 2-6 年，务必尽早确认", "财产保全须取得法院命令，资产调查与保全应同步规划", "联邦与州两级司法体系，法院程序须由当地执业律师办理", "继承通常须走 Probate，中国公证文件不能直接替代当地程序"],
         "points_en": ["Most states recognize foreign money judgments without reciprocity, but rules differ by state", "Statutes of limitation vary by state, commonly 2-6 years — confirm early", "Asset preservation requires a court order; plan tracing and preservation together", "Federal and state courts are separate systems; local licensed counsel is required", "Inheritance usually runs through probate; Chinese notarized documents do not replace local procedure"],
+        "faq_zh": [
+            "中国法院的判决能在美国执行吗？|多数州承认外国金钱判决且不要求互惠，但各州规则与程序不同，需在当地法院申请承认后执行，建议尽早评估。",
+            "在美国追收欠款的诉讼时效是多久？|诉讼时效各州不同，常见 2-6 年，务必尽早确认并保全证据。",
+            "中国公民继承美国房产需要走什么程序？|通常须经遗嘱认证（Probate），中国公证文件不能直接替代当地程序，需当地律师办理。",
+        ],
+        "faq_en": [
+            "Can a Chinese judgment be enforced in the United States?|Most states recognise foreign money judgments without requiring reciprocity, but rules differ by state; apply for recognition in the local court and assess early.",
+            "What is the statute of limitations for collecting a debt in the US?|Limitation periods vary by state, commonly 2-6 years; confirm early and preserve evidence.",
+            "What procedure applies when a Chinese citizen inherits US property?|Probate is usually required; Chinese notarised documents do not replace local procedure, and local counsel is needed.",
+        ],
     },
     "canada": {
         "name_zh": "加拿大",
@@ -1739,6 +1749,16 @@ COUNTRIES = {
         "items_en": ["Debt recovery & negotiation with Canadian counterparties", "Recognition & enforcement of Chinese judgments in Canada", "Tracing Canadian property and assets", "Cross-border inheritance & estate administration"],
         "points_zh": ["普通法省份对外国金钱判决的执行规则成熟，多数不要求互惠", "各省规则不同；魁北克为大陆法系省份，程序有别", "加拿大无遗产税，但去世时视为按市价处置资产，可能产生资本利得税", "时效各省不同，通常 2-6 年", "银行与地产登记查询渠道因省而异，需当地律师协助"],
         "points_en": ["Common-law provinces have settled foreign-judgment rules, mostly without reciprocity", "Rules vary by province; Quebec is a civil-law province with different procedures", "No estate tax, but deemed disposition at death can trigger capital gains tax", "Limitation periods vary by province, commonly 2-6 years", "Bank and property record access varies by province; local counsel is needed"],
+        "faq_zh": [
+            "中国法院的判决能在加拿大执行吗？|普通法省份对外国金钱判决的执行规则成熟，多数不要求互惠，但需依各省程序在当地法院申请承认执行。",
+            "在加拿大追收欠款的诉讼时效是多久？|时效各省不同，通常 2-6 年。",
+            "加拿大有遗产税吗？|加拿大无遗产税，但去世时视为按市价处置资产，可能产生资本利得税，需提前规划。",
+        ],
+        "faq_en": [
+            "Can a Chinese judgment be enforced in Canada?|Common-law provinces have settled foreign-judgment rules, mostly without reciprocity; apply for recognition under provincial procedure.",
+            "What is the limitation period for collecting a debt in Canada?|Limitation periods vary by province, commonly 2-6 years.",
+            "Is there an estate tax in Canada?|No estate tax, but deemed disposition at death can trigger capital gains tax — plan ahead.",
+        ],
     },
     "australia": {
         "name_zh": "澳大利亚",
@@ -1751,6 +1771,16 @@ COUNTRIES = {
         "items_en": ["Debt recovery & demand letters against Australian buyers", "Enforcement of Chinese judgments in Australia", "Tracing Australian property and assets", "Cross-border inheritance & probate"],
         "points_zh": ["外国判决执行依据各州《外国判决法》与普通法规则，程序成熟", "商业债务时效通常 6 年，需尽早启动", "澳大利亚无遗产税，但继承后出售房产可能产生资本利得税", "律师在各州分别执业，跨州案件需协调", "法院程序与文件认证要求严格，建议委托当地律师办理"],
         "points_en": ["Enforcement follows state Foreign Judgments Acts and common law — a settled path", "Limitation for commercial debts is typically 6 years; start early", "No inheritance tax, but selling inherited property may trigger capital gains tax", "Lawyers are admitted per state; multi-state matters need coordination", "Court procedure and document legalization are strict; use local counsel"],
+        "faq_zh": [
+            "中国法院的判决能在澳大利亚执行吗？|执行依据各州《外国判决法》与普通法规则，程序成熟，可在当地法院申请承认执行。",
+            "在澳大利亚追收欠款的诉讼时效是多久？|商业债务时效通常 6 年，需尽早启动。",
+            "澳大利亚有遗产税吗？|澳大利亚无遗产税，但继承后出售房产可能产生资本利得税。",
+        ],
+        "faq_en": [
+            "Can a Chinese judgment be enforced in Australia?|Enforcement follows state Foreign Judgments Acts and common law — a settled path; apply for recognition in the local court.",
+            "What is the limitation period for collecting a debt in Australia?|Limitation for commercial debts is typically 6 years; start early.",
+            "Is there an inheritance tax in Australia?|No inheritance tax, but selling inherited property may trigger capital gains tax.",
+        ],
     },
     "singapore": {
         "name_zh": "新加坡",
@@ -1763,6 +1793,16 @@ COUNTRIES = {
         "items_en": ["Debt recovery from Singapore buyers and intermediaries", "Enforcement of Chinese judgments and arbitral awards in Singapore", "Tracing Singapore bank and corporate assets", "Cross-border inheritance, trusts & family wealth planning"],
         "points_zh": ["普通法体系，外国判决执行路径成熟（普通法 + 成文法）", "仲裁裁决依据《纽约公约》执行，速度快、可预期", "债务时效通常 6 年", "家族办公室与信托常见，继承与传承规划需求高", "银行信息受严格保密法规约束，资产调查需法律程序配合"],
         "points_en": ["Common-law system with a mature foreign-judgment enforcement path", "Arbitral awards enforce under the New York Convention — fast and predictable", "Limitation for debts is typically 6 years", "Family offices and trusts are common; succession planning demand is high", "Banking secrecy is strict; asset tracing needs court processes"],
+        "faq_zh": [
+            "中国法院的判决能在新加坡执行吗？|新加坡是普通法体系，外国判决执行路径成熟（普通法 + 成文法），可在当地法院申请承认执行。",
+            "仲裁裁决在新加坡执行容易吗？|依据《纽约公约》执行，速度快、可预期，是跨境争议的常用路径。",
+            "在新加坡追收欠款的诉讼时效是多久？|债务时效通常 6 年。",
+        ],
+        "faq_en": [
+            "Can a Chinese judgment be enforced in Singapore?|Singapore is a common-law system with a mature foreign-judgment enforcement path; apply for recognition in the local court.",
+            "Are arbitral awards easy to enforce in Singapore?|Awards enforce under the New York Convention — fast and predictable, a common route for cross-border disputes.",
+            "What is the limitation period for collecting a debt in Singapore?|Limitation for debts is typically 6 years.",
+        ],
     },
     "united-kingdom": {
         "name_zh": "英国",
@@ -1775,8 +1815,215 @@ COUNTRIES = {
         "items_en": ["Debt recovery & demand letters against UK buyers", "Enforcement of Chinese judgments and awards in the UK", "Tracing UK property and assets", "Cross-border inheritance, probate & inheritance tax planning"],
         "points_zh": ["外国判决执行依据《外国判决法》与普通法规则", "商业债务时效通常 6 年", "遗产税 (IHT) 最高 40%，继承规划窗口重要", "律师与出庭律师分业，程序角色分明", "房产登记与产权查询渠道公开，调查相对便利"],
         "points_en": ["Enforcement follows the Foreign Judgments Act and common law", "Limitation for commercial debts is typically 6 years", "Inheritance tax reaches 40% — planning windows matter", "Solicitors and barristers have distinct roles in proceedings", "Land registry searches are accessible, making tracing easier"],
+        "faq_zh": [
+            "中国法院的判决能在英国执行吗？|执行依据《外国判决法》与普通法规则，可在当地法院申请承认执行。",
+            "在英国追收欠款的诉讼时效是多久？|商业债务时效通常 6 年。",
+            "英国的遗产税高吗？|遗产税（IHT）最高 40%，提前规划窗口很重要。",
+        ],
+        "faq_en": [
+            "Can a Chinese judgment be enforced in the UK?|Enforcement follows the Foreign Judgments Act and common law; apply for recognition in the local court.",
+            "What is the limitation period for collecting a debt in the UK?|Limitation for commercial debts is typically 6 years.",
+            "Is UK inheritance tax high?|Inheritance tax reaches 40% — planning windows matter.",
+        ],
+    },
+    "hong-kong": {
+        "name_zh": "香港",
+        "name_en": "Hong Kong",
+        "zh_title": "香港跨境法律服务：内地判决执行 · 欠款追收 · 遗产继承",
+        "en_title": "Hong Kong Cross-Border Legal Services: Mainland Judgment Enforcement, Debt Recovery & Inheritance",
+        "zh_intro": "内地与香港经贸往来密切，商事纠纷、货款拖欠与跨境继承常年高发。2024 年起内地民商事判决可在香港法院认可与执行，路径已大幅拓宽。本页梳理在香港最常见的跨境法律事项。",
+        "en_intro": "Mainland–Hong Kong trade is dense, and commercial disputes, unpaid debts and cross-border inheritance are common. Since 2024, mainland civil and commercial judgments can be recognised and enforced in Hong Kong courts. This page maps the common cross-border matters.",
+        "items_zh": ["内地判决在香港的认可与执行", "香港客户与中间商欠款追收", "香港公司查册与资产调查", "跨境继承、遗嘱认证与家族资产"],
+        "items_en": ["Recognition & enforcement of mainland judgments in Hong Kong", "Debt recovery from Hong Kong buyers and intermediaries", "Hong Kong company searches and asset tracing", "Cross-border inheritance, probate & family assets"],
+        "points_zh": ["2024 年 1 月起《内地与香港民商事判决互认安排》生效，覆盖绝大多数民商事判决（含非金钱判决），范围远大于旧安排", "债务诉讼时效一般 6 年（《时效条例》）", "香港不征收遗产税、赠与税与资本利得税", "事务律师与大律师分业，法院程序通常需本地律师", "公司查册、土地查册渠道公开，资产调查相对便利"],
+        "points_en": ["The 2024 Mainland–Hong Kong Judgment Arrangement covers most civil and commercial judgments (including non-money judgments), far beyond the old regime", "Limitation for debts is generally 6 years (Limitation Ordinance)", "No estate, gift or capital gains tax in Hong Kong", "Solicitors and barristers are separate branches; local counsel is usual in court", "Company and land searches are public, making tracing easier"],
+        "faq_zh": [
+            "内地法院的判决能在香港执行吗？|自 2024 年 1 月 29 日起，依据《内地与香港特别行政区法院相互认可和执行民商事案件判决的安排》，绝大多数内地民商事判决可在香港法院申请认可与执行，不再限于协议管辖案件。",
+            "在香港追收欠款的诉讼时效是多久？|依据《时效条例》，债务诉讼时效一般为 6 年，建议尽早启动并同步保全证据。",
+            "香港有遗产税吗？|香港不征收遗产税、赠与税与资本利得税；跨境继承主要关注遗嘱认证程序与内地公证文书的衔接。",
+        ],
+        "faq_en": [
+            "Can a mainland Chinese judgment be enforced in Hong Kong?|Since 29 January 2024, the Mainland–Hong Kong Arrangement on Recognition and Enforcement of Civil and Commercial Judgments allows most mainland judgments to be recognised and enforced in Hong Kong courts, no longer limited to jurisdiction-agreement cases.",
+            "What is the limitation period for collecting a debt in Hong Kong?|Under the Limitation Ordinance, the limitation period for debts is generally 6 years; start early and preserve evidence.",
+            "Is there an estate tax in Hong Kong?|No estate, gift or capital gains tax applies in Hong Kong; cross-border inheritance mainly concerns probate and the linkage of mainland notarised documents.",
+        ],
+    },
+    "germany": {
+        "name_zh": "德国",
+        "name_en": "Germany",
+        "zh_title": "德国跨境法律服务：欠款追收 · 判决执行 · 遗产继承",
+        "en_title": "Germany Cross-Border Legal Services: Debt Recovery, Judgment Enforcement & Inheritance",
+        "zh_intro": "德国是中国在欧洲最大的贸易伙伴，机械、汽车与化工行业的应收款纠纷频发。本页梳理在德国最常见的跨境法律事项：贸易追收、判决执行与继承。",
+        "en_intro": "Germany is China's largest trading partner in Europe, and receivables disputes are common in machinery, automotive and chemicals. This page maps the common cross-border matters: trade recovery, judgment enforcement and inheritance.",
+        "items_zh": ["德国客户货款追收与律师函", "中国判决在德国的承认与执行", "德国公司与动产资产调查", "跨境继承与德国遗产税规划"],
+        "items_en": ["Debt recovery & demand letters against German buyers", "Recognition & enforcement of Chinese judgments in Germany", "Tracing German company and movable assets", "Cross-border inheritance & German inheritance-tax planning"],
+        "points_zh": ["中德无双边判决互认条约，外国判决依《民事诉讼法》第 328 条审查，互惠认定严格，个案差异大", "一般债权的诉讼时效为 3 年（自债权到期年度末起算）", "德国遗产税按亲等与金额累进，最高约 50%，配偶有高额免税额", "法院程序原则上须由德国律师代理", "德国公司登记（Handelsregister）公开可查，资产调查有据可依"],
+        "points_en": ["No bilateral judgment treaty with China; foreign judgments are reviewed under §328 ZPO with strict reciprocity — case-specific", "General limitation for claims is 3 years (running from year-end after maturity)", "German inheritance tax is progressive by kinship and amount, up to about 50%, with a high spouse allowance", "Court proceedings generally require German counsel", "The commercial register (Handelsregister) is public, giving tracing a solid basis"],
+        "faq_zh": [
+            "中国法院的判决能在德国执行吗？|中德之间没有双边判决互认条约，德国法院依《民事诉讼法》第 328 条逐案审查（含互惠要求），结果因案而异，常需重新起诉，建议事先评估。",
+            "在德国追收欠款的诉讼时效是多久？|一般债权的时效为 3 年，自债权到期年度的年末起算，逾期将难以主张。",
+            "德国的遗产税高吗？|德国遗产税按亲等与金额累进，最高约 50%，配偶享有高额免税额，提前规划窗口很重要。",
+        ],
+        "faq_en": [
+            "Can a Chinese judgment be enforced in Germany?|There is no bilateral treaty; German courts review foreign judgments case-by-case under §328 ZPO (including reciprocity), so outcomes vary and re-litigation is common — assess first.",
+            "What is the limitation period for collecting a debt in Germany?|General claims lapse after 3 years, running from year-end after maturity; acting late can bar the claim.",
+            "Is German inheritance tax high?|German inheritance tax is progressive by kinship and amount, up to about 50%; spouses enjoy a high allowance, so early planning matters.",
+        ],
+    },
+    "japan": {
+        "name_zh": "日本",
+        "name_en": "Japan",
+        "zh_title": "日本跨境法律服务：欠款追收 · 判决执行 · 遗产继承",
+        "en_title": "Japan Cross-Border Legal Services: Debt Recovery, Judgment Enforcement & Inheritance",
+        "zh_intro": "日本是中国的重要贸易伙伴，商事纠纷与在日华人房产继承需求持续存在。本页梳理在日本最常见的跨境法律事项。",
+        "en_intro": "Japan is a major trading partner of China, with ongoing demand on commercial disputes and inheritance of property held by Chinese families in Japan. This page maps the common cross-border matters.",
+        "items_zh": ["日本客户欠款追收与协商", "中国判决在日本的承认与执行", "日本不动产与资产调查", "跨境继承与日本遗产税规划"],
+        "items_en": ["Debt recovery & negotiation with Japanese counterparties", "Recognition & enforcement of Chinese judgments in Japan", "Tracing Japanese real estate and assets", "Cross-border inheritance & Japanese inheritance-tax planning"],
+        "points_zh": ["外国判决依《民事诉讼法》第 118 条执行，需满足互惠等要件，中日判决互认实践存在障碍，常需重新起诉", "一般债权时效为 5 年（2020 年民法修正后统一）", "日本遗产税最高约 55%，配偶有基础免税额", "不动产物权登记与公证手续严格，交易与继承均需日本律师/司法书士协助", "公司登记（商业登记簿）公开，资产调查渠道明确"],
+        "points_en": ["Foreign judgments execute under Art. 118 of the Code of Civil Procedure, requiring reciprocity among other conditions; China–Japan recognition practice is difficult and re-litigation is common", "General claims lapse after 5 years (post-2020 Civil Code reform)", "Japanese inheritance tax can reach about 55%; spouses have a basic allowance", "Real-property registration and notarisation are strict; Japanese counsel/ judicial scriveners are involved in both transactions and inheritance", "The commercial register is public, giving tracing a clear channel"],
+        "faq_zh": [
+            "中国法院的判决能在日本执行吗？|日本法院依《民事诉讼法》第 118 条审查外国判决，须满足互惠等要件；中日之间判决互认实践存在障碍，实务中常需重新起诉。",
+            "在日本追收欠款的诉讼时效是多久？|2020 年民法修正后一般债权时效统一为 5 年。",
+            "日本的遗产税高吗？|日本遗产税最高约 55%，配偶有基础免税额（1.6 亿日元），提前规划非常重要。",
+        ],
+        "faq_en": [
+            "Can a Chinese judgment be enforced in Japan?|Japanese courts review foreign judgments under Art. 118 CCP, requiring reciprocity among other conditions; China–Japan recognition practice faces hurdles, so re-litigation is common.",
+            "What is the limitation period for collecting a debt in Japan?|General claims lapse after 5 years following the 2020 Civil Code reform.",
+            "Is Japanese inheritance tax high?|Japanese inheritance tax can reach about 55%; spouses enjoy a basic allowance of JPY 160 million, making early planning essential.",
+        ],
+    },
+    "united-arab-emirates": {
+        "name_zh": "阿联酋",
+        "name_en": "UAE (Dubai)",
+        "zh_title": "阿联酋跨境法律服务：欠款追收 · 判决执行 · 房产继承",
+        "en_title": "UAE Cross-Border Legal Services: Debt Recovery, Judgment Enforcement & Property Inheritance",
+        "zh_intro": "迪拜是中东贸易枢纽与华人商区重镇，货款纠纷与房产投资继承需求集中。本页梳理在阿联酋最常见的跨境法律事项。",
+        "en_intro": "Dubai is a Middle East trading hub with a large Chinese business community; invoice disputes and property-investment inheritance are concentrated here. This page maps the common cross-border matters in the UAE.",
+        "items_zh": ["阿联酋客户与中间商欠款追收", "中国判决在阿联酋的承认与执行", "迪拜房产与银行资产调查", "跨境继承与迪拜房产规划"],
+        "items_en": ["Debt recovery from UAE buyers and intermediaries", "Recognition & enforcement of Chinese judgments in the UAE", "Tracing Dubai property and bank assets", "Cross-border inheritance & Dubai property planning"],
+        "points_zh": ["中阿民商事司法协助条约（2004 年签署）涵盖判决承认与执行", "联邦法院与迪拜国际金融中心（DIFC）法院双轨并行，路径选择影响执行效率", "阿联酋不征收个人所得税与遗产税，2020 年后非穆斯林继承适用成文继承法，可依遗嘱继承", "穆斯林继承适用伊斯兰继承规则，与遗嘱自由并存但有限制", "银行开户与资金流调查须经法律程序配合"],
+        "points_en": ["The 2004 China–UAE judicial assistance treaty covers recognition and enforcement of judgments", "Federal courts and the DIFC courts run in parallel; the chosen route affects enforcement efficiency", "No personal income tax or estate tax; since 2020 non-Muslims inherit under codified rules and may inherit by will", "Muslim succession follows Islamic inheritance rules, coexisting with (but limiting) testamentary freedom", "Bank-account and fund-flow tracing requires court processes"],
+        "faq_zh": [
+            "中国法院的判决能在阿联酋执行吗？|中阿民商事司法协助条约（2004 年签署）涵盖判决承认与执行，可在阿联酋法院申请；联邦法院与 DIFC 法院两条路径效率不同，建议先评估。",
+            "阿联酋有遗产税吗？|阿联酋不征收遗产税；2020 年后非穆斯林适用成文继承法，可依遗嘱继承，穆斯林则适用伊斯兰继承规则。",
+            "在迪拜追收欠款需要注意什么？|迪拜法律环境对债权保护较完善，但银行信息与资金流调查须经法律程序，建议尽早固定证据并评估 DIFC 路径。",
+        ],
+        "faq_en": [
+            "Can a Chinese judgment be enforced in the UAE?|The 2004 China–UAE judicial assistance treaty covers judgment recognition and enforcement; applications go to UAE courts, with the federal and DIFC routes differing in efficiency — assess first.",
+            "Is there an estate tax in the UAE?|No estate tax applies; since 2020 non-Muslims inherit under codified rules and may inherit by will, while Muslims follow Islamic inheritance rules.",
+            "What matters when collecting a debt in Dubai?|Dubai's legal environment is creditor-friendly, but bank and fund-flow tracing needs court processes — preserve evidence early and evaluate the DIFC route.",
+        ],
+    },
+    "new-zealand": {
+        "name_zh": "新西兰",
+        "name_en": "New Zealand",
+        "zh_title": "新西兰跨境法律服务：欠款追收 · 判决执行 · 房产继承",
+        "en_title": "New Zealand Cross-Border Legal Services: Debt Recovery, Judgment Enforcement & Property Inheritance",
+        "zh_intro": "新西兰华人移民众多，奥克兰房产继承与对澳新客户的欠款追收需求持续。本页梳理在新西兰最常见的跨境法律事项。",
+        "en_intro": "New Zealand has a large Chinese community; Auckland property inheritance and debt recovery from NZ/AU clients are steady demands. This page maps the common cross-border matters.",
+        "items_zh": ["新西兰客户欠款追收与律师函", "中国判决在新西兰的承认与执行", "新西兰房产与资产调查", "跨境继承与遗嘱认证"],
+        "items_en": ["Debt recovery & demand letters against New Zealand buyers", "Recognition & enforcement of Chinese judgments in New Zealand", "Tracing New Zealand property and assets", "Cross-border inheritance & probate"],
+        "points_zh": ["互惠执行判决法覆盖指定互惠国；中国不在名单内时依普通法重新起诉", "债务诉讼时效一般 6 年", "新西兰无遗产税、无赠与税、无资本利得税", "房产交易与继承均须律师办理交割/认证程序", "土地登记（LINZ）公开可查，资产调查便利"],
+        "points_en": ["The Reciprocal Enforcement of Judgments Act covers designated countries; otherwise re-litigation at common law", "Limitation for debts is generally 6 years", "No estate, gift or capital gains tax in New Zealand", "Property conveyancing and probate both require lawyers", "Land records (LINZ) are public, making tracing easy"],
+        "faq_zh": [
+            "中国法院的判决能在新西兰执行吗？|互惠执行判决法仅覆盖指定互惠国，中国不在名单内，通常需依普通法在新西兰重新起诉后执行。",
+            "新西兰有遗产税吗？|新西兰不征收遗产税、赠与税与资本利得税，跨境继承主要关注遗嘱认证与文件公证衔接。",
+            "在新西兰追收欠款的诉讼时效是多久？|债务诉讼时效一般为 6 年。",
+        ],
+        "faq_en": [
+            "Can a Chinese judgment be enforced in New Zealand?|The Reciprocal Enforcement of Judgments Act covers designated countries only; China is not on the list, so re-litigation at common law is usual.",
+            "Is there an estate tax in New Zealand?|No estate, gift or capital gains tax applies; cross-border inheritance mainly concerns probate and document legalisation.",
+            "What is the limitation period for collecting a debt in New Zealand?|The limitation period for debts is generally 6 years.",
+        ],
+    },
+    "malaysia": {
+        "name_zh": "马来西亚",
+        "name_en": "Malaysia",
+        "zh_title": "马来西亚跨境法律服务：欠款追收 · 判决执行 · 遗产继承",
+        "en_title": "Malaysia Cross-Border Legal Services: Debt Recovery, Judgment Enforcement & Inheritance",
+        "zh_intro": "马来西亚华人社区庞大，中马贸易与吉隆坡房产投资活跃。本页梳理在马来西亚最常见的跨境法律事项。",
+        "en_intro": "Malaysia has a large Chinese community with active China–Malaysia trade and Kuala Lumpur property investment. This page maps the common cross-border matters.",
+        "items_zh": ["马来西亚客户与中间商欠款追收", "中国判决在马来西亚的执行", "吉隆坡房产与资产调查", "跨境继承（穆斯林/非穆斯林双轨）"],
+        "items_en": ["Debt recovery from Malaysian buyers and intermediaries", "Enforcement of Chinese judgments in Malaysia", "Tracing Kuala Lumpur property and assets", "Cross-border inheritance (Muslim / non-Muslim dual system)"],
+        "points_zh": ["互惠执行判决法（REOJ 1958）覆盖英联邦及指定国家，中国不在名单内，通常依普通法重新起诉", "债务诉讼时效一般 6 年", "马来西亚已停征遗产税", "继承制度分穆斯林与非穆斯林两套，程序与适用法不同", "公司查册（SSM）公开，资产调查有渠道"],
+        "points_en": ["The Reciprocal Enforcement of Judgments Act 1958 covers Commonwealth and designated countries; China is not on the list, so re-litigation at common law is usual", "Limitation for debts is generally 6 years", "Estate duty has been abolished in Malaysia", "Muslim and non-Muslim succession are separate systems with different procedures and laws", "Company searches (SSM) are public, giving tracing a channel"],
+        "faq_zh": [
+            "中国法院的判决能在马来西亚执行吗？|互惠执行判决法仅覆盖英联邦及指定国家，中国不在名单内，通常需依普通法重新起诉后执行。",
+            "马来西亚有遗产税吗？|马来西亚已停征遗产税；继承需注意穆斯林与非穆斯林两套制度的适用。",
+            "在马来西亚追收欠款的诉讼时效是多久？|债务诉讼时效一般为 6 年。",
+        ],
+        "faq_en": [
+            "Can a Chinese judgment be enforced in Malaysia?|The Reciprocal Enforcement of Judgments Act 1958 covers Commonwealth and designated countries only; China is not on the list, so re-litigation at common law is usual.",
+            "Is there an estate tax in Malaysia?|Estate duty has been abolished; note the dual Muslim / non-Muslim succession systems.",
+            "What is the limitation period for collecting a debt in Malaysia?|The limitation period for debts is generally 6 years.",
+        ],
+    },
+    "france": {
+        "name_zh": "法国",
+        "name_en": "France",
+        "zh_title": "法国跨境法律服务：欠款追收 · 判决执行 · 遗产继承",
+        "en_title": "France Cross-Border Legal Services: Debt Recovery, Judgment Enforcement & Inheritance",
+        "zh_intro": "法国是中国在欧盟的重要贸易伙伴，奢侈品、葡萄酒与机械贸易中的应收款纠纷常见。本页梳理在法国最常见的跨境法律事项。",
+        "en_intro": "France is a major EU trading partner of China; receivables disputes are common in luxury goods, wine and machinery trade. This page maps the common cross-border matters.",
+        "items_zh": ["法国客户货款追收与律师函", "中国判决在法国的承认与执行", "法国房产与资产调查", "跨境继承与法国遗产税规划"],
+        "items_en": ["Debt recovery & demand letters against French buyers", "Recognition & enforcement of Chinese judgments in France", "Tracing French property and assets", "Cross-border inheritance & French inheritance-tax planning"],
+        "points_zh": ["中法无双边判决互认条约，法国法院依国际私法规则审查外国判决，承认条件相对成熟但逐案审查", "一般债权时效为 5 年（《民法典》第 2224 条）", "法国遗产税直系子女最高约 45%，配偶免税", "公证人（Notaire）在房产交易与继承程序中角色关键", "房产登记公开，资产调查依赖公证与登记渠道"],
+        "points_en": ["No bilateral treaty with China; French courts review foreign judgments under private-international-law rules — a settled but case-by-case regime", "General claims lapse after 5 years (Art. 2224 Civil Code)", "French inheritance tax reaches about 45% for direct descendants; spouses are exempt", "Notaires play a key role in property transactions and succession", "Land registration is public; tracing relies on notarial and registry channels"],
+        "faq_zh": [
+            "中国法院的判决能在法国执行吗？|中法没有双边互认条约，法国法院依国际私法规则逐案审查外国判决，条件相对成熟，但需个案评估。",
+            "在法国追收欠款的诉讼时效是多久？|一般债权时效为 5 年。",
+            "法国的遗产税高吗？|法国遗产税直系子女最高约 45%，配偶免税；房产继承还涉及公证程序，规划窗口重要。",
+        ],
+        "faq_en": [
+            "Can a Chinese judgment be enforced in France?|No bilateral treaty exists; French courts review foreign judgments case-by-case under private-international-law rules — a settled regime, but assess each case.",
+            "What is the limitation period for collecting a debt in France?|General claims lapse after 5 years.",
+            "Is French inheritance tax high?|French inheritance tax reaches about 45% for direct descendants; spouses are exempt, and property succession involves notarial procedures — plan early.",
+        ],
+    },
+    "switzerland": {
+        "name_zh": "瑞士",
+        "name_en": "Switzerland",
+        "zh_title": "瑞士跨境法律服务：欠款追收 · 判决执行 · 资产调查",
+        "en_title": "Switzerland Cross-Border Legal Services: Debt Recovery, Judgment Enforcement & Asset Tracing",
+        "zh_intro": "瑞士是全球资产聚集地，跨境欠款、判决执行与银行资产调查需求集中。本页梳理在瑞士最常见的跨境法律事项。",
+        "en_intro": "Switzerland is a global wealth hub, with concentrated demand for cross-border debt recovery, judgment enforcement and bank-asset tracing. This page maps the common cross-border matters.",
+        "items_zh": ["瑞士客户与机构欠款追收", "中国判决在瑞士的承认与执行", "瑞士银行与资产调查", "跨境继承与瑞士税务规划"],
+        "items_en": ["Debt recovery from Swiss counterparties", "Recognition & enforcement of Chinese judgments in Switzerland", "Tracing Swiss bank accounts and assets", "Cross-border inheritance & Swiss tax planning"],
+        "points_zh": ["中瑞司法协助条约（1988 年签署）涵盖民商事判决承认与执行", "外国判决执行依《联邦国际私法法》（PILA）第 25-32 条", "一般债权时效为 10 年（《债法》第 127 条）", "瑞士无联邦遗产税，州级遗产税差异大，规划需按州评估", "银行保密与 CRS 框架并存，资产调查须经法律程序配合"],
+        "points_en": ["The 1988 China–Switzerland judicial assistance treaty covers recognition and enforcement of civil and commercial judgments", "Foreign judgments enforce under Art. 25–32 PILA", "General claims lapse after 10 years (Art. 127 Code of Obligations)", "No federal estate tax; cantonal estate taxes vary widely — plan per canton", "Banking secrecy coexists with CRS; tracing requires court processes"],
+        "faq_zh": [
+            "中国法院的判决能在瑞士执行吗？|中瑞司法协助条约（1988 年签署）涵盖民商事判决的承认与执行，可依《联邦国际私法法》第 25-32 条申请执行。",
+            "在瑞士追收欠款的诉讼时效是多久？|一般债权时效为 10 年（《债法》第 127 条）。",
+            "瑞士的遗产税情况如何？|瑞士无联邦遗产税，州级遗产税差异很大，继承规划需要按居住州个案评估。",
+        ],
+        "faq_en": [
+            "Can a Chinese judgment be enforced in Switzerland?|The 1988 China–Switzerland judicial assistance treaty covers recognition and enforcement of civil and commercial judgments; apply under Art. 25–32 PILA.",
+            "What is the limitation period for collecting a debt in Switzerland?|General claims lapse after 10 years (Art. 127 Code of Obligations).",
+            "How does Swiss estate tax work?|No federal estate tax; cantonal estate taxes vary widely, so plan according to the canton of residence.",
+        ],
     },
 }
+
+
+def _country_faq_jsonld(country: dict) -> str:
+    """FAQPage JSON-LD built from the country's faq_zh entries ("Q|A" pairs)."""
+    faqs = []
+    for entry in country.get("faq_zh", []):
+        q, _, a = entry.partition("|")
+        if q and a:
+            faqs.append(f'{{"@type": "Question", "name": "{html.escape(q)}", '
+                        f'"acceptedAnswer": {{"@type": "Answer", "text": "{html.escape(a)}"}}}}')
+    if not faqs:
+        return ""
+    return (
+        '<script type="application/ld+json">\n'
+        '{\n'
+        '  "@context": "https://schema.org",\n'
+        '  "@type": "FAQPage",\n'
+        '  "mainEntity": [' + ",".join(faqs) + "]\n"
+        "}\n"
+        "</script>\n"
+    )
 
 
 def _render_country_page(country: dict, slug: str) -> str:
@@ -1792,6 +2039,7 @@ def _render_country_page(country: dict, slug: str) -> str:
     en_url = f"{SITE_URL}/en/countries/{slug}"
     page_css = _PAGE_CSS
     ga_tag = _ga_tag()
+    faq_jsonld = _country_faq_jsonld(country)
     return f"""<!doctype html>
 <html lang="zh-CN">
 <head>
@@ -1820,6 +2068,7 @@ def _render_country_page(country: dict, slug: str) -> str:
     "knowsLanguage": ["zh", "en"]
   }}
   </script>
+  {faq_jsonld}
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
