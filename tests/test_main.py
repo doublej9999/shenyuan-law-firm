@@ -1389,6 +1389,62 @@ def test_robots_txt_points_to_sitemap(tmp_db):
         assert "Sitemap: http://localhost:8000/sitemap.xml" in resp.text
 
 
+def test_robots_allows_ai_crawlers_and_llms(tmp_db):
+    # GEO: AI crawlers explicitly allowed; llms.txt advertised in robots.
+    with TestClient(m.app) as client:
+        robots = client.get("/robots.txt").text
+        for agent in ("GPTBot", "ClaudeBot", "PerplexityBot", "Google-Extended"):
+            assert f"User-agent: {agent}" in robots, agent
+        assert "LLMtxt: http://localhost:8000/llms.txt" in robots
+
+
+def test_llms_txt_curates_site(tmp_db):
+    with TestClient(m.app) as client:
+        resp = client.get("/llms.txt")
+        assert resp.status_code == 200
+        text = resp.text
+        assert "Shenyuan International" in text
+        assert "## Services" in text and "/services/trade" in text
+        assert "## Country pages" in text
+        for slug in ("united-states", "hong-kong", "germany", "switzerland"):
+            assert f"/countries/{slug}" in text, slug
+        assert "## Legal guides (articles)" in text
+        assert "/articles/trade-payment-recovery-5-steps" in text
+
+
+def test_head_requests_supported_on_core_pages(tmp_db):
+    # Search engines and uptime tools probe URLs with HEAD; 405 breaks that.
+    with TestClient(m.app) as client:
+        for path in ("/", "/services/trade", "/articles",
+                     "/articles/trade-payment-recovery-5-steps",
+                     "/countries", "/countries/united-states",
+                     "/robots.txt", "/llms.txt", "/sitemap.xml"):
+            assert client.head(path).status_code == 200, path
+
+
+def test_404_returns_html_for_browsers_json_for_api(tmp_db):
+    with TestClient(m.app) as client:
+        html_resp = client.get("/no-such-page", headers={"accept": "text/html"})
+        assert html_resp.status_code == 404
+        assert "text/html" in html_resp.headers["content-type"]
+        assert "404" in html_resp.text
+        assert "/articles" in html_resp.text  # recovery links
+        json_resp = client.get("/no-such-page", headers={"accept": "application/json"})
+        assert json_resp.status_code == 404
+        assert "application/json" in json_resp.headers["content-type"]
+
+
+def test_twitter_cards_and_og_image_on_core_pages(tmp_db):
+    with TestClient(m.app) as client:
+        for path in ("/", "/services/trade", "/countries/united-states",
+                     "/articles/trade-payment-recovery-5-steps"):
+            html = client.get(path).text
+            assert 'name="twitter:card" content="summary_large_image"' in html, path
+            assert 'property="og:image"' in html, path
+        article = client.get("/articles/trade-payment-recovery-5-steps").text
+        assert '"dateModified"' in article  # BlogPosting completeness
+
+
 def test_sitemap_and_robots_accept_head(tmp_db):
     # Regression: GSC's fetcher probes with HEAD; a 405 there surfaces as
     # "couldn't fetch" in Search Console even though GET works fine.
