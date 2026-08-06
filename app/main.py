@@ -33,7 +33,7 @@ logging.basicConfig(level=logging.INFO)
 ROOT_DIR = Path(__file__).resolve().parent.parent
 DB_PATH = ROOT_DIR / "data" / "lawyers.sqlite3"
 FILES_DIR = DB_PATH.parent / "files"
-SCHEMA_VERSION = 5
+SCHEMA_VERSION = 6
 
 # Public base URL used for canonical/OG/sitemap links. Override in prod.
 SITE_URL = os.environ.get("SITE_URL", "http://localhost:8000").rstrip("/")
@@ -186,7 +186,7 @@ def init_db() -> None:
             CREATE TABLE IF NOT EXISTS intakes (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 name TEXT NOT NULL,
-                email TEXT NOT NULL,
+                email TEXT,
                 phone TEXT,
                 matter TEXT NOT NULL,
                 summary TEXT NOT NULL,
@@ -304,6 +304,49 @@ def migrate_schema(connection: sqlite3.Connection) -> None:
     # v9: lead acquisition source (UTM utm_source captured by the frontend).
     if "source" not in columns:
         connection.execute("ALTER TABLE intakes ADD COLUMN source TEXT")
+    # v10: email becomes optional (phone is the required channel) — rebuild so
+    # the email column is nullable (SQLite cannot alter column constraints).
+    cols_info = {r[1]: r for r in connection.execute("PRAGMA table_info(intakes)")}
+    if cols_info.get("email") and cols_info["email"][3]:
+        connection.execute("ALTER TABLE intakes RENAME TO intakes_old")
+        connection.execute(
+            """
+            CREATE TABLE intakes (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                name TEXT NOT NULL,
+                email TEXT,
+                phone TEXT,
+                matter TEXT NOT NULL,
+                summary TEXT NOT NULL,
+                country_or_region TEXT,
+                language TEXT NOT NULL DEFAULT 'zh',
+                user_agent TEXT,
+                created_at TEXT NOT NULL,
+                status TEXT NOT NULL DEFAULT 'new',
+                note TEXT,
+                consent_at TEXT,
+                score INTEGER NOT NULL DEFAULT 0,
+                updated_at TEXT,
+                source TEXT
+            )
+            """
+        )
+        connection.execute(
+            """
+            INSERT INTO intakes (
+                id, name, email, phone, matter, summary, country_or_region,
+                language, user_agent, created_at, status, note, consent_at,
+                score, updated_at, source
+            )
+            SELECT
+                id, name, email, phone, matter, summary, country_or_region,
+                language, user_agent, created_at, status, note, consent_at,
+                score, updated_at, source
+            FROM intakes_old
+            """
+        )
+        connection.execute("DROP TABLE intakes_old")
+        logger.info("Rebuilt intakes table: email is now optional")
 
     logger.info("Migrating intakes schema to version %d", SCHEMA_VERSION)
     connection.execute(f"PRAGMA user_version = {SCHEMA_VERSION}")
@@ -504,6 +547,9 @@ def _send_auto_reply(intake: dict) -> None:
     api_key = _resend_api_key()
     if not api_key:
         return
+    if not intake.get("email"):
+        # No email address — nothing to send to (phone-only leads).
+        return
 
     key = _matter_key(intake["matter"])
     materials = "\n".join(f"- {item}" for item in MATERIALS_BY_MATTER[key])
@@ -573,10 +619,11 @@ def _send_auto_reply(intake: dict) -> None:
 
 class IntakeCreate(BaseModel):
     name: Annotated[str, Field(min_length=1, max_length=80)]
-    email: Annotated[EmailStr, Field(min_length=3, max_length=254)]
+    # Email is optional — phone is the required contact channel.
+    email: Annotated[EmailStr | None, Field(max_length=254)] = None
     matter: Annotated[str, Field(min_length=1, max_length=80)]
     summary: Annotated[str, Field(min_length=1, max_length=2000)]
-    phone: Annotated[str | None, Field(max_length=60)] = None
+    phone: Annotated[str, Field(min_length=1, max_length=60)]
     country: Annotated[str | None, Field(max_length=80)] = None
     language: Annotated[str, Field(pattern="^(zh|en)$")] = "zh"
     # Acquisition channel (utm_source), captured client-side from the URL.
@@ -739,7 +786,7 @@ def _lead_score(
         score += 5
     if evidence and not any(k in evidence.lower() for k in _NO_EVIDENCE_KW):
         score += 5
-    if email and phone:
+    if email:
         score += 5
     return min(score, 100)
 

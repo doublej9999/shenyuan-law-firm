@@ -37,6 +37,7 @@ CREATE TABLE intakes (
 VALID_PAYLOAD = {
     "name": "张三",
     "email": "z@test.com",
+    "phone": "13800138000",
     "matter": "国际贸易争议",
     "summary": "客户拖欠尾款",
     "country": "美国",
@@ -177,19 +178,21 @@ def test_language_validation():
 
 def test_fields_are_trimmed():
     payload = m.IntakeCreate(
-        name="  王女士  ", email="  a@b.com  ", matter=" 贸易 ", summary=" 欠款 ", consent=True
+        name="  王女士  ", email="  a@b.com  ", phone=" 138 ", matter=" 贸易 ",
+        summary=" 欠款 ", consent=True,
     )
     assert payload.name == "王女士"
     assert payload.email == "a@b.com"
+    assert payload.phone == "138"
     assert payload.matter == "贸易"
 
 
 def test_empty_phone_and_country_become_none():
     payload = m.IntakeCreate(
         name="x", email="a@b.com", matter="m", summary="s",
-        phone="", country="", consent=True,
+        phone="123", country="", consent=True,
     )
-    assert payload.phone is None
+    assert payload.phone == "123"
     assert payload.country is None
 
 
@@ -221,10 +224,11 @@ def test_post_intake_stores_country_and_consent(tmp_db):
 
 def test_post_intake_without_optional_fields(tmp_db):
     with TestClient(m.app) as client:
+        # Phone-only lead: no email, no country.
         resp = client.post(
             "/api/intakes",
             json={
-                "name": "李四", "email": "l@test.com", "matter": "继承",
+                "name": "李四", "phone": "13900000000", "matter": "继承",
                 "summary": "遗嘱争议", "consent": True,
             },
         )
@@ -234,7 +238,17 @@ def test_post_intake_without_optional_fields(tmp_db):
         row = conn.execute("SELECT * FROM intakes").fetchone()
         conn.close()
         assert row["country_or_region"] is None
-        assert row["phone"] is None
+        assert row["email"] is None
+        assert row["phone"] == "13900000000"
+        # Phone is now required: omitting it fails validation.
+        bad = client.post(
+            "/api/intakes",
+            json={
+                "name": "李四", "email": "l@test.com", "matter": "继承",
+                "summary": "遗嘱争议", "consent": True,
+            },
+        )
+        assert bad.status_code == 422
 
 
 def test_api_rejects_missing_consent(tmp_db):
@@ -270,10 +284,11 @@ def test_rate_limit_returns_429(tmp_db):
     with TestClient(m.app) as client:
         # Unique emails so the dedupe check never fires; the rate limiter is
         # keyed by client IP, which stays the same.
+        # 6 次提交去重测试：email 和 phone 都要唯一
         statuses = [
             client.post(
                 "/api/intakes",
-                json=dict(VALID_PAYLOAD, email=f"x{i}@test.com", name="x", matter="m", summary="s"),
+                json=dict(VALID_PAYLOAD, email=f"x{i}@test.com", phone=f"13{i}00000000", name="x", matter="m", summary="s"),
             ).status_code
             for i in range(6)
         ]
@@ -1291,8 +1306,8 @@ def test_intake_source_captured_and_aggregated(tmp_db, monkeypatch):
         client.post(
             "/api/intakes",
             json={
-                "name": "李", "email": "li@example.com", "matter": "贸易",
-                "summary": "美国客户欠款", "source": "facebook", "consent": True,
+                "name": "李", "email": "li@example.com", "phone": "13800138000",
+                "matter": "贸易", "summary": "美国客户欠款", "source": "facebook", "consent": True,
             },
         )
         # Chat intake without source -> direct
