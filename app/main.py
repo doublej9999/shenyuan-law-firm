@@ -33,7 +33,7 @@ logging.basicConfig(level=logging.INFO)
 ROOT_DIR = Path(__file__).resolve().parent.parent
 DB_PATH = ROOT_DIR / "data" / "lawyers.sqlite3"
 FILES_DIR = DB_PATH.parent / "files"
-SCHEMA_VERSION = 4
+SCHEMA_VERSION = 5
 
 # Public base URL used for canonical/OG/sitemap links. Override in prod.
 SITE_URL = os.environ.get("SITE_URL", "http://localhost:8000").rstrip("/")
@@ -296,12 +296,14 @@ def migrate_schema(connection: sqlite3.Connection) -> None:
         )
         """
     )
-    # v7: CRM agent — lead score (opportunity triage) and last-touch timestamp
-    # for SLA/overdue tracking.
+    # v8: CRM Agent — lead score and last-touch timestamp.
     if "score" not in columns:
         connection.execute("ALTER TABLE intakes ADD COLUMN score INTEGER NOT NULL DEFAULT 0")
     if "updated_at" not in columns:
         connection.execute("ALTER TABLE intakes ADD COLUMN updated_at TEXT")
+    # v9: lead acquisition source (UTM utm_source captured by the frontend).
+    if "source" not in columns:
+        connection.execute("ALTER TABLE intakes ADD COLUMN source TEXT")
 
     logger.info("Migrating intakes schema to version %d", SCHEMA_VERSION)
     connection.execute(f"PRAGMA user_version = {SCHEMA_VERSION}")
@@ -577,6 +579,8 @@ class IntakeCreate(BaseModel):
     phone: Annotated[str | None, Field(max_length=60)] = None
     country: Annotated[str | None, Field(max_length=80)] = None
     language: Annotated[str, Field(pattern="^(zh|en)$")] = "zh"
+    # Acquisition channel (utm_source), captured client-side from the URL.
+    source: Annotated[str | None, Field(max_length=60)] = None
     # Explicitly required: the frontend always sends it, and omitting it must
     # fail loudly instead of silently defaulting to False (pydantic v2 does
     # not validate default values unless validate_default is set).
@@ -674,6 +678,8 @@ class ChatIntakeCreate(BaseModel):
     language: Annotated[str, Field(pattern="^(zh|en)$")] = "zh"
     consent: bool = False
     transcript: Annotated[str | None, Field(max_length=6000)] = None
+    # Acquisition channel (utm_source), captured client-side from the URL.
+    source: Annotated[str | None, Field(max_length=60)] = None
 
 
 # --- CRM Agent: lead scoring, SLA tracking, overdue reminders --------------
@@ -3032,6 +3038,19 @@ def admin_stats(request: Request) -> dict:
     }
 
 
+@app.get("/admin/api/intakes/sources", include_in_schema=False)
+@limiter.limit(ADMIN_RATE_LIMIT)
+def admin_intake_sources(request: Request) -> list[dict]:
+    """Lead counts by acquisition source (utm_source; empty -> direct)."""
+    _require_admin(request)
+    with db_connection() as connection:
+        rows = connection.execute(
+            "SELECT COALESCE(NULLIF(TRIM(source), ''), 'direct') AS src, COUNT(*) AS n "
+            "FROM intakes GROUP BY src ORDER BY n DESC, src"
+        ).fetchall()
+    return [{"source": r["src"], "count": r["n"]} for r in rows]
+
+
 @app.get("/admin/api/crm/overdue", include_in_schema=False)
 @limiter.limit(ADMIN_RATE_LIMIT)
 def admin_crm_overdue(request: Request) -> dict:
@@ -3186,9 +3205,9 @@ def create_intake(
                 INSERT INTO intakes (
                     name, email, phone, matter, summary, country_or_region,
                     language, user_agent, created_at, status, note, consent_at,
-                    score, updated_at
+                    score, updated_at, source
                 )
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'new', NULL, ?, ?, ?)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'new', NULL, ?, ?, ?, ?)
                 """,
                 (
                     payload.name,
@@ -3203,6 +3222,7 @@ def create_intake(
                     consent_at,
                     score,
                     created_at,
+                    payload.source,
                 ),
             )
     except sqlite3.Error:
@@ -3307,9 +3327,9 @@ def create_chat_intake(
                 INSERT INTO intakes (
                     name, email, phone, matter, summary, country_or_region,
                     language, user_agent, created_at, status, note, consent_at,
-                    score, updated_at
+                    score, updated_at, source
                 )
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'new', ?, ?, ?, ?)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'new', ?, ?, ?, ?, ?)
                 """,
                 (
                     payload.name,
@@ -3325,6 +3345,7 @@ def create_chat_intake(
                     created_at,
                     score,
                     created_at,
+                    payload.source,
                 ),
             )
     except sqlite3.Error:

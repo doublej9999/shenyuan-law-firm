@@ -314,6 +314,7 @@
       country: state.country || null,
       language: L,
       consent: state.consent,
+      source: new URLSearchParams(window.location.search).get("utm_source") || "",
       transcript: transcript.join("\n").slice(-4000),
     };
     fetch("/api/intakes/chat", {
