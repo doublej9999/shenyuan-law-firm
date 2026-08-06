@@ -1284,6 +1284,44 @@ def test_admin_update_touches_updated_at(tmp_db, monkeypatch):
         assert row["updated_at"] is not None
 
 
+def test_intake_source_captured_and_aggregated(tmp_db, monkeypatch):
+    monkeypatch.setenv("ADMIN_TOKEN", "secret-token")
+    with TestClient(m.app) as client:
+        # Form intake with utm_source
+        client.post(
+            "/api/intakes",
+            json={
+                "name": "李", "email": "li@example.com", "matter": "贸易",
+                "summary": "美国客户欠款", "source": "facebook", "consent": True,
+            },
+        )
+        # Chat intake without source -> direct
+        client.post(
+            "/api/intakes/chat",
+            json={"name": "赵", "contact": "zhao@example.com", "summary": "咨询继承", "consent": True},
+        )
+        # Chat intake with tiktok source
+        client.post(
+            "/api/intakes/chat",
+            json={
+                "name": "钱", "contact": "qian@example.com", "summary": "追收欠款",
+                "source": "tiktok", "consent": True,
+            },
+        )
+        conn = sqlite3.connect(tmp_db)
+        conn.row_factory = sqlite3.Row
+        rows = conn.execute("SELECT source FROM intakes ORDER BY id").fetchall()
+        conn.close()
+        assert [r["source"] for r in rows] == ["facebook", None, "tiktok"]
+        headers = {"Authorization": "Bearer secret-token"}
+        agg = client.get("/admin/api/intakes/sources", headers=headers)
+        assert agg.status_code == 200
+        by = {d["source"]: d["count"] for d in agg.json()}
+        assert by.get("facebook") == 1 and by.get("tiktok") == 1 and by.get("direct") == 1
+        # auth required
+        assert client.get("/admin/api/intakes/sources").status_code == 401
+
+
 # --- Marketing Agent: collateral generator -----------------------------------
 
 

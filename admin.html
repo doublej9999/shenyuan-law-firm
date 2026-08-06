@@ -55,6 +55,8 @@
     .hint { font-size: 12px; color: var(--muted); }
     .stats { display: flex; gap: 14px; flex-wrap: wrap; margin-bottom: 14px; }
     .score-badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 700; }
+    .src-chip { display: inline-block; padding: 4px 12px; margin: 4px 6px 0 0; background: #e9f2ef; color: var(--teal-deep, #084d50); border-radius: 14px; font-size: 12.5px; font-weight: 700; }
+    .src-row { padding: 12px 16px; }
     .score-badge.s-high { color: #fff; background: #c0392b; }
     .score-badge.s-mid { color: #7a4d00; background: #f7e3b5; }
     .score-badge.s-low { color: #54636f; background: #e6e9ec; }
@@ -87,6 +89,7 @@
     <div id="panelView" hidden>
       <div class="stats" id="statsBar"></div>
       <div id="crmBox" hidden></div>
+      <div id="sourcesBox" hidden></div>
       <div class="toolbar">
         <input type="search" id="searchInput" placeholder="搜索姓名 / 邮箱 / 电话 / 事项 / 摘要">
         <select id="statusFilter">
@@ -313,9 +316,23 @@
         } catch (e) { showError("更新失败：" + e.message); }
       }
 
+      async function loadSources() {
+        var box = document.getElementById("sourcesBox");
+        try {
+          var s = await api("/admin/api/intakes/sources");
+          if (!s.length) { box.hidden = true; return; }
+          var chips = s.map(function (r) {
+            return '<span class="src-chip">' + escapeHtml(r.source) + " " + r.count + "</span>";
+          }).join(" ");
+          box.hidden = false;
+          box.innerHTML = '<div class="crm-banner">📡 线索来源（utm_source）</div><div class="src-row">' + chips + "</div>";
+        } catch (e) { box.hidden = true; }
+      }
+
       async function load() {
         loadStats();
         loadCRM();
+        loadSources();
         var params = new URLSearchParams();
         if (state.status) params.set("status", state.status);
         if (state.q) params.set("q", state.q);

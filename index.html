@@ -1212,6 +1212,7 @@
 
       function buildPayload() {
         var formData = new FormData(form);
+        var source = new URLSearchParams(window.location.search).get("utm_source") || "";
         return {
           name: formData.get("name"),
           email: formData.get("email"),
@@ -1220,6 +1221,7 @@
           matter: formData.get("matter"),
           summary: formData.get("summary"),
           language: currentLang,
+          source: source,
           consent: document.getElementById("consent").checked
         };
       }
