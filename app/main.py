@@ -853,6 +853,14 @@ def _render_service_page(svc: dict) -> str:
     number = svc["number"]
     ga_tag = _ga_tag()
     og_image = OG_IMAGE
+    crumbs_html, crumbs_jsonld = _crumbs([
+        ("首页", f"{SITE_URL}/"),
+        (zh_title[:20], f"{SITE_URL}/services/{svc['slug']}"),
+    ])
+    related = _related_html(
+        [a for a in _related_articles({"slug": "__svc__", "business": svc["slug"]})],
+        base="/articles",
+    )
     return f"""<!doctype html>
 <html lang="zh-CN">
 <head>
@@ -886,6 +894,7 @@ def _render_service_page(svc: dict) -> str:
     "areaServed": "Worldwide"
   }}
   </script>
+  {crumbs_jsonld}
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
@@ -917,6 +926,14 @@ def _render_service_page(svc: dict) -> str:
     .lang-switch {{ padding: 7px 10px; color: rgba(255,255,255,.85); background: transparent; border: 1px solid rgba(255,255,255,.3); border-radius: 6px; font-size: 12px; }}
 
     .hero {{ padding: 64px 0 34px; }}
+    .crumbs {{ display:flex; flex-wrap:wrap; gap:6px; align-items:center; font-size:12.5px; color:var(--muted); padding:22px 0 0; }}
+    .crumbs a {{ color:var(--teal); }}
+    .crumb-sep {{ color:#b9c2c9; }}
+    .related {{ margin:40px 0 10px; padding:20px 24px; background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); }}
+    .related h3 {{ font-size:16px; margin:0 0 12px; color:var(--teal-deep); }}
+    .related ul {{ margin:0; padding-left:0; list-style:none; }}
+    .related li {{ margin:8px 0; }}
+    .related a {{ color:var(--teal); font-weight:600; font-size:14px; }}
     .number {{ color: var(--gold); font-size: 13px; font-weight: 800; letter-spacing: .08em; }}
     h1 {{ margin: 16px 0 10px; font-size: clamp(32px, 4.4vw, 50px); line-height: 1.14; letter-spacing: -.01em; }}
     .en-sub {{ color: var(--muted); font-size: 15px; }}
@@ -967,7 +984,8 @@ def _render_service_page(svc: dict) -> str:
   </div>
 
   <div class="wrap hero">
-    <div class="number">{number}</div>
+    {crumbs_html}
+    <div class="number" data-zh="服务 · {number}" data-en="SERVICE · {number}">服务 · {number}</div>
     <h1 data-zh="{zh_title}" data-en="{en_title}">{zh_title}</h1>
     <div class="en-sub" data-zh="跨境争议解决与家族资产保护" data-en="Cross-border dispute resolution & family asset protection">跨境争议解决与家族资产保护</div>
     <p class="intro" data-zh="{zh_intro}" data-en="{en_intro}">{zh_intro}</p>
@@ -994,6 +1012,8 @@ def _render_service_page(svc: dict) -> str:
     <a class="button" href="/#intake" data-zh="免费评估我的案件 →" data-en="Free case assessment →">免费评估我的案件 →</a>
     <p class="note" data-zh="提交不代表建立委托关系。初步咨询不收费，不承诺结果。" data-en="Submitting does not create an attorney-client relationship. Initial consultation is free and honest.">提交不代表建立委托关系。初步咨询不收费，不承诺结果。</p>
   </div>
+
+  {related}
 
   <footer>
     © 2026 Shenyuan International · 深远(国际)律师事务所<br>
@@ -1025,12 +1045,35 @@ def _render_service_page(svc: dict) -> str:
 </html>"""
 
 
+def _whatsapp_button() -> str:
+    """WhatsApp quick-consult link (shown only when WHATSAPP_NUMBER is set)."""
+    number = os.environ.get("WHATSAPP_NUMBER", "").strip()
+    if not number:
+        return ""
+    digits = "".join(ch for ch in number if ch.isdigit())
+    if not digits:
+        return ""
+    href = f"https://wa.me/{digits}"
+    return (
+        '<div class="contact-options wa-options">'
+        '<a class="wa-btn" href="' + href + '" target="_blank" rel="noopener">'
+        '<strong data-zh="WhatsApp 快速咨询" data-en="Quick WhatsApp consult">WhatsApp 快速咨询</strong>'
+        '<p data-zh="海外客户可通过 WhatsApp 直接留言，24 小时内回复。" data-en="Overseas clients can message us on WhatsApp — we reply within 24 hours.">'
+        "海外客户可通过 WhatsApp 直接留言，24 小时内回复。</p></a></div>"
+    )
+
+
 @app.api_route("/", methods=["GET", "HEAD"], include_in_schema=False)
 def read_index() -> Response:
     _record_page_view()
     html = (ROOT_DIR / "index.html").read_text(encoding="utf-8")
+    html = (
+        html.replace("{{SITE_URL}}", SITE_URL)
+        .replace("{{GA_TAG}}", _ga_tag())
+        .replace("{{WHATSAPP_BUTTON}}", _whatsapp_button())
+    )
     return Response(
-        content=html.replace("{{SITE_URL}}", SITE_URL).replace("{{GA_TAG}}", _ga_tag()),
+        content=html,
         media_type="text/html; charset=utf-8",
     )
 
@@ -1040,7 +1083,11 @@ def read_index() -> Response:
 def read_index_en() -> Response:
     _record_page_view()
     html = (ROOT_DIR / "index.html").read_text(encoding="utf-8")
-    html = html.replace("{{SITE_URL}}", SITE_URL).replace("{{GA_TAG}}", _ga_tag())
+    html = (
+        html.replace("{{SITE_URL}}", SITE_URL)
+        .replace("{{GA_TAG}}", _ga_tag())
+        .replace("{{WHATSAPP_BUTTON}}", _whatsapp_button())
+    )
     html = _en_variant(html)
     html = _swap_meta(html, "meta name=\"description\"", _EN_HOME_DESC)
     html = _swap_meta(html, "meta property=\"og:title\"", _EN_HOME_TITLE)
@@ -1071,6 +1118,14 @@ def robots() -> Response:
             "User-agent: PerplexityBot\n"
             "Allow: /\n"
             "User-agent: Google-Extended\n"
+            "Allow: /\n"
+            "\n"
+            "# Chinese search engines:\n"
+            "User-agent: Baiduspider\n"
+            "Allow: /\n"
+            "User-agent: Sogou web spider\n"
+            "Allow: /\n"
+            "User-agent: 360Spider\n"
             "Allow: /\n"
             "\n"
             f"Sitemap: {SITE_URL}/sitemap.xml\n"
@@ -1280,6 +1335,61 @@ def _article_html(article: dict) -> tuple[str, str]:
     """Render zh/en markdown bodies to HTML (extra enables tables, etc.)."""
     render = lambda text: markdown.markdown(text, extensions=["extra", "sane_lists"])
     return render(article["zh"]), render(article["en"])
+
+
+def _related_articles(meta: dict, limit: int = 3) -> list[dict]:
+    """Internal-link candidates: same business line first, then latest others."""
+    biz_key = _business_key(meta.get("business", ""))
+    others = [a for a in _load_articles() if a["meta"]["slug"] != meta["slug"]]
+    same = [a for a in others if _business_key(a["meta"].get("business", "")) == biz_key]
+    rest = [a for a in others if a not in same]
+    same.sort(key=lambda a: a["meta"].get("date", ""), reverse=True)
+    rest.sort(key=lambda a: a["meta"].get("date", ""), reverse=True)
+    return (same + rest)[:limit]
+
+
+def _related_html(articles: list[dict], base: str = "/articles") -> str:
+    """Bilingual 'related reading' block (empty when no candidates)."""
+    if not articles:
+        return ""
+    cards = []
+    for a in articles:
+        meta = a["meta"]
+        slug = html.escape(meta["slug"])
+        title_zh = html.escape(meta.get("title_zh", ""))
+        title_en = html.escape(meta.get("title_en", ""))
+        cards.append(
+            f'<li><a href="{base}/{slug}" data-zh="{title_zh}" data-en="{title_en}">{title_zh}</a></li>'
+        )
+    return (
+        '<div class="related"><h3 data-zh="延伸阅读" data-en="Related reading">延伸阅读</h3>'
+        "<ul>" + "".join(cards) + "</ul></div>"
+    )
+
+
+def _crumbs(items: list[tuple[str, str]]) -> tuple[str, str]:
+    """Visual breadcrumbs + BreadcrumbList JSON-LD. items = [(name_zh, url), ...]."""
+    parts = []
+    for i, (name_zh, url) in enumerate(items):
+        safe_name = html.escape(name_zh)
+        if i == len(items) - 1:
+            parts.append(f'<span class="crumb" data-zh="{safe_name}" data-en="{safe_name}">{safe_name}</span>')
+        else:
+            parts.append(f'<a class="crumb" href="{url}" data-zh="{safe_name}" data-en="{safe_name}">{safe_name}</a>')
+        if i < len(items) - 1:
+            parts.append('<span class="crumb-sep">›</span>')
+    crumbs_html = '<nav class="crumbs" aria-label="Breadcrumb">' + "".join(parts) + "</nav>"
+    items_json = ",".join(
+        f'{{"@type": "ListItem", "position": {i}, "name": "{html.escape(name)}", "item": "{url}"}}'
+        for i, (name, url) in enumerate(items, start=1)
+    )
+    jsonld = (
+        '<script type="application/ld+json">\n'
+        '{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": ['
+        + items_json
+        + "]}\n</script>"
+    )
+    return crumbs_html, jsonld
 
 
 # ---------- Marketing Agent: collateral generator ---------------------------
@@ -1667,6 +1777,7 @@ _ARTICLE_PAGE_TEMPLATE = """<!doctype html>
   <meta name="twitter:image" content="{og_image}">
   {ga_tag}
   <title>{title_zh} | Shenyuan International</title>
+  {breadcrumb_jsonld}
   <script type="application/ld+json">
   {{
     "@context": "https://schema.org",
@@ -1723,6 +1834,14 @@ _ARTICLE_PAGE_TEMPLATE = """<!doctype html>
     .button:hover {{ background:#c85d2e; }}
     footer {{ background:#15232d; color:rgba(255,255,255,.72); font-size:12px; padding:22px 0; text-align:center; line-height:1.7; }}
     footer a {{ color:rgba(255,255,255,.85); }}
+    .crumbs {{ display:flex; flex-wrap:wrap; gap:6px; align-items:center; font-size:12.5px; color:var(--muted); padding:22px 0 0; }}
+    .crumbs a {{ color:var(--teal); }}
+    .crumb-sep {{ color:#b9c2c9; }}
+    .related {{ margin:30px 0 10px; padding:20px 24px; background:var(--surface); border:1px solid var(--line); border-radius:10px; }}
+    .related h3 {{ font-size:16px; margin:0 0 12px; color:var(--teal-deep); }}
+    .related ul {{ margin:0; padding-left:0; list-style:none; }}
+    .related li {{ margin:8px 0; }}
+    .related a {{ color:var(--teal); font-weight:600; font-size:14px; }}
     @media (max-width:720px) {{ .topbar .wrap {{ min-height:60px; }} .article-body table {{ font-size:12.5px; }} }}
   </style>
 </head>
@@ -1735,6 +1854,7 @@ _ARTICLE_PAGE_TEMPLATE = """<!doctype html>
       <button class="lang-switch" type="button" id="langToggle" aria-label="切换语言">EN / 中</button>
     </div>
   </div></div>
+  {crumbs}
   <div class="wrap article-head">
     <div class="a-meta"><span class="a-tag">{tag_zh}</span><span data-zh="发布于" data-en="Published">发布于</span><span>{date}</span></div>
     <h1 data-zh="{title_zh}" data-en="{title_en}">{title_zh}</h1>
@@ -1747,6 +1867,7 @@ _ARTICLE_PAGE_TEMPLATE = """<!doctype html>
     <p data-zh="提交基本信息，我们会判断时效、证据与可行路径——免费评估，不承诺结果。" data-en="Share the basics and we will review the limitation period, evidence, and viable paths — free, honest, no promised outcomes.">提交基本信息，我们会判断时效、证据与可行路径——免费评估，不承诺结果。</p>
     <a class="button" href="/#intake" data-zh="免费法律咨询 →" data-en="Free legal consultation →">免费法律咨询 →</a>
   </div>
+  {related}
   <footer>© 2026 Shenyuan International · 深远(国际)律师事务所 · <a href="/articles" data-zh="法律专栏" data-en="Legal insights">法律专栏</a></footer>
   <script>
     (function () {{
@@ -1822,6 +1943,11 @@ def article_page(slug: str) -> Response:
     body_zh, body_en = _article_html(article)
     meta = article["meta"]
     biz = BUSINESS_LABELS.get(meta.get("business", ""), ("法律专栏", "Legal"))
+    crumbs_html, crumbs_jsonld = _crumbs([
+        ("首页", f"{SITE_URL}/"),
+        ("法律专栏", f"{SITE_URL}/articles"),
+        (meta.get("title_zh", "")[:24], f"{SITE_URL}/articles/{meta['slug']}"),
+    ])
     content = _ARTICLE_PAGE_TEMPLATE.format(
         site_url=SITE_URL,
         slug=html.escape(meta["slug"]),
@@ -1834,6 +1960,9 @@ def article_page(slug: str) -> Response:
         body_zh=body_zh,
         body_en=body_en,
         ga_tag=_ga_tag(),
+        crumbs=crumbs_html,
+        breadcrumb_jsonld=crumbs_jsonld,
+        related=_related_html(_related_articles(meta)),
         # Raw (unescaped) values for the JSON-LD block — escaping would corrupt JSON.
         json_title_zh=meta.get("title_zh", ""),
         json_desc_zh=meta.get("description_zh", ""),
@@ -1903,6 +2032,14 @@ _PAGE_CSS = """
     h1, h2, h3, p { margin: 0; }
     h1, h2, h3 { font-family: var(--serif); }
     .wrap { width: min(calc(100% - 40px), var(--max)); margin: 0 auto; }
+    .crumbs { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; font-size: 12.5px; color: var(--muted); padding: 22px 0 0; }
+    .crumbs a { color: var(--teal); }
+    .crumb-sep { color: #b9c2c9; }
+    .related { margin: 40px 0 10px; padding: 20px 24px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); }
+    .related h3 { font-size: 16px; margin: 0 0 12px; color: var(--teal-deep); }
+    .related ul { margin: 0; padding-left: 0; list-style: none; }
+    .related li { margin: 8px 0; }
+    .related a { color: var(--teal); font-weight: 600; font-size: 14px; }
     .topbar { background: var(--teal-deep); color: #f5f2ec; }
     .topbar .wrap { display: flex; justify-content: space-between; align-items: center; min-height: 66px; gap: 18px; }
     .topbar .brand { display: inline-flex; align-items: center; gap: 10px; color: #fff; font-size: 14px; font-weight: 700; }
@@ -2467,6 +2604,15 @@ def _render_country_page(country: dict, slug: str) -> str:
     ga_tag = _ga_tag()
     og_image = OG_IMAGE
     faq_jsonld = _country_faq_jsonld(country)
+    crumbs_html, crumbs_jsonld = _crumbs([
+        ("首页", f"{SITE_URL}/"),
+        ("国家专页", f"{SITE_URL}/countries"),
+        (country["name_zh"], f"{SITE_URL}/countries/{slug}"),
+    ])
+    related = _related_html(
+        _related_articles({"slug": f"__{slug}__", "business": ""}),
+        base="/articles",
+    )
     return f"""<!doctype html>
 <html lang="zh-CN">
 <head>
@@ -2501,6 +2647,7 @@ def _render_country_page(country: dict, slug: str) -> str:
   }}
   </script>
   {faq_jsonld}
+  {crumbs_jsonld}
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
@@ -2518,6 +2665,7 @@ def _render_country_page(country: dict, slug: str) -> str:
     </div>
   </div>
   <div class="wrap hero">
+    {crumbs_html}
     <div class="number" data-zh="国家专页 · {country['name_zh']}" data-en="COUNTRY PAGE · {country['name_en']}">国家专页 · {country['name_zh']}</div>
     <h1 data-zh="{country['zh_title']}" data-en="{country['en_title']}">{country['zh_title']}</h1>
     <div class="en-sub" data-zh="跨境争议解决与家族资产保护" data-en="Cross-border dispute resolution & family asset protection">跨境争议解决与家族资产保护</div>
@@ -2542,6 +2690,9 @@ def _render_country_page(country: dict, slug: str) -> str:
     <a class="button" href="/#intake" data-zh="免费评估我的案件 →" data-en="Free case assessment →">免费评估我的案件 →</a>
     <p class="note" data-zh="提交不代表建立委托关系。初步咨询不收费，不承诺结果。" data-en="Submitting does not create an attorney-client relationship. Initial consultation is free and honest.">提交不代表建立委托关系。初步咨询不收费，不承诺结果。</p>
   </div>
+
+  {related}
+
   <footer>
     © 2026 Shenyuan International · 深远(国际)律师事务所<br>
     <span data-zh="境外法律程序通过与当地执业律所合作提供。本页内容不构成法律意见。" data-en="Foreign proceedings are conducted through locally licensed counsel. This page does not constitute legal advice.">境外法律程序通过与当地执业律所合作提供。本页内容不构成法律意见。</span>
@@ -2739,8 +2890,25 @@ def wechat_qrcode() -> FileResponse:
 
 
 @app.get("/api/health")
-def health() -> dict[str, str]:
+def health() -> dict:
     return {"status": "ok"}
+
+
+@app.get("/vcard.vcf", include_in_schema=False)
+def vcard() -> Response:
+    """Electronic business card (vCard 3.0). Contact info via env; 404 when unset."""
+    name = os.environ.get("CONTACT_NAME", "Shenyuan International 深远(国际)律师事务所")
+    email = os.environ.get("CONTACT_EMAIL", "")
+    phone = os.environ.get("CONTACT_PHONE", "")
+    if not (email or phone):
+        raise HTTPException(status_code=404, detail="Contact not configured")
+    lines = ["BEGIN:VCARD", "VERSION:3.0", f"FN:{name}", f"ORG:{name}", f"URL:{SITE_URL}"]
+    if email:
+        lines.append(f"EMAIL:{email}")
+    if phone:
+        lines.append(f"TEL:{phone}")
+    lines.append("END:VCARD")
+    return Response(content="\n".join(lines) + "\n", media_type="text/vcard; charset=utf-8")
 
 
 @app.get("/admin", include_in_schema=False)
