@@ -1411,9 +1411,56 @@ def test_robots_allows_ai_crawlers_and_llms(tmp_db):
     # GEO: AI crawlers explicitly allowed; llms.txt advertised in robots.
     with TestClient(m.app) as client:
         robots = client.get("/robots.txt").text
-        for agent in ("GPTBot", "ClaudeBot", "PerplexityBot", "Google-Extended"):
+        for agent in ("GPTBot", "ClaudeBot", "PerplexityBot", "Google-Extended",
+                      "Baiduspider", "Sogou web spider", "360Spider"):
             assert f"User-agent: {agent}" in robots, agent
         assert "LLMtxt: http://localhost:8000/llms.txt" in robots
+
+
+def test_related_reading_and_breadcrumbs(tmp_db):
+    with TestClient(m.app) as client:
+        # Article page: related block + BreadcrumbList JSON-LD
+        article = client.get("/articles/trade-payment-recovery-5-steps").text
+        assert "延伸阅读" in article
+        assert 'class="related"' in article
+        assert 'href="/articles/recovery-' in article  # same-business suggestion
+        assert "BreadcrumbList" in article
+        assert 'class="crumbs"' in article
+        # Service page: crumbs + related
+        service = client.get("/services/trade").text
+        assert "BreadcrumbList" in service
+        assert 'class="crumbs"' in service
+        assert "延伸阅读" in service
+        # Country page: crumbs (3 levels) + related
+        country = client.get("/countries/united-states").text
+        assert "BreadcrumbList" in country
+        assert 'class="crumbs"' in country
+        assert "国家专页" in country
+        assert "延伸阅读" in country
+
+
+def test_vcard_and_whatsapp_are_env_gated(tmp_db, monkeypatch):
+    monkeypatch.delenv("CONTACT_EMAIL", raising=False)
+    monkeypatch.delenv("CONTACT_PHONE", raising=False)
+    monkeypatch.delenv("WHATSAPP_NUMBER", raising=False)
+    with TestClient(m.app) as client:
+        assert client.get("/vcard.vcf").status_code == 404
+        home = client.get("/").text
+        assert "WHATSAPP_BUTTON" not in home  # placeholder resolved to empty
+        assert "wa.me" not in home
+    # Configured: vCard served, WhatsApp button appears
+    monkeypatch.setenv("CONTACT_EMAIL", "info@shenyuanlegal.com")
+    monkeypatch.setenv("WHATSAPP_NUMBER", "+86 138 0000 0000")
+    with TestClient(m.app) as client:
+        vc = client.get("/vcard.vcf")
+        assert vc.status_code == 200
+        assert "BEGIN:VCARD" in vc.text and "info@shenyuanlegal.com" in vc.text
+        assert "text/vcard" in vc.headers["content-type"]
+        home = client.get("/").text
+        assert "wa.me/8613800000000" in home
+        en_home = client.get("/en/").text
+        assert "wa.me/8613800000000" in en_home
+        assert "{{WHATSAPP_BUTTON}}" not in en_home
 
 
 def test_llms_txt_curates_site(tmp_db):
