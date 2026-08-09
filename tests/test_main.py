@@ -871,6 +871,14 @@ def test_article_pages_render_bilingual(tmp_db):
             "legacy-relative-dies-abroad-china-heirs",
             "legacy-inheriting-overseas-property-us-canada-australia",
             "recovery-types-of-commercial-fraud-contracts-investments-exports",
+            "trade-jurisdiction-governing-law-clauses-how-to-negotiate",
+            "recovery-won-the-case-but-no-money-enforcement-strategies",
+            "legacy-foreign-heirs-inheriting-china-company-shares",
+            "legacy-cross-border-inheritance-from-death-certificate-to-transfer",
+            "trade-supplier-late-delivery-buyer-s-legal-remedies",
+            "recovery-investigating-assets-inside-china-equity-property-deposits",
+            "legacy-making-a-will-abroad-does-it-cover-china-assets",
+            "trade-first-24-hours-after-trade-fraud-evidence-and-freezing",
         ):
             resp = client.get(f"/articles/{slug}")
             assert resp.status_code == 200, slug
@@ -1476,7 +1484,7 @@ def test_related_reading_and_breadcrumbs(tmp_db):
         article = client.get("/articles/trade-payment-recovery-5-steps").text
         assert "延伸阅读" in article
         assert 'class="related"' in article
-        assert 'href="/articles/recovery-' in article  # same-business suggestion
+        assert 'href="/articles/trade-' in article  # same-business suggestion
         assert "BreadcrumbList" in article
         assert 'class="crumbs"' in article
         # Service page: crumbs + related
