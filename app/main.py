@@ -823,6 +823,56 @@ def _overdue_leads() -> list[dict]:
     return leads
 
 
+def _stale_leads(days: int = 30, limit: int = 10) -> list[dict]:
+    """Churn-risk leads: not closed and untouched for N days (流失预警)."""
+    now = datetime.now(timezone.utc)
+    cutoff = (now - timedelta(days=days)).isoformat()
+    with db_connection() as connection:
+        rows = connection.execute(
+            """
+            SELECT id, name, email, phone, matter, summary, score, status,
+                   created_at, updated_at
+            FROM intakes
+            WHERE status != 'closed' AND COALESCE(updated_at, created_at) < ?
+            ORDER BY score DESC, COALESCE(updated_at, created_at) ASC
+            LIMIT ?
+            """,
+            (cutoff, limit),
+        ).fetchall()
+    leads = []
+    for row in rows:
+        lead = dict(row)
+        last_touch = lead.get("updated_at") or lead["created_at"]
+        try:
+            lead["stale_days"] = round(
+                (now - datetime.fromisoformat(last_touch)).total_seconds() / 86400, 1
+            )
+        except (ValueError, TypeError):
+            lead["stale_days"] = days
+        leads.append(lead)
+    return leads
+
+
+def _post_webhook(url: str, text: str) -> None:
+    """Best-effort push to the configured notification webhook (WeCom-style JSON)."""
+    payload = json.dumps({"msgtype": "text", "text": {"content": text}}).encode("utf-8")
+    request = urllib.request.Request(url, method="POST")
+    request.add_header("Content-Type", "application/json")
+    request.add_header("User-Agent", "shenyuan-law-firm/1.0")
+    request.data = payload
+    try:
+        with urllib.request.urlopen(request, timeout=5) as response:
+            body = response.read()
+        try:
+            result = json.loads(body.decode("utf-8", errors="replace"))
+            if result.get("errcode"):
+                logger.error("Webhook rejected: %s", result.get("errmsg", result))
+        except ValueError:
+            pass
+    except Exception:
+        logger.exception("Failed to send webhook notification")
+
+
 def _send_crm_reminder(leads: list[dict]) -> None:
     """Post a digest of overdue leads to the notification webhook (fire-and-forget)."""
     url = _notify_webhook_url()
@@ -844,23 +894,7 @@ def _send_crm_reminder(leads: list[dict]) -> None:
     if len(leads) > 5:
         lines.append(f"… 共 {len(leads)} 条，其余见后台")
     lines.append("后台处理：/admin")
-    content = "\n".join(lines)
-    payload = json.dumps({"msgtype": "text", "text": {"content": content}}).encode("utf-8")
-    request = urllib.request.Request(url, method="POST")
-    request.add_header("Content-Type", "application/json")
-    request.add_header("User-Agent", "shenyuan-law-firm/1.0")
-    request.data = payload
-    try:
-        with urllib.request.urlopen(request, timeout=5) as response:
-            body = response.read()
-        try:
-            result = json.loads(body.decode("utf-8", errors="replace"))
-            if result.get("errcode"):
-                logger.error("CRM reminder webhook rejected: %s", result.get("errmsg", result))
-        except ValueError:
-            pass
-    except Exception:
-        logger.exception("Failed to send CRM reminder webhook")
+    _post_webhook(url, "\n".join(lines))
 
 
 def _crm_reminder_loop(stop_event: threading.Event) -> None:
@@ -872,6 +906,21 @@ def _crm_reminder_loop(stop_event: threading.Event) -> None:
             if leads:
                 _send_crm_reminder(leads)
                 logger.info("CRM reminder sent for %d overdue leads", len(leads))
+            stale = _stale_leads()
+            if stale:
+                url = _notify_webhook_url()
+                if url:
+                    lines = [
+                        "【CRM 流失预警】",
+                        f"以下 {len(stale)} 条线索超过 30 天未跟进，存在流失风险：",
+                        "",
+                    ] + [
+                        f"- #{l['id']} {l.get('name', '?')} · {l.get('matter', '')[:16]} · "
+                        f"评分{l.get('score') or 0} · {l['stale_days']} 天未动"
+                        for l in stale
+                    ]
+                    _post_webhook(url, "\n".join(lines))
+                    logger.info("CRM churn alert sent for %d stale leads", len(stale))
         except Exception:
             logger.exception("CRM reminder loop iteration failed")
 
@@ -1847,6 +1896,11 @@ def admin_marketing_generate(
     else:
         biz = business if business in _MARKETING_KW else "unsure"
         url = f"{SITE_URL}/services/{biz}" if biz in ("trade", "recovery", "legacy") else f"{SITE_URL}/articles"
+    log_audit(
+        request.client.host if request.client else "",
+        "marketing.generate",
+        f"{slug or business or 'unsure'} :: {biz}",
+    )
     return _marketing_bundle(article, biz, url)
 
 
@@ -3227,11 +3281,14 @@ def admin_crm_overdue(request: Request) -> dict:
     """CRM Agent: leads past their follow-up SLA, highest score first."""
     _require_admin(request)
     leads = _overdue_leads()
+    stale = _stale_leads()
     return {
         "count": len(leads),
         "first_sla_hours": _crm_first_sla_hours(),
         "progress_sla_days": _crm_progress_sla_days(),
         "leads": leads,
+        "stale_count": len(stale),
+        "stale": stale,
     }
 
 
