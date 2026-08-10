@@ -1445,6 +1445,129 @@ def _crumbs(items: list[tuple[str, str]]) -> tuple[str, str]:
     return crumbs_html, jsonld
 
 
+# ---------- Case Research Agent: knowledge base, search, memo drafts -------
+
+_KB_DIR = ROOT_DIR / "legal_kb"
+
+_MATTER_META = {
+    "trade": {
+        "label": "国际贸易争议",
+        "next": [
+            "核对合同与凭证：订单、提单、验收单、往来邮件——确认欠款金额与违约事实",
+            "发正式催款函（模板见知识库 templates/demand-letter.md），保留送达凭证",
+            "确认合同争议解决条款：优先仲裁（HKIAC/SIAC）优于诉讼（执行便利性）",
+            "评估诉讼时效（中国法 3 年）与证据完整性，必要时申请财产保全",
+        ],
+    },
+    "recovery": {
+        "label": "诉讼与债务追收",
+        "next": [
+            "定位债务人资产：境内（股权/房产/存款）与境外（各国执行路径见知识库）",
+            "判断执行路径：外国判决执行成功率低，评估在当地重新起诉",
+            "如为仲裁裁决，确认纽约公约成员国与承认条件",
+            "启动财产保全防止资产转移，同步评估时效与成本",
+        ],
+    },
+    "legacy": {
+        "label": "继承与家族资产",
+        "next": [
+            "按知识库 templates/probate-checklist.md 收集材料清单",
+            "区分动产（死亡时经常居所地法）与不动产（所在地法）两条路径",
+            "死亡证明等外国文件走海牙/领事认证 + 有资质翻译",
+            "确认遗产税申报义务后再操作过户（美/英/德/日等国）",
+        ],
+    },
+}
+
+
+def _kb_search(query: str, top: int = 5) -> list[dict]:
+    """Search the Case Research knowledge base (title hits weigh more)."""
+    q = query.strip().lower()
+    if not q or not _KB_DIR.exists():
+        return []
+    tokens = [t for t in re.split(r"[,\s，。、/]+", q) if len(t) >= 2]
+    if not tokens:
+        return []
+    results = []
+    for path in sorted(_KB_DIR.rglob("*.md")):
+        text = path.read_text(encoding="utf-8")
+        lines = text.splitlines()
+        title = path.stem
+        score = 0
+        for t in tokens:
+            tl = t.lower()
+            if tl in title.lower():
+                score += 3
+            if tl in text.lower():
+                score += 1
+        if not score:
+            continue
+        snippet = next(
+            (ln.strip()[:120] for ln in lines if any(t.lower() in ln.lower() for t in tokens)),
+            (lines[0].strip()[:120] if lines else ""),
+        )
+        results.append(
+            {
+                "path": str(path.relative_to(_KB_DIR)),
+                "title": title,
+                "score": score,
+                "snippet": snippet,
+            }
+        )
+    results.sort(key=lambda r: r["score"], reverse=True)
+    return results[:top]
+
+
+class ResearchMemoCreate(BaseModel):
+    matter_type: Annotated[str, Field(pattern="^(trade|recovery|legacy)$")]
+    facts: Annotated[str, Field(min_length=10, max_length=2000)]
+    amount: Annotated[str, Field(max_length=200)] = ""
+    country: Annotated[str | None, Field(max_length=120)] = None
+
+
+def _research_memo(payload: ResearchMemoCreate) -> dict:
+    """Rule-based initial memo draft: links KB hits + per-line next steps."""
+    meta = _MATTER_META[payload.matter_type]
+    hits = _kb_search(f"{payload.facts} {payload.country or ''} {meta['label']}", top=4)
+    return {
+        "matter_type": payload.matter_type,
+        "label": meta["label"],
+        "facts": payload.facts.strip(),
+        "amount": payload.amount.strip(),
+        "country": payload.country.strip() if payload.country else "",
+        "kb_hits": hits,
+        "next_steps": meta["next"],
+        "disclaimer": "本备忘录由 Case Research Agent 依据内部知识库自动生成，仅供内部研究参考，不构成法律意见；对外使用前须经执业律师复核签字。",
+    }
+
+
+@app.get("/admin/api/research/search", include_in_schema=False)
+@limiter.limit(ADMIN_RATE_LIMIT)
+def admin_research_search(request: Request, q: str = "", top: int = 5) -> list[dict]:
+    _require_admin(request)
+    results = _kb_search(q, top=max(1, min(top, 20)))
+    log_audit(request.client.host if request.client else "", "research.search", q[:120])
+    return results
+
+
+@app.post("/admin/api/research/memo", include_in_schema=False)
+@limiter.limit(ADMIN_RATE_LIMIT)
+def admin_research_memo(payload: ResearchMemoCreate, request: Request) -> dict:
+    _require_admin(request)
+    memo = _research_memo(payload)
+    log_audit(
+        request.client.host if request.client else "",
+        "research.memo",
+        f"{payload.matter_type} :: {payload.facts[:120]}",
+    )
+    return memo
+
+
+@app.get("/admin/research", include_in_schema=False)
+def admin_research_page() -> FileResponse:
+    return FileResponse(ROOT_DIR / "admin_research.html", media_type="text/html; charset=utf-8")
+
+
 # ---------- Marketing Agent: collateral generator ---------------------------
 
 _MARKETING_KW = {

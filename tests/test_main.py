@@ -1500,6 +1500,70 @@ def test_related_reading_and_breadcrumbs(tmp_db):
         assert "延伸阅读" in country
 
 
+# --- Case Research Agent ------------------------------------------------
+
+
+def test_kb_search_finds_statutes_and_practice(tmp_db, monkeypatch):
+    monkeypatch.setenv("ADMIN_TOKEN", "secret-token")
+    with TestClient(m.app) as client:
+        # Unauthorized
+        assert client.get("/admin/api/research/search?q=时效").status_code == 401
+        headers = {"Authorization": "Bearer secret-token"}
+        hits = client.get("/admin/api/research/search?q=时效 判决执行", headers=headers).json()
+        assert hits, "knowledge base should return hits"
+        paths = {h["path"] for h in hits}
+        assert any("statutes" in p for p in paths)
+        assert any("practice" in p for p in paths)
+        # Every hit carries a snippet
+        assert all(h.get("snippet") for h in hits)
+
+
+def test_research_memo_generation(tmp_db, monkeypatch):
+    monkeypatch.setenv("ADMIN_TOKEN", "secret-token")
+    with TestClient(m.app) as client:
+        headers = {"Authorization": "Bearer secret-token", "Content-Type": "application/json"}
+        memo = client.post(
+            "/admin/api/research/memo",
+            json={
+                "matter_type": "recovery",
+                "facts": "美国客户收货后拖欠货款 45 万美元，逾期 6 个月，合同约定纽约法管辖",
+                "amount": "45 万美元",
+                "country": "美国",
+            },
+            headers=headers,
+        )
+        assert memo.status_code == 200
+        data = memo.json()
+        assert data["label"] == "诉讼与债务追收"
+        assert data["facts"].startswith("美国客户")
+        assert len(data["kb_hits"]) > 0
+        assert any("时效" in h["snippet"] for h in data["kb_hits"]) or any("美国" in h["snippet"] for h in data["kb_hits"])
+        assert data["next_steps"]
+        assert "不构成法律意见" in data["disclaimer"]
+        # Invalid matter type rejected
+        bad = client.post(
+            "/admin/api/research/memo",
+            json={"matter_type": "tax", "facts": "x" * 20},
+            headers=headers,
+        )
+        assert bad.status_code == 422
+        # Audit trail written
+        conn = sqlite3.connect(tmp_db)
+        n = conn.execute("SELECT COUNT(*) FROM audit_log WHERE action LIKE 'research.%'").fetchone()[0]
+        conn.close()
+        assert n >= 1
+
+
+def test_admin_research_page_and_dockerfile_ship_it(tmp_db):
+    with TestClient(m.app) as client:
+        resp = client.get("/admin/research")
+        assert resp.status_code == 200
+        assert "案件研究" in resp.text
+    dockerfile = (Path(__file__).resolve().parent.parent / "Dockerfile").read_text(encoding="utf-8")
+    assert "COPY admin_research.html" in dockerfile
+    assert "COPY legal_kb ./legal_kb" in dockerfile
+
+
 def test_vcard_and_whatsapp_are_env_gated(tmp_db, monkeypatch):
     monkeypatch.delenv("CONTACT_EMAIL", raising=False)
     monkeypatch.delenv("CONTACT_PHONE", raising=False)

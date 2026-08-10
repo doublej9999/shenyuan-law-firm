@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>案件研究 · Case Research</title>
+<style>
+  :root { --ink:#172433; --muted:#627180; --paper:#f6f3ed; --surface:#fffdf9;
+          --line:#d9d9d2; --teal:#0d6c6b; --teal-deep:#084d50; --orange:#d76e39; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--paper); color:var(--ink); font-family:"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif; line-height:1.6; }
+  .topbar { background:var(--teal-deep); color:#f5f2ec; padding:14px 24px; display:flex; align-items:center; gap:16px; }
+  .topbar a { color:rgba(255,255,255,.85); font-size:13px; text-decoration:none; margin-left:auto; }
+  .wrap { width:min(calc(100% - 40px), 1000px); margin:28px auto; }
+  h1 { font-size:22px; margin:0 0 4px; }
+  .sub { color:var(--muted); font-size:13px; margin-bottom:22px; }
+  .card { background:var(--surface); border:1px solid var(--line); border-radius:10px; padding:18px 20px; margin-bottom:16px; }
+  .card h2 { font-size:15px; margin:0 0 12px; color:var(--teal-deep); }
+  input, select, textarea { font:inherit; padding:9px 12px; border:1px solid var(--line); border-radius:7px; width:100%; background:#fff; }
+  .row { display:flex; gap:10px; flex-wrap:wrap; }
+  .row > * { flex:1; min-width:160px; }
+  button { font:inherit; font-weight:700; padding:10px 22px; border:0; border-radius:7px; background:var(--orange); color:#fff; cursor:pointer; }
+  button:hover { opacity:.9; }
+  .hit { padding:10px 0; border-bottom:1px dashed var(--line); }
+  .hit:last-child { border-bottom:0; }
+  .hit .t { font-weight:700; font-size:14px; }
+  .hit .p { color:var(--muted); font-size:11.5px; font-family:monospace; }
+  .hit .s { font-size:12.5px; color:#334454; margin-top:3px; }
+  .memo { white-space:pre-wrap; font-size:13px; background:#faf8f3; border:1px solid var(--line); border-radius:8px; padding:14px; }
+  .memo b { color:var(--teal-deep); }
+  .memo .disc { color:var(--muted); font-size:11.5px; margin-top:12px; display:block; }
+  .meta { color:var(--muted); font-size:12px; }
+  .btn-ghost { background:transparent; color:var(--teal); border:1px solid var(--teal); }
+</style>
+</head>
+<body>
+<div class="topbar">
+  <strong>📚 案件研究 · Case Research Agent</strong>
+  <a href="/admin">← 返回后台</a>
+</div>
+<div class="wrap">
+  <h1>法条 / 实务要点 / 文书模板 检索</h1>
+  <p class="sub">知识库：中国法条精要 · 跨境执行实务 · 继承卡点 · 文书模板。生成内容仅为内部研究参考，对外使用须律师复核。</p>
+
+  <div class="card">
+    <h2>🔍 知识库检索</h2>
+    <div class="row">
+      <input id="q" placeholder="例如：美国 判决执行 时效 或 继承 海牙认证" onkeydown="if(event.key==='Enter')search()">
+      <button onclick="search()">检索</button>
+    </div>
+    <div id="results" style="margin-top:10px"></div>
+  </div>
+
+  <div class="card">
+    <h2>📝 案件备忘录初稿</h2>
+    <div class="row" style="margin-bottom:10px">
+      <select id="matter">
+        <option value="trade">国际贸易争议</option>
+        <option value="recovery">诉讼与债务追收</option>
+        <option value="legacy">继承与家族资产</option>
+      </select>
+      <input id="amount" placeholder="金额（可选，如 50 万美元）">
+      <input id="country" placeholder="国家/地区（可选，如 美国）">
+    </div>
+    <textarea id="facts" rows="4" placeholder="案情概要（不少于 10 字）：例如 美国客户收货后拖欠货款 45 万美元，合同约定纽约法管辖，货物已按约交付，逾期 6 个月。"></textarea>
+    <div style="margin-top:10px"><button onclick="memo()">生成备忘录初稿</button></div>
+    <div id="memoOut" style="margin-top:12px"></div>
+  </div>
+</div>
+
+<script>
+  var TOKEN = sessionStorage.getItem("admin_token") || "";
+  function hdrs() {
+    var h = { "Content-Type": "application/json" };
+    if (TOKEN) h["Authorization"] = "Bearer " + TOKEN;
+    return h;
+  }
+  function esc(s) {
+    return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
+  async function api(path, opts) {
+    var resp = await fetch(path, opts);
+    if (resp.status === 401) throw new Error("未登录或令牌失效，请先登录后台（/admin）");
+    if (!resp.ok) throw new Error("请求失败 HTTP " + resp.status);
+    return resp.json();
+  }
+  async function search() {
+    var q = document.getElementById("q").value.trim();
+    var box = document.getElementById("results");
+    box.innerHTML = "检索中…";
+    try {
+      var hits = await api("/admin/api/research/search?q=" + encodeURIComponent(q) + "&top=8", { headers: hdrs() });
+      if (!hits.length) { box.innerHTML = '<div class="meta">未命中。换个关键词试试（如：时效 / 执行 / 认证 / 仲裁）。</div>'; return; }
+      box.innerHTML = hits.map(function (h) {
+        return '<div class="hit"><div class="t">' + esc(h.title) +
+          ' <span class="meta">score ' + h.score + '</span></div>' +
+          '<div class="p">' + esc(h.path) + '</div>' +
+          '<div class="s">' + esc(h.snippet) + '</div></div>';
+      }).join("");
+    } catch (e) { box.innerHTML = '<div class="meta">' + esc(e.message) + "</div>"; }
+  }
+  async function memo() {
+    var box = document.getElementById("memoOut");
+    box.innerHTML = "生成中…";
+    try {
+      var m = await api("/admin/api/research/memo", {
+        method: "POST",
+        headers: hdrs(),
+        body: JSON.stringify({
+          matter_type: document.getElementById("matter").value,
+          facts: document.getElementById("facts").value,
+          amount: document.getElementById("amount").value,
+          country: document.getElementById("country").value
+        })
+      });
+      var lines = [];
+      lines.push("【案件备忘录初稿】" + m.label + (m.country ? " · " + m.country : "") + (m.amount ? " · " + m.amount : ""));
+      lines.push("");
+      lines.push("案情概要：" + m.facts);
+      lines.push("");
+      if (m.kb_hits.length) {
+        lines.push("关联知识库：");
+        m.kb_hits.forEach(function (h) { lines.push("  · [" + h.title + "] " + h.snippet); });
+        lines.push("");
+      }
+      lines.push("初步行动清单：");
+      m.next_steps.forEach(function (s, i) { lines.push("  " + (i + 1) + ". " + s); });
+      lines.push("");
+      lines.push(m.disclaimer);
+      box.innerHTML = '<div class="memo">' + esc(lines.join("\n")).replace(/\n/g, "<br>") + "</div>";
+    } catch (e) { box.innerHTML = '<div class="meta">' + esc(e.message) + "</div>"; }
+  }
+</script>
+</body>
+</html>
