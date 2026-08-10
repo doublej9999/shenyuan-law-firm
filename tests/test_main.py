@@ -1596,6 +1596,41 @@ def test_crm_stale_leads_churn_warning(tmp_db, monkeypatch):
         assert n >= 1
 
 
+def test_trust_pages_and_cookie_banner(tmp_db, monkeypatch):
+    """/about /fees /privacy render bilingual; cookie banner + analytics bundle."""
+    monkeypatch.setenv("GA_MEASUREMENT_ID", "G-TEST123")
+    monkeypatch.setenv("META_PIXEL_ID", "123456789")
+    monkeypatch.setenv("BAIDU_ANALYTICS_ID", "baidu-test")
+    with TestClient(m.app) as client:
+        for slug in ("about", "fees", "privacy"):
+            zh = client.get(f"/{slug}")
+            assert zh.status_code == 200
+            assert "Shenyuan International" in zh.text
+            en = client.get(f"/en/{slug}")
+            assert en.status_code == 200
+            assert 'hreflang="en"' in en.text
+            assert "cookieBanner" in zh.text
+            assert 'hreflang="zh-CN"' in zh.text
+        # Analytics bundle: GA + Meta Pixel + Baidu all present when configured
+        home = client.get("/").text
+        assert "googletagmanager.com/gtag/js?id=G-TEST123" in home
+        assert "connect.facebook.net/en_US/fbevents.js" in home
+        assert "hm.baidu.com/hm.js?baidu-test" in home
+        # Sitemap includes trust pages
+        sitemap = client.get("/sitemap.xml").text
+        for u in ("/about", "/en/about", "/fees", "/privacy"):
+            assert f"<loc>http://localhost:8000{u}</loc>" in sitemap
+    # Disabled when unset
+    monkeypatch.delenv("META_PIXEL_ID")
+    monkeypatch.delenv("BAIDU_ANALYTICS_ID")
+    monkeypatch.delenv("GA_MEASUREMENT_ID")
+    with TestClient(m.app) as client:
+        home = client.get("/").text
+        assert "fbevents" not in home
+        assert "hm.baidu" not in home
+        assert "cookieBanner" in home  # banner is independent of analytics
+
+
 def test_vcard_and_whatsapp_are_env_gated(tmp_db, monkeypatch):
     monkeypatch.delenv("CONTACT_EMAIL", raising=False)
     monkeypatch.delenv("CONTACT_PHONE", raising=False)
