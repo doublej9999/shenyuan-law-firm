@@ -40,20 +40,74 @@ SITE_URL = os.environ.get("SITE_URL", "http://localhost:8000").rstrip("/")
 
 
 def _ga_tag() -> str:
-    """Google Analytics 4 snippet, injected into HTML heads.
+    """Analytics bundle injected into HTML heads: GA4 + optional Meta Pixel
+    + optional Baidu analytics (each gated by its env ID; empty = disabled).
 
     Read per-request (like the admin token) so tests can toggle it via the
-    environment. Empty/unset = analytics disabled and no tag is rendered.
+    environment.
     """
+    parts = []
     ga_id = os.environ.get("GA_MEASUREMENT_ID", "").strip()
-    if not ga_id:
-        return ""
+    if ga_id:
+        parts.append(
+            '<script async src="https://www.googletagmanager.com/gtag/js?id={id}"></script>\n'
+            '<script>window.dataLayer=window.dataLayer||[];'
+            "function gtag(){{dataLayer.push(arguments);}}"
+            "gtag('js',new Date());gtag('config','{id}');</script>".format(id=ga_id)
+        )
+    pixel_id = os.environ.get("META_PIXEL_ID", "").strip()
+    if pixel_id:
+        parts.append(
+            "<script>!function(f,b,e,v,n,t,s){{if(f.fbq)return;n=f.fbq=function(){{n.callMethod?"
+            "n.callMethod.apply(n,arguments):n.queue.push(arguments)}};if(!f._fbq)f._fbq=n;"
+            "n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;"
+            "t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}}(window,"
+            "document,'script','https://connect.facebook.net/en_US/fbevents.js');"
+            "fbq('init','{id}');fbq('track','PageView');</script>".format(id=pixel_id)
+        )
+        parts.append(
+            '<noscript><img height="1" width="1" style="display:none" '
+            'src="https://www.facebook.com/tr?id={id}&ev=PageView&noscript=1"/></noscript>'.format(id=pixel_id)
+        )
+    baidu_id = os.environ.get("BAIDU_ANALYTICS_ID", "").strip()
+    if baidu_id:
+        parts.append(
+            "<script>var _hmt=_hmt||[];(function(){{var hm=document.createElement('script');"
+            "hm.src='https://hm.baidu.com/hm.js?{id}';var s=document.getElementsByTagName"
+            "('script')[0];s.parentNode.insertBefore(hm,s);}})();</script>".format(id=baidu_id)
+        )
+    return "\n".join(parts)
+
+
+def _cookie_banner() -> str:
+    """GDPR-style cookie consent banner (zh/en, remembers the choice)."""
     return (
-        '<script async src="https://www.googletagmanager.com/gtag/js?id={id}"></script>\n'
-        '<script>window.dataLayer=window.dataLayer||[];'
-        "function gtag(){{dataLayer.push(arguments);}}"
-        "gtag('js',new Date());gtag('config','{id}');</script>"
-    ).format(id=ga_id)
+        '<div id="cookieBanner" role="dialog" aria-label="Cookie consent" '
+        'style="position:fixed;left:16px;right:16px;bottom:16px;z-index:99999;'
+        "max-width:560px;margin:0 auto;background:#172433;color:#f5f2ec;"
+        'border-radius:10px;padding:14px 18px;font-size:13px;line-height:1.6;'
+        "box-shadow:0 12px 32px rgba(20,33,44,.3);display:none;"
+        'font-family:\'Segoe UI\',\'PingFang SC\',\'Microsoft YaHei\',sans-serif;">'
+        '<span data-zh="本网站使用 Cookie 与统计工具（Google Analytics）分析访问流量，以改进服务。'
+        '继续访问即表示您同意。详见" data-en="This site uses cookies and analytics (Google '
+        'Analytics) to understand traffic and improve our service. By continuing you consent. '
+        'See">本网站使用 Cookie 与统计工具分析访问流量。详见</span> '
+        '<a href="/privacy" style="color:#e8b26a;text-decoration:underline" '
+        'data-zh="隐私政策" data-en="Privacy Policy">隐私政策</a>'
+        '<div style="margin-top:10px;display:flex;gap:10px">'
+        '<button type="button" id="cookieOk" style="padding:6px 18px;border:0;border-radius:6px;'
+        'background:#d76e39;color:#fff;font-weight:700;cursor:pointer" data-zh="同意" '
+        'data-en="Accept">同意</button>'
+        '<button type="button" id="cookieNo" style="padding:6px 18px;border:1px solid '
+        'rgba(255,255,255,.4);background:transparent;color:#f5f2ec;border-radius:6px;'
+        'cursor:pointer" data-zh="拒绝" data-en="Decline">拒绝</button>'
+        '</div></div>'
+        "<script>(function(){try{var c=localStorage.getItem('sy_cookie');"
+        "if(c)return;var b=document.getElementById('cookieBanner');b.style.display='block';"
+        "document.getElementById('cookieOk').onclick=function(){localStorage.setItem('sy_cookie','ok');"
+        "b.style.display='none';};document.getElementById('cookieNo').onclick=function(){"
+        "localStorage.setItem('sy_cookie','no');b.style.display='none';};}catch(e){}})();</script>"
+    )
 
 # Per-IP limit for the public intake form. Prevents spam bots from flooding
 # the SQLite database. Humans rarely submit more than a few times a minute.
@@ -959,6 +1013,7 @@ def _render_service_page(svc: dict) -> str:
         ("首页", f"{SITE_URL}/"),
         (zh_title[:20], f"{SITE_URL}/services/{svc['slug']}"),
     ])
+    cookie_banner = _cookie_banner()
     related = _related_html(
         [a for a in _related_articles({"slug": "__svc__", "business": svc["slug"]})],
         base="/articles",
@@ -1143,6 +1198,7 @@ def _render_service_page(svc: dict) -> str:
   </script>
   <div id="chat-widget-root"></div>
   <script src="/static/chat.js" defer></script>
+  {cookie_banner}
 </body>
 </html>"""
 
@@ -1173,6 +1229,7 @@ def read_index() -> Response:
         html.replace("{{SITE_URL}}", SITE_URL)
         .replace("{{GA_TAG}}", _ga_tag())
         .replace("{{WHATSAPP_BUTTON}}", _whatsapp_button())
+        .replace("{{COOKIE_BANNER}}", _cookie_banner())
     )
     return Response(
         content=html,
@@ -1189,6 +1246,7 @@ def read_index_en() -> Response:
         html.replace("{{SITE_URL}}", SITE_URL)
         .replace("{{GA_TAG}}", _ga_tag())
         .replace("{{WHATSAPP_BUTTON}}", _whatsapp_button())
+        .replace("{{COOKIE_BANNER}}", _cookie_banner())
     )
     html = _en_variant(html)
     html = _swap_meta(html, "meta name=\"description\"", _EN_HOME_DESC)
@@ -1329,6 +1387,9 @@ def sitemap() -> Response:
     for u in (
         f"{SITE_URL}/", f"{SITE_URL}/articles", f"{SITE_URL}/en/", f"{SITE_URL}/en/articles",
         f"{SITE_URL}/countries", f"{SITE_URL}/en/countries",
+        f"{SITE_URL}/about", f"{SITE_URL}/en/about",
+        f"{SITE_URL}/fees", f"{SITE_URL}/en/fees",
+        f"{SITE_URL}/privacy", f"{SITE_URL}/en/privacy",
     ):
         entries.append(f"  <url><loc>{u}</loc></url>\n")
     for slug in COUNTRIES:
@@ -1615,6 +1676,257 @@ def admin_research_memo(payload: ResearchMemoCreate, request: Request) -> dict:
 @app.get("/admin/research", include_in_schema=False)
 def admin_research_page() -> FileResponse:
     return FileResponse(ROOT_DIR / "admin_research.html", media_type="text/html; charset=utf-8")
+
+
+# ---------- Trust pages: about / fees / privacy (bilingual static) ----------
+
+_STATIC_PAGES: dict[str, dict] = {
+    "about": {
+        "title_zh": "关于我们",
+        "title_en": "About Us",
+        "sections": [
+            (
+                "律所定位",
+                "Who we are",
+                "深远国际律师事务所（Shenyuan International）专注于跨境争议解决与家族资产保护：国际贸易争议、债务追收、判决与裁决执行、跨境继承与遗嘱规划。团队中英双语工作，服务中国大陆、港澳台及海外华人客户。",
+                "Shenyuan International focuses on cross-border dispute resolution and family asset protection: trade disputes, debt recovery, judgment and award enforcement, and cross-border inheritance and estate planning. Our team works bilingually in Chinese and English, serving clients across China, Hong Kong, Macau, Taiwan, and the overseas Chinese diaspora.",
+            ),
+            (
+                "全球合作网络",
+                "Global network",
+                "我们与 30 多个国家和地区的当地执业律所保持合作，境外法律程序通过与当地执业律所合作提供，确保程序符合当地法律要求。",
+                "We work with locally licensed counsel in 30+ jurisdictions. Foreign legal proceedings are conducted through locally licensed counsel to ensure compliance with local law.",
+            ),
+            (
+                "律师团队",
+                "Our team",
+                "团队成员简介正在整理中，将陆续发布。",
+                "Team profiles are being finalized and will be published soon.",
+            ),
+            (
+                "执业承诺",
+                "Our commitments",
+                "客户信息严格保密，受律师-客户保密特权保护；评估与报价透明；我们诚实评估案件可行性，不承诺任何结果。",
+                "Client information is kept strictly confidential and protected by attorney-client privilege. Our assessments and fees are transparent, and we are honest about case prospects — we never promise results.",
+            ),
+        ],
+    },
+    "fees": {
+        "title_zh": "收费说明",
+        "title_en": "Fees",
+        "sections": [
+            (
+                "初步评估免费",
+                "Free initial assessment",
+                "通过官网表单或 AI 咨询助手提交基本信息后，我们会进行初步评估，判断事项类型、时效与可行路径。初步评估不收费，不产生任何委托关系。",
+                "After you share the basics via our form or AI assistant, we conduct an initial assessment of the matter type, limitation period, and viable paths. The initial assessment is free and creates no attorney-client relationship.",
+            ),
+            (
+                "分阶段透明报价",
+                "Transparent, stage-based fees",
+                "正式委托按阶段报价：策略评估、证据梳理、函件与谈判、仲裁/诉讼程序、执行。每阶段开始前书面确认费用与范围，无隐藏费用。",
+                "Engagement is quoted by stage: strategy review, evidence organization, letters and negotiation, arbitration/litigation, and enforcement. Fees and scope are confirmed in writing before each stage begins; no hidden charges.",
+            ),
+            (
+                "境外程序费用",
+                "Foreign proceedings",
+                "涉及境外法域时，当地律师费由合作律所按其标准收取，我们会在委托前提供费用预估区间，并全程协调沟通。",
+                "Where foreign jurisdictions are involved, local counsel fees are charged by the cooperating firm at its own rates. We provide an estimated range before engagement and coordinate throughout.",
+            ),
+            (
+                "诚实承诺",
+                "Honest promise",
+                "我们不对案件结果作任何承诺。费用与周期以书面协议为准。",
+                "We make no promises regarding outcomes. Fees and timelines are governed by the written engagement agreement.",
+            ),
+        ],
+    },
+    "privacy": {
+        "title_zh": "隐私政策",
+        "title_en": "Privacy Policy",
+        "sections": [
+            (
+                "我们收集的信息",
+                "Information we collect",
+                "咨询表单与 AI 咨询助手收集您主动提供的联系信息（姓名、电话、邮箱）与案件描述；网站使用统计工具（Google Analytics）收集匿名访问数据。",
+                "Our consultation form and AI assistant collect contact details you provide (name, phone, email) and your matter description. Anonymous traffic data is collected via analytics (Google Analytics).",
+            ),
+            (
+                "信息用途",
+                "How we use it",
+                "仅用于：评估您的咨询、由律师团队与您联系、改进网站服务。我们不会向第三方出售您的信息。",
+                "Information is used solely to assess your inquiry, enable our team to contact you, and improve our website. We never sell your data to third parties.",
+            ),
+            (
+                "合规与保护",
+                "Compliance & protection",
+                "我们遵守《个人信息保护法》（PIPL）与 GDPR 的相关要求；客户信息受律师-客户保密特权保护，仅限办理案件所必需的人员接触。",
+                "We comply with PIPL and, where applicable, GDPR. Client information is protected by attorney-client privilege and accessible only to those necessary to handle the matter.",
+            ),
+            (
+                "Cookie 说明",
+                "Cookies",
+                "本站使用 Cookie 与统计工具分析流量。继续使用本网站即表示您同意；您可随时清除浏览器 Cookie。",
+                "This site uses cookies and analytics tools to understand traffic. By continuing to use the site you consent; you may clear cookies in your browser at any time.",
+            ),
+            (
+                "联系我们",
+                "Contact us",
+                "如对隐私政策有任何疑问，可通过网站表单或微信（ShenyuanLegal）与我们联系。",
+                "For any privacy questions, contact us via the website form or WeChat (ShenyuanLegal).",
+            ),
+        ],
+    },
+}
+
+
+def _render_static_page(slug: str, en: bool = False) -> Response:
+    page = _STATIC_PAGES[slug]
+    title = page["title_en"] if en else page["title_zh"]
+    lang = "en" if en else "zh-CN"
+    sections = ""
+    for h2_zh, h2_en, p_zh, p_en in page["sections"]:
+        h2 = h2_en if en else h2_zh
+        p = p_en if en else p_zh
+        sections += (
+            f'<section class="sp-sec"><h2 data-zh="{h2_zh}" data-en="{h2_en}">{h2}</h2>'
+            f'<p data-zh="{p_zh}" data-en="{p_en}">{p}</p></section>'
+        )
+    crumbs_html, crumbs_jsonld = _crumbs(
+        [("首页", f"{SITE_URL}/"), (title, f"{SITE_URL}/{slug}")]
+    )
+    html = f"""<!doctype html>
+<html lang="{lang}">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="{title} | Shenyuan International">
+  <meta name="robots" content="index,follow">
+  <link rel="canonical" href="{SITE_URL}/{slug}">
+  <link rel="alternate" hreflang="zh-CN" href="{SITE_URL}/{slug}">
+  <link rel="alternate" hreflang="en" href="{SITE_URL}/en/{slug}">
+  <link rel="alternate" hreflang="x-default" href="{SITE_URL}/{slug}">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="{title} | Shenyuan International">
+  <meta property="og:url" content="{SITE_URL}/{slug}">
+  <meta property="og:image" content="{OG_IMAGE}">
+  <meta name="twitter:card" content="summary_large_image">
+  {crumbs_jsonld}
+  {_ga_tag()}
+  <title>{title} | Shenyuan International</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {{
+      --ink:#172433; --muted:#627180; --paper:#f6f3ed; --surface:#fffdf9;
+      --line:#d9d9d2; --teal:#0d6c6b; --teal-deep:#084d50; --orange:#d76e39;
+      --gold:#b08d57; --max:1060px;
+      --serif:"Playfair Display","Noto Serif SC",Georgia,"Songti SC","SimSun",serif;
+      --sans:"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+    }}
+    * {{ box-sizing:border-box; }}
+    body {{ margin:0; color:var(--ink); background:var(--paper); font-family:var(--sans); line-height:1.7; }}
+    a {{ color:inherit; text-decoration:none; }}
+    h1,h2,h3,p {{ margin:0; }}
+    h1,h2,h3 {{ font-family:var(--serif); }}
+    .wrap {{ width:min(calc(100% - 40px), var(--max)); margin:0 auto; }}
+    .topbar {{ background:var(--teal-deep); color:#f5f2ec; }}
+    .topbar .wrap {{ display:flex; justify-content:space-between; align-items:center; min-height:64px; gap:18px; }}
+    .topbar .brand {{ display:inline-flex; align-items:center; gap:10px; color:#fff; font-weight:700; font-size:14px; }}
+    .brand-mark {{ width:34px;height:34px;display:inline-flex;align-items:center;justify-content:center;background:var(--gold);color:#fff;border-radius:8px;font-family:var(--serif);font-weight:700; }}
+    .nav-links {{ display:flex; align-items:center; gap:18px; font-size:13.5px; }}
+    .nav-links a {{ color:rgba(255,255,255,.85); }}
+    .nav-links a:hover {{ color:#fff; }}
+    .crumbs {{ display:flex; flex-wrap:wrap; gap:6px; align-items:center; font-size:12.5px; color:var(--muted); padding:26px 0 0; }}
+    .crumbs a {{ color:var(--teal); }}
+    .crumb-sep {{ color:#b9c2c9; }}
+    .sp-head {{ padding:40px 0 8px; }}
+    .sp-head h1 {{ font-size:clamp(28px, 4vw, 42px); line-height:1.15; }}
+    .sp-body {{ padding:18px 0 70px; }}
+    .sp-sec {{ padding:22px 0; border-bottom:1px solid var(--line); }}
+    .sp-sec:last-child {{ border-bottom:0; }}
+    .sp-sec h2 {{ font-size:19px; color:var(--teal-deep); margin-bottom:8px; }}
+    .sp-sec p {{ font-size:14.5px; color:#334454; max-width:760px; }}
+    footer {{ background:#15232d; color:rgba(255,255,255,.72); font-size:12px; padding:24px 0; text-align:center; line-height:2; }}
+    footer a {{ color:rgba(255,255,255,.85); margin:0 8px; }}
+    .lang-switch {{ padding:7px 10px; color:rgba(255,255,255,.85); background:transparent; border:1px solid rgba(255,255,255,.3); border-radius:6px; font-size:12px; cursor:pointer; }}
+    @media (max-width:720px) {{ .nav-links {{ gap:10px; font-size:12px; }} .topbar .wrap {{ min-height:56px; }} }}
+  </style>
+</head>
+<body>
+  <div class="topbar"><div class="wrap">
+    <a class="brand" href="/"><span class="brand-mark">深</span><span>Shenyuan International</span></a>
+    <div class="nav-links">
+      <a href="/" data-zh="首页" data-en="Home">首页</a>
+      <a href="/countries" data-zh="国家专页" data-en="Countries">国家专页</a>
+      <a href="/articles" data-zh="法律专栏" data-en="Articles">法律专栏</a>
+      <button class="lang-switch" type="button" id="langToggle" aria-label="切换语言">EN / 中</button>
+    </div>
+  </div></div>
+  {crumbs_html}
+  <div class="wrap sp-head"><h1 data-zh="{page['title_zh']}" data-en="{page['title_en']}">{title}</h1></div>
+  <div class="wrap sp-body">{sections}</div>
+  <footer>
+    © 2026 Shenyuan International · 深远(国际)律师事务所
+    <div>
+      <a href="/about" data-zh="关于我们" data-en="About Us">关于我们</a>
+      <a href="/fees" data-zh="收费说明" data-en="Fees">收费说明</a>
+      <a href="/privacy" data-zh="隐私政策" data-en="Privacy">隐私政策</a>
+      <a href="/articles" data-zh="法律专栏" data-en="Articles">法律专栏</a>
+    </div>
+  </footer>
+  <script>
+    (function () {{
+      var currentLang = "{'en' if en else 'zh'}";
+      var zhTitle = {page['title_zh']!r};
+      var enTitle = {page['title_en']!r};
+      var toggle = document.getElementById("langToggle");
+      toggle.addEventListener("click", function () {{
+        window.location.href = currentLang === "zh" ? "/en/{slug}" : "/{slug}";
+      }});
+    }}());
+  </script>
+  {_cookie_banner()}
+</body>
+</html>"""
+    return Response(content=html, media_type="text/html; charset=utf-8")
+
+
+@app.api_route("/about", methods=["GET", "HEAD"], include_in_schema=False)
+def static_about() -> Response:
+    _record_page_view()
+    return _render_static_page("about")
+
+
+@app.api_route("/fees", methods=["GET", "HEAD"], include_in_schema=False)
+def static_fees() -> Response:
+    _record_page_view()
+    return _render_static_page("fees")
+
+
+@app.api_route("/privacy", methods=["GET", "HEAD"], include_in_schema=False)
+def static_privacy() -> Response:
+    _record_page_view()
+    return _render_static_page("privacy")
+
+
+@app.api_route("/en/about", methods=["GET", "HEAD"], include_in_schema=False)
+def static_about_en() -> Response:
+    _record_page_view()
+    return _render_static_page("about", en=True)
+
+
+@app.api_route("/en/fees", methods=["GET", "HEAD"], include_in_schema=False)
+def static_fees_en() -> Response:
+    _record_page_view()
+    return _render_static_page("fees", en=True)
+
+
+@app.api_route("/en/privacy", methods=["GET", "HEAD"], include_in_schema=False)
+def static_privacy_en() -> Response:
+    _record_page_view()
+    return _render_static_page("privacy", en=True)
 
 
 # ---------- Marketing Agent: collateral generator ---------------------------
@@ -1982,6 +2294,7 @@ _ARTICLE_INDEX_TEMPLATE = """<!doctype html>
   </script>
   <div id="chat-widget-root"></div>
   <script src="/static/chat.js" defer></script>
+  {cookie_banner}
 </body>
 </html>"""
 
@@ -2120,6 +2433,7 @@ _ARTICLE_PAGE_TEMPLATE = """<!doctype html>
   </script>
   <div id="chat-widget-root"></div>
   <script src="/static/chat.js" defer></script>
+  {cookie_banner}
 </body>
 </html>"""
 
@@ -2138,7 +2452,7 @@ def _articles_index_html() -> str:
             "</article>"
         )
     return _ARTICLE_INDEX_TEMPLATE.format(
-        site_url=SITE_URL, cards="\n".join(cards), ga_tag=_ga_tag()
+        site_url=SITE_URL, cards="\n".join(cards), ga_tag=_ga_tag(), cookie_banner=_cookie_banner()
     )
 
 
@@ -2193,6 +2507,7 @@ def article_page(slug: str) -> Response:
         crumbs=crumbs_html,
         breadcrumb_jsonld=crumbs_jsonld,
         related=_related_html(_related_articles(meta)),
+        cookie_banner=_cookie_banner(),
         # Raw (unescaped) values for the JSON-LD block — escaping would corrupt JSON.
         json_title_zh=meta.get("title_zh", ""),
         json_desc_zh=meta.get("description_zh", ""),
@@ -2839,6 +3154,7 @@ def _render_country_page(country: dict, slug: str) -> str:
         ("国家专页", f"{SITE_URL}/countries"),
         (country["name_zh"], f"{SITE_URL}/countries/{slug}"),
     ])
+    cookie_banner = _cookie_banner()
     related = _related_html(
         _related_articles({"slug": f"__{slug}__", "business": ""}),
         base="/articles",
@@ -2948,6 +3264,7 @@ def _render_country_page(country: dict, slug: str) -> str:
   </script>
   <div id="chat-widget-root"></div>
   <script src="/static/chat.js" defer></script>
+  {cookie_banner}
 </body>
 </html>"""
 
@@ -3028,6 +3345,7 @@ _COUNTRY_INDEX_TEMPLATE = """<!doctype html>
   </script>
   <div id="chat-widget-root"></div>
   <script src="/static/chat.js" defer></script>
+  {cookie_banner}
 </body>
 </html>"""
 
@@ -3043,7 +3361,9 @@ def _countries_index_html() -> str:
             f'<a class="c-more" href="/countries/{slug}" data-zh="查看专页 →" data-en="View page →">查看专页 →</a>'
             "</article>"
         )
-    return _COUNTRY_INDEX_TEMPLATE.format(site_url=SITE_URL, cards="\n".join(cards), ga_tag=_ga_tag())
+    return _COUNTRY_INDEX_TEMPLATE.format(
+        site_url=SITE_URL, cards="\n".join(cards), ga_tag=_ga_tag(), cookie_banner=_cookie_banner()
+    )
 
 
 @app.api_route("/countries", methods=["GET", "HEAD"], include_in_schema=False)
