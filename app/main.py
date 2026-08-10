@@ -1880,7 +1880,7 @@ _ARTICLE_PAGE_TEMPLATE = """<!doctype html>
     .article-body strong {{ color:var(--ink); }}
     .article-body a {{ color:var(--teal); font-weight:700; border-bottom:1px solid rgba(13,108,107,.3); }}
     .article-body hr {{ margin:30px 0 0; border:0; border-top:1px solid var(--line); }}
-    .cta-box {{ margin:10px 0 70px; padding:30px; text-align:center; background:var(--teal-deep); border-radius:12px; color:#f5f2ec; }}
+    .cta-box {{ margin:10px auto 70px; padding:30px; text-align:center; background:var(--teal-deep); border-radius:12px; color:#f5f2ec; }}
     .cta-box h2 {{ font-size:22px; }}
     .cta-box p {{ margin-top:10px; color:rgba(255,255,255,.75); font-size:14px; }}
     .button {{ display:inline-flex; align-items:center; gap:9px; margin-top:18px; min-height:46px; padding:0 24px; color:#fff; background:var(--orange); border-radius:8px; font-size:14px; font-weight:700; }}
