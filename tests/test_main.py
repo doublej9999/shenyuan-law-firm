@@ -1648,6 +1648,44 @@ def test_handbook_route_and_keyword_docs(tmp_db):
     assert (repo / "docs" / "handbook" / "handbook.pdf").exists()
 
 
+def test_site_search_and_faq_hub_and_analytics(tmp_db, monkeypatch):
+    """/search ranks articles+countries; /faq aggregates; analytics API works."""
+    monkeypatch.setenv("ADMIN_TOKEN", "secret-token")
+    with TestClient(m.app) as client:
+        # Search: article hit for a real keyword
+        s = client.get("/search?q=执行")
+        assert s.status_code == 200
+        assert "条结果" in s.text
+        assert "articles/" in s.text
+        # Search: country hit
+        s2 = client.get("/search?q=德国")
+        assert s2.status_code == 200
+        assert "/countries/germany" in s2.text
+        # Empty query shows the prompt
+        s0 = client.get("/search")
+        assert "输入关键词开始搜索" in s0.text
+        # FAQ hub
+        faq = client.get("/faq")
+        assert faq.status_code == 200
+        assert "faq-item" in faq.text
+        assert "FAQPage" in faq.text
+        assert "常见问题" in faq.text
+        en_faq = client.get("/en/faq")
+        assert en_faq.status_code == 200 and 'hreflang="en"' in en_faq.text
+        # Analytics API (auth required)
+        assert client.get("/admin/api/intakes/analytics").status_code == 401
+        headers = {"Authorization": "Bearer secret-token"}
+        client.post("/api/intakes", json=dict(VALID_PAYLOAD, email="an@test.com", phone="13700000001"))
+        a = client.get("/admin/api/intakes/analytics", headers=headers).json()
+        assert "by_business" in a and "by_country" in a and "by_source" in a
+        assert a["by_business"]["trade"] >= 1  # VALID_PAYLOAD matter is 贸易
+        # WebSite SearchAction on home
+        home = client.get("/").text
+        assert '"@type": "WebSite"' in home
+        assert "SearchAction" in home
+        assert "/search?q={search_term_string}" in home
+
+
 def test_vcard_and_whatsapp_are_env_gated(tmp_db, monkeypatch):
     monkeypatch.delenv("CONTACT_EMAIL", raising=False)
     monkeypatch.delenv("CONTACT_PHONE", raising=False)
