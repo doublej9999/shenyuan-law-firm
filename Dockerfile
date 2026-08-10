@@ -17,6 +17,7 @@ COPY admin_research.html .
 COPY wechat-qrcode.png .
 COPY content ./content
 COPY legal_kb ./legal_kb
+COPY docs/handbook ./docs/handbook
 
 # Non-root user + writable data dir (WAL mode also needs write access there).
 RUN mkdir -p /app/data \

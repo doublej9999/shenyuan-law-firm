@@ -1631,6 +1631,23 @@ def test_trust_pages_and_cookie_banner(tmp_db, monkeypatch):
         assert "cookieBanner" in home  # banner is independent of analytics
 
 
+def test_handbook_route_and_keyword_docs(tmp_db):
+    with TestClient(m.app) as client:
+        resp = client.get("/handbook")
+        assert resp.status_code == 200
+        assert "跨境维权法律手册" in resp.text
+        assert "Shenyuan International" in resp.text
+        sitemap = client.get("/sitemap.xml").text
+        assert "<loc>http://localhost:8000/handbook</loc>" in sitemap
+    dockerfile = (Path(__file__).resolve().parent.parent / "Dockerfile").read_text(encoding="utf-8")
+    assert "COPY docs/handbook ./docs/handbook" in dockerfile
+    # Keyword research V1 and handbook artifacts exist
+    repo = Path(__file__).resolve().parent.parent
+    assert (repo / "docs" / "keyword-research-v1.md").exists()
+    assert (repo / "docs" / "handbook" / "handbook.html").exists()
+    assert (repo / "docs" / "handbook" / "handbook.pdf").exists()
+
+
 def test_vcard_and_whatsapp_are_env_gated(tmp_db, monkeypatch):
     monkeypatch.delenv("CONTACT_EMAIL", raising=False)
     monkeypatch.delenv("CONTACT_PHONE", raising=False)
