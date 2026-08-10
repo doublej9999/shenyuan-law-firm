@@ -1390,6 +1390,7 @@ def sitemap() -> Response:
         f"{SITE_URL}/about", f"{SITE_URL}/en/about",
         f"{SITE_URL}/fees", f"{SITE_URL}/en/fees",
         f"{SITE_URL}/privacy", f"{SITE_URL}/en/privacy",
+        f"{SITE_URL}/handbook",
     ):
         entries.append(f"  <url><loc>{u}</loc></url>\n")
     for slug in COUNTRIES:
@@ -1927,6 +1928,16 @@ def static_fees_en() -> Response:
 def static_privacy_en() -> Response:
     _record_page_view()
     return _render_static_page("privacy", en=True)
+
+
+@app.api_route("/handbook", methods=["GET", "HEAD"], include_in_schema=False)
+def handbook_page() -> Response:
+    """《跨境维权法律手册》— compiled from published articles (print-friendly)."""
+    _record_page_view()
+    html = ROOT_DIR / "docs" / "handbook" / "handbook.html"
+    if not html.exists():
+        raise HTTPException(status_code=404, detail="Handbook not built yet")
+    return Response(content=html.read_text(encoding="utf-8"), media_type="text/html; charset=utf-8")
 
 
 # ---------- Marketing Agent: collateral generator ---------------------------
