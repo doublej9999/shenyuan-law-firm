@@ -10,6 +10,7 @@ import logging
 import sqlite3
 import urllib.error
 import urllib.request
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 import pytest
@@ -1562,6 +1563,37 @@ def test_admin_research_page_and_dockerfile_ship_it(tmp_db):
     dockerfile = (Path(__file__).resolve().parent.parent / "Dockerfile").read_text(encoding="utf-8")
     assert "COPY admin_research.html" in dockerfile
     assert "COPY legal_kb ./legal_kb" in dockerfile
+
+
+def test_crm_stale_leads_churn_warning(tmp_db, monkeypatch):
+    """30-day-no-touch leads surface as stale (流失预警) and are audited."""
+    monkeypatch.setenv("ADMIN_TOKEN", "secret-token")
+    with TestClient(m.app) as client:
+        # Create a lead, then backdate it 40 days so it is stale.
+        resp = client.post(
+            "/api/intakes",
+            json=dict(VALID_PAYLOAD, email="stale@test.com", phone="13812345678"),
+        )
+        assert resp.status_code == 201
+        conn = sqlite3.connect(tmp_db)
+        old = (datetime.now(timezone.utc) - timedelta(days=40)).isoformat()
+        conn.execute("UPDATE intakes SET created_at = ?, updated_at = ? WHERE id = ?",
+                     (old, old, resp.json()["id"]))
+        conn.commit()
+        conn.close()
+
+        headers = {"Authorization": "Bearer secret-token"}
+        c = client.get("/admin/api/crm/overdue", headers=headers).json()
+        assert c["stale_count"] >= 1
+        assert any(l["id"] == resp.json()["id"] and l["stale_days"] >= 30 for l in c["stale"])
+
+        # Marketing generation is audited (6.6.4 留痕).
+        bundle = client.get("/admin/api/marketing/generate?business=trade", headers=headers)
+        assert bundle.status_code == 200
+        conn = sqlite3.connect(tmp_db)
+        n = conn.execute("SELECT COUNT(*) FROM audit_log WHERE action = 'marketing.generate'").fetchone()[0]
+        conn.close()
+        assert n >= 1
 
 
 def test_vcard_and_whatsapp_are_env_gated(tmp_db, monkeypatch):
