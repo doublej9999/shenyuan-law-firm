@@ -29,7 +29,28 @@
     "image": "https://images.unsplash.com/photo-1526304640581-d334cdbbf45e?auto=format&fit=crop&w=1200&q=80",
     "description": "面向中国企业与家庭的跨境法律服务：国际贸易争议、诉讼与债务追收、继承与家族资产。中英双语，覆盖 30+ 国家与地区的合作律所网络。",
     "knowsLanguage": ["zh", "en"],
-    "areaServed": "Worldwide"
+    "areaServed": "Worldwide",
+    "sameAs": [
+      "{{SITE_URL}}/",
+      "{{SITE_URL}}/about",
+      "{{SITE_URL}}/fees"
+    ]
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "Shenyuan International 深远(国际)律师事务所",
+    "url": "{{SITE_URL}}/",
+    "potentialAction": {
+      "@type": "SearchAction",
+      "target": {
+        "@type": "EntryPoint",
+        "urlTemplate": "{{SITE_URL}}/search?q={search_term_string}"
+      },
+      "query-input": "required name=search_term_string"
+    }
   }
   </script>
   <script type="application/ld+json">

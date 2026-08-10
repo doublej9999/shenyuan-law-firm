@@ -1940,6 +1940,273 @@ def handbook_page() -> Response:
     return Response(content=html.read_text(encoding="utf-8"), media_type="text/html; charset=utf-8")
 
 
+# ---------- Site search -------------------------------------------------------
+
+def _site_search(q: str, limit: int = 12) -> list[dict]:
+    """Search articles, country pages, services, and trust pages by title/body."""
+    tokens = [t for t in re.split(r"[,\s，。、/]+", q.strip().lower()) if len(t) >= 2]
+    if not tokens:
+        return []
+    results = []
+
+    def score_hit(title: str, haystack: str, url: str, kind: str, snippet: str = "") -> None:
+        tl = title.lower()
+        hs = haystack.lower()
+        score = sum((3 if t in tl else 0) + (1 if t in hs else 0) for t in tokens)
+        if score:
+            results.append({"title": title, "url": url, "kind": kind,
+                            "score": score, "snippet": snippet or title[:80]})
+
+    # Articles (zh title + description + en title + body excerpt)
+    for a in _load_articles():
+        meta = a["meta"]
+        hay = " ".join([meta.get("title_zh", ""), meta.get("description_zh", ""),
+                        meta.get("title_en", ""), a.get("zh", "")[:900]])
+        score_hit(meta.get("title_zh", ""), hay, f"{SITE_URL}/articles/{meta['slug']}",
+                  "文章", meta.get("description_zh", "")[:100])
+    # Countries
+    for slug, c in COUNTRIES.items():
+        hay = " ".join([c.get("zh_title", ""), c.get("zh_intro", ""),
+                        c.get("en_title", ""), c.get("name_zh", "")])
+        score_hit(c.get("zh_title", ""), hay, f"{SITE_URL}/countries/{slug}",
+                  "国家专页", c.get("zh_intro", "")[:100])
+    # Services
+    for slug, svc in SERVICES.items():
+        hay = " ".join([svc.get("zh_title", ""), svc.get("zh_intro", ""),
+                        svc.get("en_title", "")])
+        score_hit(svc.get("zh_title", ""), hay, f"{SITE_URL}/services/{slug}",
+                  "服务", svc.get("zh_intro", "")[:100])
+    # Trust pages
+    for slug, page in _STATIC_PAGES.items():
+        hay = " ".join([page.get("title_zh", "")] + [s[0] + s[2] for s in page["sections"]])
+        score_hit(page.get("title_zh", ""), hay, f"{SITE_URL}/{slug}",
+                  "页面", page["sections"][0][2][:100])
+
+    results.sort(key=lambda r: r["score"], reverse=True)
+    return results[:limit]
+
+
+_SEARCH_PAGE_TEMPLATE = """<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex,follow">
+  <title>{title} | Shenyuan International</title>
+  <link rel="canonical" href="{site_url}/search">
+  <style>
+    :root {{
+      --ink:#172433; --muted:#627180; --paper:#f6f3ed; --surface:#fffdf9;
+      --line:#d9d9d2; --teal:#0d6c6b; --teal-deep:#084d50; --orange:#d76e39;
+      --gold:#b08d57; --max:860px;
+      --serif:"Playfair Display","Noto Serif SC",Georgia,"Songti SC","SimSun",serif;
+      --sans:"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+    }}
+    * {{ box-sizing:border-box; }}
+    body {{ margin:0; color:var(--ink); background:var(--paper); font-family:var(--sans); line-height:1.7; }}
+    a {{ color:inherit; text-decoration:none; }}
+    .wrap {{ width:min(calc(100% - 40px), var(--max)); margin:0 auto; }}
+    .topbar {{ background:var(--teal-deep); color:#f5f2ec; }}
+    .topbar .wrap {{ display:flex; justify-content:space-between; align-items:center; min-height:62px; }}
+    .topbar .brand {{ color:#fff; font-weight:700; font-size:14px; }}
+    h1 {{ font-family:var(--serif); font-size:24px; margin:26px 0 14px; }}
+    form {{ display:flex; gap:10px; margin-bottom:20px; }}
+    input {{ flex:1; font:inherit; padding:11px 14px; border:1px solid var(--line); border-radius:8px; background:#fff; }}
+    button {{ font:inherit; font-weight:700; padding:0 22px; border:0; border-radius:8px; background:var(--orange); color:#fff; cursor:pointer; }}
+    .result {{ background:var(--surface); border:1px solid var(--line); border-radius:10px; padding:14px 18px; margin-bottom:10px; }}
+    .result a {{ display:block; }}
+    .result .t {{ font-weight:700; color:var(--teal-deep); }}
+    .result .k {{ font-size:11px; color:var(--gold); margin-left:8px; }}
+    .result .s {{ font-size:13px; color:#334454; margin-top:4px; }}
+    .none {{ color:var(--muted); padding:30px 0; text-align:center; }}
+    footer {{ background:#15232d; color:rgba(255,255,255,.72); font-size:12px; padding:22px 0; text-align:center; }}
+  </style>
+</head>
+<body>
+  <div class="topbar"><div class="wrap">
+    <a class="brand" href="/">Shenyuan International 深远(国际)律师事务所</a>
+    <a href="/" style="color:rgba(255,255,255,.85);font-size:13px">← 返回首页</a>
+  </div></div>
+  <div class="wrap">
+    <h1>{heading}</h1>
+    <form action="/search" method="get">
+      <input type="search" name="q" value="{q}" placeholder="搜索：文章 / 国家专页 / 服务 / 时效 / 执行 / 继承…" autofocus>
+      <button type="submit">搜索</button>
+    </form>
+    {results_html}
+  </div>
+  <footer>© 2026 Shenyuan International · 深远(国际)律师事务所</footer>
+</body>
+</html>"""
+
+
+@app.api_route("/search", methods=["GET", "HEAD"], include_in_schema=False)
+def search_page(q: str = "") -> Response:
+    _record_page_view()
+    q = q.strip()
+    if not q:
+        return Response(
+            content=_SEARCH_PAGE_TEMPLATE.format(
+                site_url=SITE_URL, title="搜索", heading="站内搜索",
+                q="", results_html='<div class="none">输入关键词开始搜索，例如：美国判决执行 / 继承时效 / 贸易欺诈。</div>',
+            ),
+            media_type="text/html; charset=utf-8",
+        )
+    hits = _site_search(q)
+    if not hits:
+        results_html = f'<div class="none">没有找到与「{html.escape(q)}」相关的内容。换个关键词试试，或直接<a href="/#intake" style="color:var(--teal);text-decoration:underline">咨询我们</a>。</div>'
+    else:
+        cards = []
+        for h in hits:
+            cards.append(
+                f'<div class="result"><a href="{h["url"]}">'
+                f'<span class="t">{html.escape(h["title"])}</span>'
+                f'<span class="k">{h["kind"]}</span></a>'
+                f'<div class="s">{html.escape(h["snippet"])}</div></div>'
+            )
+        results_html = f"<div>找到 {len(hits)} 条结果：</div>" + "".join(cards)
+    return Response(
+        content=_SEARCH_PAGE_TEMPLATE.format(
+            site_url=SITE_URL, title=f"搜索：{q[:30]}", heading=f"搜索「{html.escape(q[:40])}」",
+            q=html.escape(q), results_html=results_html,
+        ),
+        media_type="text/html; charset=utf-8",
+    )
+
+
+# ---------- FAQ hub -----------------------------------------------------------
+
+def _collect_faqs() -> list[dict]:
+    """Gather all country-page FAQs into (q/a, qe/ae, country) records."""
+    faqs = []
+    for slug, c in COUNTRIES.items():
+        for q_zh, q_en in zip(c.get("faq_zh", []), c.get("faq_en", [])):
+            q, a = (q_zh.split("|", 1) + ["", ""])[:2]
+            qe, ae = (q_en.split("|", 1) + ["", ""])[:2]
+            faqs.append({
+                "q": q.strip(), "a": a.strip(),
+                "qe": qe.strip(), "ae": ae.strip(),
+                "country": c.get("name_zh", slug),
+                "slug": slug,
+            })
+    return faqs
+
+
+_FAQ_GROUP_LABELS = {"trade": "国际贸易争议", "recovery": "诉讼与债务追收", "legacy": "继承与家族资产", "general": "通用问题"}
+
+
+def _render_faq_page(en: bool = False) -> Response:
+    faqs = _collect_faqs()
+    groups: dict[str, list[dict]] = {"trade": [], "recovery": [], "legacy": [], "general": []}
+    for f in faqs:
+        biz = _business_key(f["q"])
+        groups[biz if biz in groups else "general"].append(f)
+    lang = "en" if en else "zh-CN"
+    title = "常见问题 · FAQ" if not en else "FAQ · Frequently Asked Questions"
+
+    sections = ""
+    json_items = []
+    for biz, label in _FAQ_GROUP_LABELS.items():
+        items = groups.get(biz, [])
+        if not items:
+            continue
+        lis = ""
+        for f in items:
+            q = f["qe"] if en else f["q"]
+            a = f["ae"] if en else f["a"]
+            lis += (
+                f'<details class="faq-item"><summary>'
+                f'<span class="faq-q">{html.escape(q)}</span>'
+                f'<span class="faq-c">{f["country"]}</span></summary>'
+                f'<p>{html.escape(a)}</p></details>'
+            )
+        sections += f'<section class="faq-sec"><h2>{label}</h2>{lis}</section>'
+        for f in items[:6]:  # keep JSON-LD within schema limits
+            q = f["qe"] if en else f["q"]
+            a = f["ae"] if en else f["a"]
+            json_items.append(
+                f'{{"@type": "Question", "name": "{html.escape(q[:200])}", '
+                f'"acceptedAnswer": {{"@type": "Answer", "text": "{html.escape(a[:500])}"}}}}'
+            )
+    faq_jsonld = (
+        '<script type="application/ld+json">\n'
+        '{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": ['
+        + ",".join(json_items) + "]}\n</script>"
+    )
+
+    page_html = f"""<!doctype html>
+<html lang="{lang}">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="跨境法律常见问题汇总：国际贸易争议、债务追收、判决执行、跨境继承——按国家整理的实务解答。">
+  <link rel="canonical" href="{SITE_URL}/faq">
+  <link rel="alternate" hreflang="zh-CN" href="{SITE_URL}/faq">
+  <link rel="alternate" hreflang="en" href="{SITE_URL}/en/faq">
+  <link rel="alternate" hreflang="x-default" href="{SITE_URL}/faq">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="{title} | Shenyuan International">
+  <meta property="og:image" content="{OG_IMAGE}">
+  <meta name="twitter:card" content="summary_large_image">
+  {faq_jsonld}
+  {_ga_tag()}
+  <title>{title} | Shenyuan International</title>
+  <style>
+    :root {{
+      --ink:#172433; --muted:#627180; --paper:#f6f3ed; --surface:#fffdf9;
+      --line:#d9d9d2; --teal:#0d6c6b; --teal-deep:#084d50; --orange:#d76e39; --gold:#b08d57; --max:880px;
+      --serif:"Playfair Display","Noto Serif SC",Georgia,"Songti SC","SimSun",serif;
+      --sans:"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+    }}
+    * {{ box-sizing:border-box; }}
+    body {{ margin:0; color:var(--ink); background:var(--paper); font-family:var(--sans); line-height:1.7; }}
+    a {{ color:inherit; text-decoration:none; }}
+    .wrap {{ width:min(calc(100% - 40px), var(--max)); margin:0 auto; }}
+    .topbar {{ background:var(--teal-deep); color:#f5f2ec; }}
+    .topbar .wrap {{ display:flex; justify-content:space-between; align-items:center; min-height:62px; }}
+    .topbar .brand {{ color:#fff; font-weight:700; font-size:14px; }}
+    .topbar a.alt {{ color:rgba(255,255,255,.85); font-size:13px; }}
+    h1 {{ font-family:var(--serif); font-size:28px; margin:30px 0 6px; }}
+    .sub {{ color:var(--muted); font-size:13px; margin-bottom:20px; }}
+    .faq-sec {{ margin-bottom:26px; }}
+    .faq-sec h2 {{ font-family:var(--serif); font-size:19px; color:var(--teal-deep); border-left:4px solid var(--gold); padding-left:12px; margin-bottom:12px; }}
+    .faq-item {{ background:var(--surface); border:1px solid var(--line); border-radius:10px; margin-bottom:8px; overflow:hidden; }}
+    .faq-item summary {{ display:flex; justify-content:space-between; align-items:center; gap:12px; padding:13px 16px; cursor:pointer; list-style:none; }}
+    .faq-item summary::-webkit-details-marker {{ display:none; }}
+    .faq-q {{ font-weight:700; font-size:14px; color:#172433; }}
+    .faq-c {{ flex:none; font-size:11px; color:var(--gold); background:#f6f3ed; border:1px solid var(--line); border-radius:10px; padding:2px 10px; }}
+    .faq-item p {{ margin:0; padding:0 16px 14px; font-size:13.5px; color:#334454; }}
+    footer {{ background:#15232d; color:rgba(255,255,255,.72); font-size:12px; padding:22px 0; text-align:center; }}
+  </style>
+</head>
+<body>
+  <div class="topbar"><div class="wrap">
+    <a class="brand" href="/">Shenyuan International 深远(国际)律师事务所</a>
+    <a class="alt" href="/search">🔍 搜索</a>
+  </div></div>
+  <div class="wrap">
+    <h1>{title}</h1>
+    <p class="sub">{'按国家整理的跨境法律实务问答（点击展开）' if not en else 'Cross-border legal FAQs by country (click to expand)'}</p>
+    {sections}
+  </div>
+  <footer>© 2026 Shenyuan International · 深远(国际)律师事务所</footer>
+</body>
+</html>"""
+    return Response(content=page_html, media_type="text/html; charset=utf-8")
+
+
+@app.api_route("/faq", methods=["GET", "HEAD"], include_in_schema=False)
+def faq_page() -> Response:
+    _record_page_view()
+    return _render_faq_page()
+
+
+@app.api_route("/en/faq", methods=["GET", "HEAD"], include_in_schema=False)
+def faq_page_en() -> Response:
+    _record_page_view()
+    return _render_faq_page(en=True)
+
+
 # ---------- Marketing Agent: collateral generator ---------------------------
 
 _MARKETING_KW = {
@@ -3604,6 +3871,36 @@ def admin_intake_sources(request: Request) -> list[dict]:
             "FROM intakes GROUP BY src ORDER BY n DESC, src"
         ).fetchall()
     return [{"source": r["src"], "count": r["n"]} for r in rows]
+
+
+@app.get("/admin/api/intakes/analytics", include_in_schema=False)
+@limiter.limit(ADMIN_RATE_LIMIT)
+def admin_intake_analytics(request: Request) -> dict:
+    """Lead analytics: business line, country, source, and status distributions."""
+    _require_admin(request)
+    with db_connection() as connection:
+        rows = connection.execute(
+            "SELECT matter, country_or_region, source, status FROM intakes"
+        ).fetchall()
+    by_business = {"trade": 0, "recovery": 0, "legacy": 0, "other": 0}
+    by_country: dict[str, int] = {}
+    by_source: dict[str, int] = {}
+    by_status: dict[str, int] = {}
+    for r in rows:
+        biz = _business_key(r["matter"] or "")
+        by_business[biz if biz in by_business else "other"] += 1
+        c = (r["country_or_region"] or "").strip() or "未填写"
+        by_country[c] = by_country.get(c, 0) + 1
+        s = (r["source"] or "").strip() or "direct"
+        by_source[s] = by_source.get(s, 0) + 1
+        st = r["status"] or "new"
+        by_status[st] = by_status.get(st, 0) + 1
+    return {
+        "by_business": by_business,
+        "by_country": dict(sorted(by_country.items(), key=lambda kv: kv[1], reverse=True)[:10]),
+        "by_source": dict(sorted(by_source.items(), key=lambda kv: kv[1], reverse=True)),
+        "by_status": by_status,
+    }
 
 
 @app.get("/admin/api/crm/overdue", include_in_schema=False)

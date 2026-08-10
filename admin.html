@@ -91,6 +91,7 @@
       <div class="stats" id="statsBar"></div>
       <div id="crmBox" hidden></div>
       <div id="sourcesBox" hidden></div>
+      <div id="analyticsBox" hidden></div>
       <div class="toolbar">
         <input type="search" id="searchInput" placeholder="搜索姓名 / 邮箱 / 电话 / 事项 / 摘要">
         <select id="statusFilter">
@@ -346,10 +347,31 @@
         } catch (e) { box.hidden = true; }
       }
 
+      async function loadAnalytics() {
+        var box = document.getElementById("analyticsBox");
+        try {
+          var a = await api("/admin/api/intakes/analytics");
+          var biz = a.by_business;
+          var bizTxt = [["贸易", biz.trade], ["追收", biz.recovery], ["继承", biz.legacy], ["其他", biz.other]]
+            .map(function (p) { return p[0] + " " + p[1]; }).join(" · ");
+          var countryTxt = Object.keys(a.by_country).slice(0, 5).map(function (k) {
+            return k + " " + a.by_country[k];
+          }).join(" · ");
+          var srcTxt = Object.keys(a.by_source).slice(0, 5).map(function (k) {
+            return k + " " + a.by_source[k];
+          }).join(" · ");
+          box.hidden = false;
+          box.innerHTML = '<div class="crm-banner">📊 线索分析</div><div class="src-row">' +
+            "<b>业务线：</b>" + bizTxt + "<br><b>国家（前5）：</b>" + countryTxt +
+            "<br><b>来源（前5）：</b>" + srcTxt + "</div>";
+        } catch (e) { box.hidden = true; }
+      }
+
       async function load() {
         loadStats();
         loadCRM();
         loadSources();
+        loadAnalytics();
         var params = new URLSearchParams();
         if (state.status) params.set("status", state.status);
         if (state.q) params.set("q", state.q);
