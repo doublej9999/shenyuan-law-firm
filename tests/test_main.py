@@ -1708,6 +1708,32 @@ def test_cases_page_anonymized(tmp_db):
         assert 'href="/cases"' in home
 
 
+def test_indexes_search_log_and_article_faq(tmp_db):
+    """Indexes exist, /search logs queries, article pages embed FAQ."""
+    with TestClient(m.app) as client:
+        # 1) indexes + search_log table
+        m.init_db()
+        conn = sqlite3.connect(tmp_db)
+        idxs = {r[1] for r in conn.execute("PRAGMA index_list(intakes)")}
+        for idx in ("idx_intakes_status", "idx_intakes_created_at",
+                    "idx_intakes_updated_at", "idx_intakes_source"):
+            assert idx in idxs, idx
+        tables = {r[0] for r in conn.execute("SELECT name FROM sqlite_master WHERE type='table'")}
+        assert "search_log" in tables
+        # 2) search logging
+        client.get("/search?q=执行")
+        client.get("/search?q=执行")
+        n = conn.execute("SELECT COUNT(*) FROM search_log WHERE q='执行'").fetchone()[0]
+        assert n == 2
+        conn.close()
+        # 3) article FAQ block + JSON-LD (business-matched)
+        art = client.get("/articles/recovery-enforce-chinese-judgment-us-canada").text
+        assert "article-faq" in art
+        assert "常见问题" in art
+        assert '"@type": "FAQPage"' in art
+        assert art.count("FAQPage") >= 1
+
+
 def test_vcard_and_whatsapp_are_env_gated(tmp_db, monkeypatch):
     monkeypatch.delenv("CONTACT_EMAIL", raising=False)
     monkeypatch.delenv("CONTACT_PHONE", raising=False)

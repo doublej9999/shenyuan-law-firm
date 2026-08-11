@@ -402,6 +402,25 @@ def migrate_schema(connection: sqlite3.Connection) -> None:
         connection.execute("DROP TABLE intakes_old")
         logger.info("Rebuilt intakes table: email is now optional")
 
+    # v11: query indexes + search log table.
+    for idx, col in (
+        ("idx_intakes_status", "status"),
+        ("idx_intakes_created_at", "created_at"),
+        ("idx_intakes_updated_at", "updated_at"),
+        ("idx_intakes_source", "source"),
+    ):
+        connection.execute(f"CREATE INDEX IF NOT EXISTS {idx} ON intakes ({col})")
+    connection.execute(
+        """
+        CREATE TABLE IF NOT EXISTS search_log (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            q TEXT NOT NULL,
+            results INTEGER NOT NULL DEFAULT 0,
+            created_at TEXT NOT NULL
+        )
+        """
+    )
+
     logger.info("Migrating intakes schema to version %d", SCHEMA_VERSION)
     connection.execute(f"PRAGMA user_version = {SCHEMA_VERSION}")
 
@@ -2055,6 +2074,14 @@ def search_page(q: str = "") -> Response:
             media_type="text/html; charset=utf-8",
         )
     hits = _site_search(q)
+    try:
+        with db_connection() as connection:
+            connection.execute(
+                "INSERT INTO search_log (q, results, created_at) VALUES (?, ?, ?)",
+                (q[:100], len(hits), datetime.now(timezone.utc).isoformat()),
+            )
+    except sqlite3.Error:
+        logger.exception("Failed to log search query")
     if not hits:
         results_html = f'<div class="none">没有找到与「{html.escape(q)}」相关的内容。换个关键词试试，或直接<a href="/#intake" style="color:var(--teal);text-decoration:underline">咨询我们</a>。</div>'
     else:
@@ -2095,6 +2122,36 @@ def _collect_faqs() -> list[dict]:
 
 
 _FAQ_GROUP_LABELS = {"trade": "国际贸易争议", "recovery": "诉讼与债务追收", "legacy": "继承与家族资产", "general": "通用问题"}
+
+
+def _article_faq_block(biz_key: str) -> tuple[str, str]:
+    """Same-business FAQs for article pages: HTML block + FAQPage JSON-LD."""
+    faqs = [f for f in _collect_faqs() if _business_key(f["q"]) == biz_key][:3]
+    if not faqs:
+        return "", ""
+    items = ""
+    json_items = []
+    for f in faqs:
+        items += (
+            f'<details class="a-faq"><summary>{html.escape(f["q"])}</summary>'
+            f'<p>{html.escape(f["a"])}</p></details>'
+        )
+        json_items.append(
+            f'{{"@type": "Question", "name": "{html.escape(f["q"][:200])}", '
+            f'"acceptedAnswer": {{"@type": "Answer", "text": "{html.escape(f["a"][:500])}"}}}}'
+        )
+    block = (
+        '<div class="article-faq"><h3 data-zh="常见问题" data-en="FAQ">常见问题</h3>'
+        + items
+        + "</div>"
+    )
+    jsonld = (
+        '<script type="application/ld+json">\n'
+        '{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": ['
+        + ",".join(json_items)
+        + "]}\n</script>"
+    )
+    return block, jsonld
 
 
 def _render_faq_page(en: bool = False) -> Response:
@@ -2898,6 +2955,7 @@ _ARTICLE_PAGE_TEMPLATE = """<!doctype html>
   {ga_tag}
   <title>{title_zh} | Shenyuan International</title>
   {breadcrumb_jsonld}
+  {article_faq_jsonld}
   <script type="application/ld+json">
   {{
     "@context": "https://schema.org",
@@ -2962,6 +3020,12 @@ _ARTICLE_PAGE_TEMPLATE = """<!doctype html>
     .related ul {{ margin:0; padding-left:0; list-style:none; }}
     .related li {{ margin:8px 0; }}
     .related a {{ color:var(--teal); font-weight:600; font-size:14px; }}
+    .article-faq {{ margin:30px 0 10px; padding:20px 24px; background:var(--surface); border:1px solid var(--line); border-radius:10px; }}
+    .article-faq h3 {{ font-size:16px; margin:0 0 12px; color:var(--teal-deep); }}
+    .a-faq {{ border-top:1px dashed var(--line); padding:10px 0; }}
+    .a-faq:first-of-type {{ border-top:0; }}
+    .a-faq summary {{ cursor:pointer; font-weight:700; font-size:13.5px; color:var(--ink); }}
+    .a-faq p {{ margin:8px 0 0; font-size:13px; color:#334454; }}
     @media (max-width:720px) {{ .topbar .wrap {{ min-height:60px; }} .article-body table {{ font-size:12.5px; }} }}
   </style>
 </head>
@@ -2987,6 +3051,7 @@ _ARTICLE_PAGE_TEMPLATE = """<!doctype html>
     <p data-zh="提交基本信息，我们会判断时效、证据与可行路径——免费评估，不承诺结果。" data-en="Share the basics and we will review the limitation period, evidence, and viable paths — free, honest, no promised outcomes.">提交基本信息，我们会判断时效、证据与可行路径——免费评估，不承诺结果。</p>
     <a class="button" href="/#intake" data-zh="免费法律咨询 →" data-en="Free legal consultation →">免费法律咨询 →</a>
   </div>
+  {article_faq}
   {related}
   <footer>© 2026 Shenyuan International · 深远(国际)律师事务所 · <a href="/articles" data-zh="法律专栏" data-en="Legal insights">法律专栏</a></footer>
   <script>
@@ -3069,6 +3134,7 @@ def article_page(slug: str) -> Response:
         ("法律专栏", f"{SITE_URL}/articles"),
         (meta.get("title_zh", "")[:24], f"{SITE_URL}/articles/{meta['slug']}"),
     ])
+    article_faq, article_faq_jsonld = _article_faq_block(_business_key(meta.get("business", "")))
     content = _ARTICLE_PAGE_TEMPLATE.format(
         site_url=SITE_URL,
         slug=html.escape(meta["slug"]),
@@ -3083,6 +3149,8 @@ def article_page(slug: str) -> Response:
         ga_tag=_ga_tag(),
         crumbs=crumbs_html,
         breadcrumb_jsonld=crumbs_jsonld,
+        article_faq=article_faq,
+        article_faq_jsonld=article_faq_jsonld,
         related=_related_html(_related_articles(meta)),
         cookie_banner=_cookie_banner(),
         # Raw (unescaped) values for the JSON-LD block — escaping would corrupt JSON.
