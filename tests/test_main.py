@@ -1686,6 +1686,28 @@ def test_site_search_and_faq_hub_and_analytics(tmp_db, monkeypatch):
         assert "/search?q={search_term_string}" in home
 
 
+def test_cases_page_anonymized(tmp_db):
+    """Case studies page renders 5 anonymized examples with compliance framing."""
+    with TestClient(m.app) as client:
+        zh = client.get("/cases")
+        assert zh.status_code == 200
+        assert "脱敏示例" in zh.text
+        assert "不承诺" in zh.text
+        assert "美国买家拖欠货款" in zh.text
+        assert "加拿大债务人" in zh.text
+        assert "美国房产继承" in zh.text
+        assert "ItemList" in zh.text  # structured data
+        en = client.get("/en/cases")
+        assert en.status_code == 200
+        assert "Anonymized Examples" in en.text
+        sitemap = client.get("/sitemap.xml").text
+        assert "<loc>http://localhost:8000/cases</loc>" in sitemap
+        assert "<loc>http://localhost:8000/faq</loc>" in sitemap
+        # Home footer links to cases
+        home = client.get("/").text
+        assert 'href="/cases"' in home
+
+
 def test_vcard_and_whatsapp_are_env_gated(tmp_db, monkeypatch):
     monkeypatch.delenv("CONTACT_EMAIL", raising=False)
     monkeypatch.delenv("CONTACT_PHONE", raising=False)

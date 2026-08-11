@@ -1391,6 +1391,8 @@ def sitemap() -> Response:
         f"{SITE_URL}/fees", f"{SITE_URL}/en/fees",
         f"{SITE_URL}/privacy", f"{SITE_URL}/en/privacy",
         f"{SITE_URL}/handbook",
+        f"{SITE_URL}/cases", f"{SITE_URL}/en/cases",
+        f"{SITE_URL}/faq", f"{SITE_URL}/en/faq",
     ):
         entries.append(f"  <url><loc>{u}</loc></url>\n")
     for slug in COUNTRIES:
@@ -2205,6 +2207,303 @@ def faq_page() -> Response:
 def faq_page_en() -> Response:
     _record_page_view()
     return _render_faq_page(en=True)
+
+
+# ---------- Case studies (anonymized examples) --------------------------------
+
+# 脱敏示例案例库：展示办案思路与流程，非具体案件记录。
+# 真实案件信息受律师-客户保密特权保护，不对外披露；真实素材到位后替换。
+_CASES: list[dict] = [
+    {
+        "slug": "us-buyer-trade-debt",
+        "business": "trade",
+        "title_zh": "美国买家拖欠货款：从证据补强到还款计划",
+        "title_en": "US Buyer Defaults: From Evidence to a Repayment Plan",
+        "situation_zh": "出口商与一家美国采购商长期合作，采用赊账方式结算。某批货物交付后，对方以“质量异议”为由拒付尾款，同时仍在继续下单，形成持续拖欠。",
+        "situation_en": "An exporter sold goods to a US buyer on open account terms. After one shipment, the buyer withheld the balance citing a 'quality dispute', while continuing to place new orders — a pattern of escalating arrears.",
+        "approach_zh": [
+            "第一步：证据盘点——合同、订单、提单、签收单、往来邮件逐项核对，确认欠款金额与“质量异议”是否在约定异议期内提出",
+            "第二步：法律路径评估——合同适用法与管辖条款确认；诉讼时效核对（美国各州 4-6 年不等，按合同准据法确认）",
+            "第三步：发正式催款函并保留送达凭证，同步暂缓赊账额度",
+            "第四步：谈判——以“继续合作”为筹码换取书面还款计划",
+        ],
+        "approach_en": [
+            "Step 1: Evidence review — contract, PO, bill of lading, proof of delivery, and emails to confirm the arrears and whether the quality objection was raised within the contractual window",
+            "Step 2: Legal path — governing law and forum clauses; limitation period check (US states vary, typically 4-6 years)",
+            "Step 3: Formal demand letter with proof of service, while suspending further credit",
+            "Step 4: Negotiation — trade continued cooperation for a written repayment schedule",
+        ],
+        "points_zh": [
+            "质量异议有约定时限：超过异议期未提出的质量抗辩，在诉讼中通常难以成立（依合同与准据法）",
+            "催款函是中断时效与固定证据的关键动作，必须保留送达凭证",
+            "继续供货的“信用杠杆”比诉讼更快见效，但需评估对方偿付能力",
+        ],
+        "points_en": [
+            "Quality objections are typically time-barred by contract — late objections rarely defeat a payment claim",
+            "A demand letter both interrupts limitation and fixes evidence; always keep proof of service",
+            "The leverage of continued credit can resolve matters faster than litigation, subject to a solvency check",
+        ],
+        "outcome_zh": "（脱敏示例，非具体案件）此类案件常见结果区间：催款函 + 谈判阶段 1-3 个月达成书面还款计划；进入诉讼/仲裁程序通常 12-24 个月，视法域与程序而定。结果不承诺，个案差异大。",
+        "outcome_en": "(Anonymized example, not a specific case) Common outcome range: written repayment plan within 1-3 months via demand letter and negotiation; litigation/arbitration typically 12-24 months depending on jurisdiction. No outcome is promised and cases vary.",
+        "lesson_zh": "赊账贸易应约定：质量异议期限、逾期利息、争议解决条款（优先仲裁）与付款节奏挂钩的信用额度。",
+        "lesson_en": "Open-account trade should include: a quality-inspection window, late-interest terms, dispute resolution clauses (arbitration preferred), and credit limits tied to payment history.",
+    },
+    {
+        "slug": "canada-debtor-asset-tracing",
+        "business": "recovery",
+        "title_zh": "加拿大债务人“失联”：资产线索与保全路径",
+        "title_en": "A Canadian Debtor Vanishes: Asset Tracing and Preservation",
+        "situation_zh": "债务人拖欠货款后变更联系方式并转移经营实体，债权人担心其转移资产。我方需要判断：还能找到哪些资产？有没有快速保全手段？",
+        "situation_en": "After defaulting, the debtor changed contact details and moved operations to a new entity. The creditor feared asset dissipation. We assessed what assets remained traceable and whether interim relief was available.",
+        "approach_zh": [
+            "第一步：信息梳理——从历史交易、银行流水、公开工商信息、社交媒体交叉比对，锁定新经营实体与关联资产线索",
+            "第二步：资产地图——区分境内（股权/房产/存款）与加拿大境内资产（企业登记、不动产记录、银行账户）",
+            "第三步：路径选择——中国判决在加拿大直接执行成功率低，评估以“当地重新起诉 + 申请冻结令（Mareva injunction / attachment）”为主路径",
+            "第四步：与加拿大合作律所同步启动，评估保全成本与时效",
+        ],
+        "approach_en": [
+            "Step 1: Intelligence — cross-reference trade history, bank records, public registries, and social media to locate the new entity and asset leads",
+            "Step 2: Asset map — domestic (shares, property, deposits) and Canadian (corporate registry, land records, bank accounts)",
+            "Step 3: Route — direct enforcement of a Chinese judgment in Canada is rarely viable; the primary route is a local action with interim freezing relief (Mareva injunction / attachment)",
+            "Step 4: Engage local counsel in parallel; assess the cost and speed of preservation",
+        ],
+        "points_zh": [
+            "加拿大对临时冻结令（Mareva injunction）适用门槛较高：需证明资产流失风险与实质性争议",
+            "企业注册信息（含董事、地址变更历史）是追查“金蝉脱壳”的高价值公开数据",
+            "保全动作必须快：从发现转移迹象到申请保全，时间窗口通常以周计",
+        ],
+        "points_en": [
+            "Canadian Mareva injunctions require a real risk of dissipation and a serious issue to be tried",
+            "Corporate registry data (directors, historical addresses) is high-value public intel for tracing shell-out maneuvers",
+            "Speed matters: the window from spotting dissipation risk to seeking relief is usually measured in weeks",
+        ],
+        "outcome_zh": "（脱敏示例，非具体案件）此类案件常见结果区间：保全 + 当地诉讼 12-24 个月；多数案件在保全压力下转入和解。结果不承诺。",
+        "outcome_en": "(Anonymized example) Common range: 12-24 months for preservation plus local proceedings; many matters settle under freezing pressure. No outcome is promised.",
+        "lesson_zh": "对赊账客户建立“信用额度 + 定期对账 + 公开信息监控”，失联风险可提前预警。",
+        "lesson_en": "Credit limits, periodic reconciliation, and public-record monitoring turn disappearance risk into an early-warning system.",
+    },
+    {
+        "slug": "arbitral-award-enforcement-overseas",
+        "business": "recovery",
+        "title_zh": "境内仲裁胜诉：裁决在海外执行的全路径评估",
+        "title_en": "Winning Domestically: Enforcing an Award Abroad",
+        "situation_zh": "债权人已在中国取得胜诉仲裁裁决，但债务人主要资产在境外。如何让裁决在海外“变现”？",
+        "situation_en": "The creditor holds a winning arbitration award in China, but the debtor's main assets sit abroad. How can the award be enforced overseas?",
+        "approach_zh": [
+            "第一步：确认裁决的可执行性——仲裁条款有效性、程序合规、裁决终局性",
+            "第二步：资产定位——债务人在目标法域（如新加坡/香港/美国）的资产分布",
+            "第三步：路径——依《纽约公约》向目标国法院申请承认与执行；对非公约国或无资产法域，评估当地重新起诉",
+            "第四步：执行策略——承认程序与资产冻结并行，防止“纸面胜诉”",
+        ],
+        "approach_en": [
+            "Step 1: Verify enforceability — valid arbitration clause, procedural compliance, final award",
+            "Step 2: Locate assets — the debtor's holdings in target jurisdictions (e.g., Singapore, Hong Kong, the US)",
+            "Step 3: Route — recognition and enforcement under the New York Convention; where unavailable, evaluate a local action",
+            "Step 4: Execution — run recognition and asset freezing in parallel to avoid a paper victory",
+        ],
+        "points_zh": [
+            "纽约公约成员国（含主要普通法国家）承认仲裁裁决，比外国法院判决执行成功率高",
+            "承认申请须在法定期限内提出（如新加坡执行时效 6 年，视法域）",
+            "执行阶段的关键是“冻结在前、承认在后”：先冻结资产再走承认程序",
+        ],
+        "points_en": [
+            "New York Convention states recognize arbitral awards far more readily than foreign court judgments",
+            "Applications must be filed within the local limitation window (e.g., 6 years in Singapore; varies by jurisdiction)",
+            "Freeze first, recognize second: interim relief before the recognition application prevents dissipation",
+        ],
+        "outcome_zh": "（脱敏示例，非具体案件）此类案件常见结果区间：承认与执行程序 6-18 个月（视法域）；资产明确时执行到位率显著高于无资产案件。结果不承诺。",
+        "outcome_en": "(Anonymized example) Common range: 6-18 months for recognition and enforcement depending on jurisdiction; outcomes improve markedly where assets are identified. No outcome is promised.",
+        "lesson_zh": "跨境合同约定仲裁（HKIAC/SIAC 等）并明确“裁决可在任一法域执行”，为后续执行铺路。",
+        "lesson_en": "Draft cross-border contracts for arbitration (HKIAC/SIAC) with express provision that awards are enforceable in any jurisdiction.",
+    },
+    {
+        "slug": "us-property-probate",
+        "business": "legacy",
+        "title_zh": "美国房产继承：Probate 流程与税务安排",
+        "title_en": "Inheriting a US Property: Probate and Tax Planning",
+        "situation_zh": "被继承人在美国持有一套房产，在国内去世。继承人需办理美国遗产程序并最终过户，同时评估美国遗产税影响。",
+        "situation_en": "The decedent owned a US property and passed away in China. Heirs must navigate US probate to transfer title while assessing US estate tax exposure.",
+        "approach_zh": [
+            "第一步：文件链——死亡证明（海牙认证 + 翻译）、遗嘱（如有）、亲属关系证明、房产产权文件",
+            "第二步：美国遗产程序——由当地律师判断简易程序（small estate）或正式 Probate，指定遗产管理人",
+            "第三步：税务评估——美国联邦遗产税免税额与申报义务（非居民身份规则不同），多数州另有州税",
+            "第四步：过户与处置——登记过户、出售或出租方案比较",
+        ],
+        "approach_en": [
+            "Step 1: Document chain — death certificate (Apostille + translation), will (if any), kinship proof, title documents",
+            "Step 2: US estate proceedings — local counsel determines small-estate vs. formal probate and appoints a personal representative",
+            "Step 3: Tax review — US federal estate tax exemption and filing duties (non-resident rules differ); most states add their own tax",
+            "Step 4: Transfer and options — record title, compare sale vs. rental",
+        ],
+        "points_zh": [
+            "美国房产继承走的是所在地法程序（不动产所在地法律），中国继承公证不能直接过户美国房产",
+            "非居民遗产税免税额远低于居民，需在申报前做资产与税务测算",
+            "小额房产（低于州简易程序限额）可大幅简化流程、降低成本",
+        ],
+        "points_en": [
+            "US real property follows local law — Chinese inheritance certificates do not transfer US title",
+            "Non-resident estate tax exemptions are far lower than resident ones; run the numbers before filing",
+            "Small estates under state limits can use streamlined procedures at a fraction of the cost",
+        ],
+        "outcome_zh": "（脱敏示例，非具体案件）此类案件常见结果区间：简易程序 3-6 个月，正式 Probate 6-18 个月；费用通常为遗产价值的 1%-5%（视州与复杂度）。结果不承诺。",
+        "outcome_en": "(Anonymized example) Common range: 3-6 months for small estates, 6-18 months for formal probate; costs typically 1-5% of estate value depending on state and complexity. No outcome is promised.",
+        "lesson_zh": "海外有房产的家庭应提前规划：联合持有方式、生前信托或遗嘱安排，可显著降低继承程序成本与税负。",
+        "lesson_en": "Families with overseas property should plan ahead: joint ownership structures, trusts, or wills materially reduce probate cost and tax.",
+    },
+    {
+        "slug": "overseas-will-china-assets",
+        "business": "legacy",
+        "title_zh": "海外遗嘱 + 中国境内资产：效力确认与过户",
+        "title_en": "An Overseas Will and Chinese Assets: Validity and Transfer",
+        "situation_zh": "被继承人在海外立有遗嘱，但在中国境内留有房产与银行存款。遗嘱能否在中国直接执行？继承人如何完成境内过户？",
+        "situation_en": "The decedent left a foreign will, but held real property and bank deposits in China. Can the will take effect in China, and how do heirs complete local transfers?",
+        "approach_zh": [
+            "第一步：遗嘱效力审查——中国法下遗嘱形式要件（自书/代书/公证/录音录像/打印）与外国遗嘱的确认程序",
+            "第二步：境外文件处理——遗嘱原件、死亡证明经认证 + 有资质翻译",
+            "第三步：境内程序——公证处继承权公证（或诉讼确认），凭公证书办理房产过户与存款支取",
+            "第四步：多法域协调——如海外另有资产，两条程序并行并交叉核对",
+        ],
+        "approach_en": [
+            "Step 1: Will validity — Chinese formal requirements (holographic, notarized, printed, etc.) and the confirmation procedure for foreign wills",
+            "Step 2: Foreign documents — notarized/Apostilled originals with certified translations",
+            "Step 3: Domestic procedure — inheritance notarization (or judicial confirmation) to transfer property and withdraw deposits",
+            "Step 4: Multi-jurisdiction coordination — run parallel tracks when overseas assets also exist",
+        ],
+        "points_zh": [
+            "外国遗嘱在中国不能“直接执行”，需先经确认程序（公证确认或法院认定）",
+            "打印遗嘱等新型形式要件较严格（需两名见证人 + 签名日期），外国遗嘱更须逐项核对",
+            "继承权公证通常需全部继承人到场或出具经认证的委托材料",
+        ],
+        "points_en": [
+            "Foreign wills are not directly enforceable in China — confirmation (notarial or judicial) is required first",
+            "Newer will forms (e.g., printed) have strict formalities (two witnesses, signatures, dates); foreign wills require item-by-item review",
+            "Inheritance notarization typically requires all heirs to appear or submit authenticated powers of attorney",
+        ],
+        "outcome_zh": "（脱敏示例，非具体案件）此类案件常见结果区间：材料齐全时境内公证 1-3 个月；存在遗嘱争议时 6-24 个月。结果不承诺。",
+        "outcome_en": "(Anonymized example) Common range: 1-3 months for domestic notarization with complete documents; 6-24 months where the will is contested. No outcome is promised.",
+        "lesson_zh": "跨境家庭建议境内境外分别立遗嘱并交叉引用，明确“各管各的资产”，避免单一遗嘱的效力与执行障碍。",
+        "lesson_en": "Cross-border families should maintain separate wills for domestic and foreign assets with cross-references, avoiding single-will validity gaps.",
+    },
+]
+
+_CASE_BUSINESS_LABELS = {"trade": "国际贸易", "recovery": "债务追收", "legacy": "跨境继承"}
+
+
+def _render_cases_page(en: bool = False) -> Response:
+    lang = "en" if en else "zh-CN"
+    title = "案例分享 · 脱敏示例" if not en else "Case Studies · Anonymized Examples"
+    cards = ""
+    json_items = []
+    for c in _CASES:
+        biz = _CASE_BUSINESS_LABELS.get(c["business"], "")
+        t = c["title_en"] if en else c["title_zh"]
+        situation = c["situation_en"] if en else c["situation_zh"]
+        approach = c["approach_en"] if en else c["approach_zh"]
+        points = c["points_en"] if en else c["points_zh"]
+        outcome = c["outcome_en"] if en else c["outcome_zh"]
+        lesson = c["lesson_en"] if en else c["lesson_zh"]
+        steps = "".join(f"<li>{html.escape(s)}</li>" for s in approach)
+        pts = "".join(f"<li>{html.escape(p)}</li>" for p in points)
+        cards += f"""
+<article class="case">
+  <div class="case-head"><span class="case-biz">{biz}</span><h2>{html.escape(t)}</h2></div>
+  <p class="case-sit"><b>{'情境' if not en else 'Situation'}：</b>{html.escape(situation)}</p>
+  <p><b>{'处理路径' if not en else 'Approach'}：</b></p>
+  <ol>{steps}</ol>
+  <p><b>{'关键法律点' if not en else 'Key points'}：</b></p>
+  <ul>{pts}</ul>
+  <p class="case-out"><b>{'结果（经验区间）' if not en else 'Outcome (experience range)'}：</b>{html.escape(outcome)}</p>
+  <p class="case-lesson"><b>{'经验' if not en else 'Lesson'}：</b>{html.escape(lesson)}</p>
+</article>"""
+        json_items.append(
+            f'{{"@type": "Article", "headline": "{html.escape(t[:100])}", '
+            f'"articleBody": "{html.escape((situation + " " + outcome)[:800])}"}}'
+        )
+    jsonld = (
+        '<script type="application/ld+json">\n'
+        '{"@context": "https://schema.org", "@type": "ItemList", "itemListElement": ['
+        + ",".join(json_items) + "]}\n</script>"
+    )
+    disclaimer = (
+        "以下案例为脱敏示例（非具体案件记录），用于展示办案思路、流程与经验区间；"
+        "真实案件信息受律师-客户保密特权保护，不对外披露。我们不承诺任何结果。"
+        if not en else
+        "The cases below are anonymized examples (not records of specific matters), "
+        "illustrating approach, process, and experience ranges. Actual client matters "
+        "are protected by privilege and never disclosed. We make no promises of outcomes."
+    )
+    page_html = f"""<!doctype html>
+<html lang="{lang}">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="跨境法律办案思路脱敏示例：贸易欠款、债务追收、仲裁执行、跨境继承。展示路径与经验区间，不承诺结果。">
+  <link rel="canonical" href="{SITE_URL}/cases">
+  <link rel="alternate" hreflang="zh-CN" href="{SITE_URL}/cases">
+  <link rel="alternate" hreflang="en" href="{SITE_URL}/en/cases">
+  <link rel="alternate" hreflang="x-default" href="{SITE_URL}/cases">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="{title} | Shenyuan International">
+  <meta property="og:image" content="{OG_IMAGE}">
+  <meta name="twitter:card" content="summary_large_image">
+  {jsonld}
+  {_ga_tag()}
+  <title>{title} | Shenyuan International</title>
+  <style>
+    :root {{
+      --ink:#172433; --muted:#627180; --paper:#f6f3ed; --surface:#fffdf9;
+      --line:#d9d9d2; --teal:#0d6c6b; --teal-deep:#084d50; --orange:#d76e39; --gold:#b08d57; --max:900px;
+      --serif:"Playfair Display","Noto Serif SC",Georgia,"Songti SC","SimSun",serif;
+      --sans:"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+    }}
+    * {{ box-sizing:border-box; }}
+    body {{ margin:0; color:var(--ink); background:var(--paper); font-family:var(--sans); line-height:1.75; }}
+    a {{ color:inherit; text-decoration:none; }}
+    .wrap {{ width:min(calc(100% - 40px), var(--max)); margin:0 auto; }}
+    .topbar {{ background:var(--teal-deep); color:#f5f2ec; }}
+    .topbar .wrap {{ display:flex; justify-content:space-between; align-items:center; min-height:62px; }}
+    .topbar .brand {{ color:#fff; font-weight:700; font-size:14px; }}
+    .topbar a.alt {{ color:rgba(255,255,255,.85); font-size:13px; }}
+    h1 {{ font-family:var(--serif); font-size:28px; margin:30px 0 8px; }}
+    .disclaimer {{ background:#fdf1e0; border:1px solid #eccd94; border-radius:8px; color:#7a4d00; font-size:12.5px; padding:10px 14px; margin-bottom:22px; }}
+    .case {{ background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:20px 22px; margin-bottom:18px; }}
+    .case-head {{ display:flex; align-items:center; gap:10px; margin-bottom:8px; }}
+    .case-biz {{ flex:none; background:var(--teal-deep); color:#fff; font-size:11px; padding:3px 10px; border-radius:10px; }}
+    .case h2 {{ font-family:var(--serif); font-size:18px; color:var(--teal-deep); margin:0; }}
+    .case p {{ font-size:13.5px; color:#334454; margin:8px 0; }}
+    .case ol, .case ul {{ margin:6px 0; padding-left:22px; font-size:13px; color:#334454; }}
+    .case li {{ margin:4px 0; }}
+    .case-out {{ background:#f6f3ed; border-radius:6px; padding:8px 12px; }}
+    .case-lesson {{ color:var(--ink); }}
+    footer {{ background:#15232d; color:rgba(255,255,255,.72); font-size:12px; padding:22px 0; text-align:center; }}
+  </style>
+</head>
+<body>
+  <div class="topbar"><div class="wrap">
+    <a class="brand" href="/">Shenyuan International 深远(国际)律师事务所</a>
+    <a class="alt" href="/search">🔍 搜索</a>
+  </div></div>
+  <div class="wrap">
+    <h1>{title}</h1>
+    <p class="disclaimer">{disclaimer}</p>
+    {cards}
+  </div>
+  <footer>© 2026 Shenyuan International · 深远(国际)律师事务所</footer>
+</body>
+</html>"""
+    return Response(content=page_html, media_type="text/html; charset=utf-8")
+
+
+@app.api_route("/cases", methods=["GET", "HEAD"], include_in_schema=False)
+def cases_page() -> Response:
+    _record_page_view()
+    return _render_cases_page()
+
+
+@app.api_route("/en/cases", methods=["GET", "HEAD"], include_in_schema=False)
+def cases_page_en() -> Response:
+    _record_page_view()
+    return _render_cases_page(en=True)
 
 
 # ---------- Marketing Agent: collateral generator ---------------------------
