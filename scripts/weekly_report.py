@@ -231,6 +231,22 @@ def main():
     out.append("- GA4 流量来源与转化明细请到 Google Analytics 后台查看（站内转化率 = 表单/AI 提交 ÷ 页面访问）。")
     out.append("- 逾期线索在后台 `/admin` 的 CRM 面板可直接一键推进。")
 
+    # Site-search terms this week (user-intent signal for the content calendar).
+    try:
+        rows = conn.execute(
+            "SELECT q, COUNT(*) AS n, MAX(results) AS best FROM search_log "
+            "WHERE created_at >= ? GROUP BY q ORDER BY n DESC, best DESC LIMIT 5",
+            (week_ago.isoformat(),),
+        ).fetchall()
+        if rows:
+            out.append("")
+            out.append("## 🔎 站内搜索词（本周）")
+            for r in rows:
+                out.append(f"- 「{r['q']}」× {r['n']}（最多命中 {r['best']} 条）")
+            out.append("  - 提示：搜索词是用户需求信号，可反哺内容日历选题。")
+    except Exception:
+        pass
+
     # GSC search performance (degraded gracefully when unconfigured).
     try:
         sys.path.insert(0, str(Path(__file__).resolve().parent))
