@@ -210,6 +210,17 @@ def main():
     out.append("- 详细线索跟进在后台 /admin；流量与转化明细在 GA4 后台。")
     out.append("- 线索来源分布依赖 URL 的 utm_source 参数（主页链接已配置各平台 UTM）。")
 
+    # GSC search performance (degraded gracefully when unconfigured).
+    try:
+        sys.path.insert(0, str(Path(__file__).resolve().parent))
+        import gsc_report
+        gsc = gsc_report.fetch(30)
+        if gsc:
+            out.append("")
+            out.append(gsc)
+    except Exception:
+        pass
+
     print("\n".join(out))
     return 0
 

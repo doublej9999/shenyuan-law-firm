@@ -231,6 +231,17 @@ def main():
     out.append("- GA4 流量来源与转化明细请到 Google Analytics 后台查看（站内转化率 = 表单/AI 提交 ÷ 页面访问）。")
     out.append("- 逾期线索在后台 `/admin` 的 CRM 面板可直接一键推进。")
 
+    # GSC search performance (degraded gracefully when unconfigured).
+    try:
+        sys.path.insert(0, str(Path(__file__).resolve().parent))
+        import gsc_report
+        gsc = gsc_report.fetch(7)
+        if gsc:
+            out.append("")
+            out.append(gsc)
+    except Exception:
+        pass
+
     print("\n".join(out))
     return 0
 
