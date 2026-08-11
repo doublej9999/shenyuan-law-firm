@@ -33,7 +33,7 @@ logging.basicConfig(level=logging.INFO)
 ROOT_DIR = Path(__file__).resolve().parent.parent
 DB_PATH = ROOT_DIR / "data" / "lawyers.sqlite3"
 FILES_DIR = DB_PATH.parent / "files"
-SCHEMA_VERSION = 6
+SCHEMA_VERSION = 7
 
 # Public base URL used for canonical/OG/sitemap links. Override in prod.
 SITE_URL = os.environ.get("SITE_URL", "http://localhost:8000").rstrip("/")
