@@ -35,8 +35,23 @@ SCOPE = "https://www.googleapis.com/auth/webmasters.readonly"
 API = "https://searchconsole.googleapis.com/webmasters/v3/sites/{site}/searchAnalytics/query"
 
 
+def _env(name: str, default: str = "") -> str:
+    """Read env var, falling back to the repo .env file (host cron runs)."""
+    val = os.environ.get(name, "").strip()
+    if val:
+        return val
+    env_file = Path(__file__).resolve().parent.parent / ".env"
+    try:
+        for line in env_file.read_text(encoding="utf-8").splitlines():
+            if line.startswith(f"{name}="):
+                return line.split("=", 1)[1].strip().strip('"').strip("'")
+    except OSError:
+        pass
+    return default
+
+
 def _access_token() -> str | None:
-    path = os.environ.get("GSC_SERVICE_ACCOUNT_JSON", "").strip()
+    path = _env("GSC_SERVICE_ACCOUNT_JSON").strip()
     if not path or not Path(path).exists():
         return None
     try:
@@ -61,8 +76,13 @@ def _query(token: str, site: str, start: str, end: str, dimensions: list[str],
         method="POST",
         headers={"Authorization": f"Bearer {token}", "Content-Type": "application/json"},
     )
-    with urllib.request.urlopen(req, timeout=25) as resp:
-        data = json.loads(resp.read().decode("utf-8"))
+    try:
+        with urllib.request.urlopen(req, timeout=25) as resp:
+            data = json.loads(resp.read().decode("utf-8"))
+    except urllib.error.HTTPError as exc:
+        detail = exc.read().decode("utf-8", "replace")[:400]
+        print(f"gsc: HTTP {exc.code} for {site}: {detail}", file=sys.stderr)
+        return []
     return data.get("rows", [])
 
 
@@ -70,7 +90,7 @@ def fetch(days: int = 7) -> str:
     token = _access_token()
     if not token:
         return ""
-    site = os.environ.get("GSC_SITE_URL", "https://shenyuanlegal.com/").strip()
+    site = os.environ.get("GSC_SITE_URL", "sc-domain:shenyuanlegal.com").strip()
     end = datetime.now(timezone.utc) - timedelta(days=1)
     start = end - timedelta(days=days - 1)
     s, e = start.strftime("%Y-%m-%d"), end.strftime("%Y-%m-%d")
