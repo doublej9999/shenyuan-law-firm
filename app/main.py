@@ -1043,7 +1043,7 @@ def _render_service_page(svc: dict) -> str:
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="index, follow">
-  <meta name="description" content="{zh_intro}">
+  <meta name="description" content="{zh_intro} 我们提供免费初步评估：提交基本信息，即可判断时效、证据与可行路径——覆盖中国大陆及 30+ 国家与地区。">
   <meta property="og:type" content="website">
   <meta property="og:title" content="{zh_title} | Shenyuan International">
   <meta property="og:description" content="{zh_intro}">
@@ -1454,7 +1454,7 @@ def service_page_en(slug: str) -> Response:
         raise HTTPException(status_code=404, detail="Not found")
     page = _en_variant(_render_service_page(svc))
     page = _swap_meta(page, "meta name=\"description\"", html.escape(svc["en_intro"])[:165])
-    page = _swap_meta(page, "meta property=\"og:title\"", html.escape(svc["en_title"])[:45] + " | Shenyuan International")
+    page = _swap_meta(page, "meta property=\"og:title\"", html.escape(svc["en_title"])[:42] + " | Shenyuan International")
     page = _swap_meta(page, "meta property=\"og:description\"", html.escape(svc["en_intro"])[:165])
     page = re.sub(
         r"(<title>)[^<]*(</title>)",
@@ -3194,7 +3194,7 @@ def article_page_en(slug: str) -> Response:
     page = _swap_meta(page, "meta name=\"description\"", html.escape(meta.get("description_en", "")))
     page = re.sub(
         r"(<title>)[^<]*(</title>)",
-        rf"\g<1>{html.escape(meta.get('title_en', '')[:45])} | Shenyuan International\g<2>",
+        rf"\g<1>{html.escape(meta.get('title_en', '')[:42])} | Shenyuan International\g<2>",
         page,
         count=1,
     )
@@ -4057,7 +4057,7 @@ def country_page_en(slug: str) -> Response:
         raise HTTPException(status_code=404, detail="Not found")
     page = _en_variant(_render_country_page(country, slug))
     page = _swap_meta(page, "meta name=\"description\"", html.escape(country["en_intro"])[:165])
-    page = _swap_meta(page, "meta property=\"og:title\"", html.escape(country["en_title"])[:45] + " | Shenyuan International")
+    page = _swap_meta(page, "meta property=\"og:title\"", html.escape(country["en_title"])[:42] + " | Shenyuan International")
     page = _swap_meta(page, "meta property=\"og:description\"", html.escape(country["en_intro"])[:165])
     page = re.sub(
         r"(<title>)[^<]*(</title>)",
