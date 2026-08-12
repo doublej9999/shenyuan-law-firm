@@ -3,7 +3,7 @@ slug: recovery-won-the-case-but-no-money-enforcement-strategies
 title_zh: 赢了官司拿不到钱？执行难的破解思路
 title_en: Won the Case but No Money? Enforcement Strategies
 description_zh: 胜诉只是第一步，执行到位才算真正回款。本文梳理"赢了官司拿不到钱"的常见原因，给出从财产线索调查、保全到执行措施组合的破解路径，以及何时该止损的清醒判断。
-description_en: Winning the case is only the first step — recovery happens at enforcement. This article breaks down why judgments fail to collect, the practical path from asset tracing and preservation to enforcement tactics, and when it is wise to stop.
+description_en: Winning a judgment is only the start—collection happens at enforcement. Learn asset tracing, preservation tactics, and when to stop.
 business: recovery
 intent: T
 date: 2026-08-10

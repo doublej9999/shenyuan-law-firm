@@ -3,7 +3,7 @@ slug: recovery-locate-debtor-overseas-assets
 title_zh: 如何查到债务人在海外的资产？
 title_en: How to Locate a Debtor's Overseas Assets
 description_zh: 执行的前提是找到资产。本文介绍海外资产调查的合法途径：公开登记、法院记录、信用报告、社交媒体、OSINT开源情报与委托调查，并说明证据效力与合规边界。
-description_en: Enforcement starts with finding assets. This article covers lawful asset tracing abroad: public registries, court records, credit reports, social media, OSINT, and professional investigators — plus evidentiary value and compliance boundaries.
+description_en: Learn lawful asset tracing abroad: public registries, OSINT, and investigators, plus evidentiary value and compliance boundaries.
 business: recovery
 intent: T
 date: 2026-08-13

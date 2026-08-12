@@ -3,7 +3,7 @@ slug: recovery-enforce-chinese-judgment-us-canada
 title_zh: 中国判决在美国/加拿大如何执行？
 title_en: Enforcing Chinese Judgments in the US and Canada
 description_zh: 在中国赢了中国官司，如何在美加执行？本文讲清判决承认与执行的路径、条件（正当程序、互惠、公共政策）、周期与成本，以及实务中的替代方案。
-description_en: Won a judgment in China but the debtor has assets in the US or Canada? This article explains recognition and enforcement — due process, reciprocity, public policy, timelines, costs — plus practical alternatives.
+description_en: Enforce a Chinese judgment in the US or Canada? Learn about recognition, due process, reciprocity, public policy, costs, and alternatives.
 business: recovery
 intent: T
 date: 2026-08-07

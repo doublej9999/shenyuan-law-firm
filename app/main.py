@@ -1352,12 +1352,12 @@ def llms_txt() -> Response:
 # ---------- English variants (/en/ URLs) ----------
 
 _EN_HOME_TITLE = (
-    "Shenyuan International | Cross-Border Dispute Resolution & Family Asset Protection"
+    "Shenyuan International | Cross-Border Dispute Resolution"
 )
 _EN_HOME_DESC = (
-    "Bilingual legal services for Chinese businesses and families: international trade "
-    "disputes, cross-border debt recovery, inheritance and family assets. A local "
-    "counsel network across 30+ jurisdictions."
+    "Bilingual cross-border legal services: international trade disputes, debt "
+    "recovery, and inheritance & family assets, backed by a 30+ jurisdiction "
+    "counsel network."
 )
 
 # Swap the visible text of every `data-zh="..." data-en="..."` leaf node to its
@@ -1706,6 +1706,8 @@ _STATIC_PAGES: dict[str, dict] = {
     "about": {
         "title_zh": "关于我们",
         "title_en": "About Us",
+        "description_zh": "深远国际律师事务所：面向中国企业与家庭的跨境法律服务，中英双语团队与 30+ 国家合作律所网络，专注贸易争议、债务追收与跨境继承。",
+        "description_en": "Shenyuan International: bilingual cross-border legal services for Chinese businesses and families — trade disputes, debt recovery, and inheritance, backed by a 30+ jurisdiction counsel network.",
         "sections": [
             (
                 "律所定位",
@@ -1736,6 +1738,8 @@ _STATIC_PAGES: dict[str, dict] = {
     "fees": {
         "title_zh": "收费说明",
         "title_en": "Fees",
+        "description_zh": "收费说明：初步评估免费，案件按阶段透明报价，境外程序与当地合作律所分项计费；不承诺结果。",
+        "description_en": "Fee transparency: free initial assessment, phased transparent quotes, local-counsel costs itemized for foreign proceedings; no promised outcomes.",
         "sections": [
             (
                 "初步评估免费",
@@ -1766,6 +1770,8 @@ _STATIC_PAGES: dict[str, dict] = {
     "privacy": {
         "title_zh": "隐私政策",
         "title_en": "Privacy Policy",
+        "description_zh": "隐私政策：我们如何收集、使用与保护您在表单和 AI 咨询中提交的信息，符合 PIPL 与 GDPR 要求；含 Cookie 说明。",
+        "description_en": "Privacy policy: how we collect, use, and protect information from our forms and AI assistant, in line with PIPL and GDPR; includes our cookie notice.",
         "sections": [
             (
                 "我们收集的信息",
@@ -1805,6 +1811,7 @@ _STATIC_PAGES: dict[str, dict] = {
 def _render_static_page(slug: str, en: bool = False) -> Response:
     page = _STATIC_PAGES[slug]
     title = page["title_en"] if en else page["title_zh"]
+    desc = page.get("description_en", title) if en else page.get("description_zh", title)
     lang = "en" if en else "zh-CN"
     sections = ""
     for h2_zh, h2_en, p_zh, p_en in page["sections"]:
@@ -1822,7 +1829,7 @@ def _render_static_page(slug: str, en: bool = False) -> Response:
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="{title} | Shenyuan International">
+  <meta name="description" content="{desc}">
   <meta name="robots" content="index,follow">
   <link rel="canonical" href="{SITE_URL}/{slug}">
   <link rel="alternate" hreflang="zh-CN" href="{SITE_URL}/{slug}">
@@ -1830,6 +1837,7 @@ def _render_static_page(slug: str, en: bool = False) -> Response:
   <link rel="alternate" hreflang="x-default" href="{SITE_URL}/{slug}">
   <meta property="og:type" content="website">
   <meta property="og:title" content="{title} | Shenyuan International">
+  <meta property="og:description" content="{desc}">
   <meta property="og:url" content="{SITE_URL}/{slug}">
   <meta property="og:image" content="{OG_IMAGE}">
   <meta name="twitter:card" content="summary_large_image">
@@ -2862,6 +2870,11 @@ _ARTICLE_INDEX_TEMPLATE = """<!doctype html>
   <link rel="alternate" hreflang="x-default" href="{site_url}/articles">
   {ga_tag}
   <title>法律专栏 | Shenyuan International 深远(国际)律师事务所</title>
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="法律专栏 | Shenyuan International">
+  <meta property="og:description" content="跨境法律实务指南：国际贸易争议、债务追收、继承与家族资产。律师团队撰写，含时效、证据与执行路径。">
+  <meta property="og:image" content="{og_image}">
+  <meta name="twitter:card" content="summary_large_image">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
@@ -3094,7 +3107,8 @@ def _articles_index_html() -> str:
             "</article>"
         )
     return _ARTICLE_INDEX_TEMPLATE.format(
-        site_url=SITE_URL, cards="\n".join(cards), ga_tag=_ga_tag(), cookie_banner=_cookie_banner()
+        site_url=SITE_URL, cards="\n".join(cards), ga_tag=_ga_tag(), cookie_banner=_cookie_banner(),
+        og_image=OG_IMAGE,
     )
 
 
@@ -3926,6 +3940,11 @@ _COUNTRY_INDEX_TEMPLATE = """<!doctype html>
   <link rel="alternate" hreflang="x-default" href="{site_url}/countries">
   {ga_tag}
   <title>国家专页 | Shenyuan International 深远(国际)律师事务所</title>
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="国家专页 | Shenyuan International">
+  <meta property="og:description" content="美国、加拿大、澳大利亚、新加坡、英国等 22 国的欠款追收、判决执行与跨境继承实务要点。">
+  <meta property="og:image" content="{og_image}">
+  <meta name="twitter:card" content="summary_large_image">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
@@ -4007,7 +4026,8 @@ def _countries_index_html() -> str:
             "</article>"
         )
     return _COUNTRY_INDEX_TEMPLATE.format(
-        site_url=SITE_URL, cards="\n".join(cards), ga_tag=_ga_tag(), cookie_banner=_cookie_banner()
+        site_url=SITE_URL, cards="\n".join(cards), ga_tag=_ga_tag(), cookie_banner=_cookie_banner(),
+        og_image=OG_IMAGE,
     )
 
 

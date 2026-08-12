@@ -1,9 +1,9 @@
 ---
 slug: recovery-enforce-arbitral-award-new-york-convention
 title_zh: 仲裁裁决跨境执行：纽约公约实务指南
-title_en: Enforcing Arbitral Awards: A Practical Guide to the New York Convention
+title_en: Enforcing Arbitral Awards: New York Convention Guide
 description_zh: 《纽约公约》让160多个国家的仲裁裁决可以跨境执行。本文讲清申请承认与执行的流程、被申请方常用的抗辩理由（管辖、程序瑕疵、公共政策等）与应对策略。
-description_en: The New York Convention lets arbitral awards travel across 160+ countries. This guide covers the recognition and enforcement process, common defenses (jurisdiction, procedural defects, public policy), and how to counter them.
+description_en: Enforce arbitral awards in 160+ countries under the New York Convention. Learn to counter defenses like jurisdiction, procedural defects, and public policy.
 business: recovery
 intent: C
 date: 2026-08-18

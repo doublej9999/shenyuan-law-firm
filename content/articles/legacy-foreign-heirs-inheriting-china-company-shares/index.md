@@ -3,7 +3,7 @@ slug: legacy-foreign-heirs-inheriting-china-company-shares
 title_zh: 中国公司股权继承：海外继承人如何办理？
 title_en: Foreign Heirs Inheriting China Company Shares
 description_zh: 被继承人在中国境内公司持有股权，海外继承人要办理继承并完成工商变更，涉及公证、身份认证、继承权确认与公司章程限制等环节。本文梳理办理路径、材料清单与常见障碍。
-description_en: When a deceased person held shares in a China-registered company, overseas heirs face notarization, identity authentication, inheritance confirmation, and articles-of-association restrictions. This article maps the process, documents, and common obstacles.
+description_en: Overseas heirs inheriting shares in a China company: notarization, identity checks, inheritance confirmation, and articles restrictions. Learn the process and documents.
 business: legacy
 intent: T
 date: 2026-08-10

@@ -3,7 +3,7 @@ slug: trade-contract-review-10-clauses
 title_zh: 国际买卖合同审查清单：10个必改条款
 title_en: International Sales Contract Review: 10 Clauses You Must Check
 description_zh: 国际买卖合同90%的风险集中在10个条款：价格与付款、交付、质量、责任限制、管辖与法律适用、违约、不可抗力等。逐条讲解审查要点与修改方向。
-description_en: 90% of international sales contract risk sits in 10 clauses: price and payment, delivery, quality, limitation of liability, jurisdiction and governing law, breach, force majeure, and more. Here is what to check and how to fix them.
+description_en: 90% of international sales contract risk sits in just 10 clauses. Learn which ones and how to fix them.
 business: trade
 intent: C
 date: 2026-08-17

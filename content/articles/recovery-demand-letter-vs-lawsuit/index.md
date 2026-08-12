@@ -3,7 +3,7 @@ slug: recovery-demand-letter-vs-lawsuit
 title_zh: 律师函 vs 诉讼：哪种方式更适合你的欠款？
 title_en: Demand Letter vs Lawsuit: Which Works for Your Debt?
 description_zh: 欠款追收不是非黑即白。律师函成本低、周期短，诉讼威慑强、成本高。本文对比两种方式的适用场景、成本、周期与风险，帮您选出性价比最高的路径。
-description_en: Debt recovery is not binary. A demand letter is cheap and fast; a lawsuit is powerful but costly. This article compares the two — scenarios, cost, timeline, and risk — to help you pick the most cost-effective path.
+description_en: Compare demand letter vs lawsuit for debt recovery: cost, timeline, risk. Choose the most cost-effective path.
 business: recovery
 intent: C
 date: 2026-08-05
