@@ -1732,6 +1732,11 @@ def test_indexes_search_log_and_article_faq(tmp_db):
         assert "常见问题" in art
         assert '"@type": "FAQPage"' in art
         assert art.count("FAQPage") >= 1
+        # 4) JSON-LD must stay parseable even when text contains ASCII quotes
+        art2 = client.get("/articles/recovery-debt-collection-golden-window").text
+        import json as _json, re as _re
+        for block in _re.findall(r'<script type="application/ld\+json">(.*?)</script>', art2, _re.S):
+            _json.loads(block)  # raises on broken JSON
 
 
 def test_vcard_and_whatsapp_are_env_gated(tmp_db, monkeypatch):
