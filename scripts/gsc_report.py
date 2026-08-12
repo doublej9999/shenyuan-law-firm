@@ -96,7 +96,7 @@ def fetch(days: int = 7) -> str:
     s, e = start.strftime("%Y-%m-%d"), end.strftime("%Y-%m-%d")
     try:
         daily = _query(token, site, s, e, ["date"])
-        top = _query(token, site, s, e, ["query"], row_limit=5)
+        top = _query(token, site, s, e, ["query"], row_limit=20)
     except Exception as exc:
         print(f"gsc: query failed: {exc}", file=sys.stderr)
         return ""
@@ -114,12 +114,21 @@ def fetch(days: int = 7) -> str:
     lines.append(f"- 点击 **{clicks}** · 展示 **{impr}** · CTR **{ctr:.1f}%** · 平均排名 **{pos:.1f}**")
     if top:
         lines.append("- 热门查询：")
-        for r in top:
+        for r in top[:5]:
             q = r.get("keys", ["?"])[0]
             lines.append(
                 f"  - 「{q}」点击 {r.get('clicks', 0)} · 展示 {r.get('impressions', 0)} · "
                 f"排名 {r.get('position', 0):.1f}"
             )
+        # Opportunity words: ranked 10-20 (just outside page 1) — content/内链 targets.
+        opp = [r for r in top if 10 <= r.get("position", 0) <= 20][:4]
+        if opp:
+            lines.append("- 🎯 机会词（排名 10-20，快进首页）：")
+            for r in opp:
+                q = r.get("keys", ["?"])[0]
+                lines.append(
+                    f"  - 「{q}」展示 {r.get('impressions', 0)} · 排名 {r.get('position', 0):.1f}"
+                )
     else:
         lines.append("- 近 7 天无搜索展示数据（新站正常，等收录爬升）")
     return "\n".join(lines)
