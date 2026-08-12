@@ -2975,8 +2975,8 @@ _ARTICLE_PAGE_TEMPLATE = """<!doctype html>
   {{
     "@context": "https://schema.org",
     "@type": "BlogPosting",
-    "headline": "{json_title_zh}",
-    "description": "{json_desc_zh}",
+    "headline": {json_title_zh},
+    "description": {json_desc_zh},
     "datePublished": "{json_date}",
     "dateModified": "{json_date}",
     "image": "{og_image}",
@@ -3169,9 +3169,10 @@ def article_page(slug: str) -> Response:
         article_faq_jsonld=article_faq_jsonld,
         related=_related_html(_related_articles(meta)),
         cookie_banner=_cookie_banner(),
-        # Raw (unescaped) values for the JSON-LD block — escaping would corrupt JSON.
-        json_title_zh=meta.get("title_zh", ""),
-        json_desc_zh=meta.get("description_zh", ""),
+        # JSON-LD values MUST be json-escaped (article text can contain ASCII
+        # quotes which would otherwise break the JSON — e.g. "黄金时间").
+        json_title_zh=json.dumps(meta.get("title_zh", ""), ensure_ascii=False),
+        json_desc_zh=json.dumps(meta.get("description_zh", ""), ensure_ascii=False),
         json_date=meta.get("date", ""),
         json_slug=meta["slug"],
         json_site_url=SITE_URL,
@@ -3193,7 +3194,7 @@ def article_page_en(slug: str) -> Response:
     page = _swap_meta(page, "meta name=\"description\"", html.escape(meta.get("description_en", "")))
     page = re.sub(
         r"(<title>)[^<]*(</title>)",
-        rf"\g<1>{html.escape(meta.get('title_en', ''))} | Shenyuan International\g<2>",
+        rf"\g<1>{html.escape(meta.get('title_en', '')[:46])} | Shenyuan International\g<2>",
         page,
         count=1,
     )
