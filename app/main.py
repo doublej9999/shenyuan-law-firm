@@ -1707,7 +1707,7 @@ _STATIC_PAGES: dict[str, dict] = {
         "title_zh": "关于我们",
         "title_en": "About Us",
         "description_zh": "深远国际律师事务所：面向中国企业与家庭的跨境法律服务，中英双语团队与 30+ 国家合作律所网络，专注贸易争议、债务追收与跨境继承。",
-        "description_en": "Shenyuan International: bilingual cross-border legal services for Chinese businesses and families — trade disputes, debt recovery, and inheritance, backed by a 30+ jurisdiction counsel network.",
+        "description_en": "Shenyuan International: bilingual cross-border legal services — trade disputes, debt recovery, and inheritance, backed by a 30+ jurisdiction counsel network.",
         "sections": [
             (
                 "律所定位",
@@ -2509,6 +2509,7 @@ def _render_cases_page(en: bool = False) -> Response:
   <link rel="alternate" hreflang="x-default" href="{SITE_URL}/cases">
   <meta property="og:type" content="website">
   <meta property="og:title" content="{title} | Shenyuan International">
+  <meta property="og:description" content="{disclaimer[:160]}">
   <meta property="og:image" content="{OG_IMAGE}">
   <meta name="twitter:card" content="summary_large_image">
   {jsonld}

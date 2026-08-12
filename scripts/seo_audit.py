@@ -81,8 +81,14 @@ def check_page(url: str) -> list[str]:
     canon = re.search(r'<link rel="canonical" href="([^"]*)"', html)
     if not canon:
         issues.append("缺 canonical")
-    elif canon.group(1).rstrip("/") != url.rstrip("/"):
-        issues.append(f"canonical 指向 {canon.group(1)} ≠ 自身")
+    else:
+        c = canon.group(1).rstrip("/")
+        u = url.rstrip("/")
+        # /en/* pages may legitimately canonical to their zh source (hreflang
+        # pair) to avoid duplicate content — that is the intended strategy.
+        zh_source = u.replace("/en", "", 1) if "/en/" in u else u
+        if c != u and c != zh_source:
+            issues.append(f"canonical 指向 {c} ≠ 自身")
     if not re.search(r'hreflang="[a-z-]+" href="[^"]*/(en|zh)/', html) and not re.search(r'hreflang="x-default"', html):
         if "/en/" not in url and not url.endswith("/en/") and "/search" not in url:
             issues.append("缺 hreflang 声明")
