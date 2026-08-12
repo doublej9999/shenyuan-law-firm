@@ -1454,7 +1454,7 @@ def service_page_en(slug: str) -> Response:
         raise HTTPException(status_code=404, detail="Not found")
     page = _en_variant(_render_service_page(svc))
     page = _swap_meta(page, "meta name=\"description\"", html.escape(svc["en_intro"])[:165])
-    page = _swap_meta(page, "meta property=\"og:title\"", html.escape(svc["en_title"])[:42] + " | Shenyuan International")
+    page = _swap_meta(page, "meta property=\"og:title\"", html.escape(svc["en_title"])[:40] + " | Shenyuan International")
     page = _swap_meta(page, "meta property=\"og:description\"", html.escape(svc["en_intro"])[:165])
     page = re.sub(
         r"(<title>)[^<]*(</title>)",
@@ -3192,9 +3192,10 @@ def article_page_en(slug: str) -> Response:
     page = _en_variant(bytes(article_page(slug).body).decode("utf-8"))
     meta = article["meta"]
     page = _swap_meta(page, "meta name=\"description\"", html.escape(meta.get("description_en", "")))
+    page = _swap_meta(page, "meta property=\"og:title\"", html.escape(meta.get("title_en", "")[:40], quote=False) + " | Shenyuan International")
     page = re.sub(
         r"(<title>)[^<]*(</title>)",
-        rf"\g<1>{html.escape(meta.get('title_en', '')[:42])} | Shenyuan International\g<2>",
+        rf"\g<1>{html.escape(meta.get('title_en', '')[:40], quote=False)} | Shenyuan International\g<2>",
         page,
         count=1,
     )
@@ -4057,7 +4058,7 @@ def country_page_en(slug: str) -> Response:
         raise HTTPException(status_code=404, detail="Not found")
     page = _en_variant(_render_country_page(country, slug))
     page = _swap_meta(page, "meta name=\"description\"", html.escape(country["en_intro"])[:165])
-    page = _swap_meta(page, "meta property=\"og:title\"", html.escape(country["en_title"])[:42] + " | Shenyuan International")
+    page = _swap_meta(page, "meta property=\"og:title\"", html.escape(country["en_title"])[:40] + " | Shenyuan International")
     page = _swap_meta(page, "meta property=\"og:description\"", html.escape(country["en_intro"])[:165])
     page = re.sub(
         r"(<title>)[^<]*(</title>)",
