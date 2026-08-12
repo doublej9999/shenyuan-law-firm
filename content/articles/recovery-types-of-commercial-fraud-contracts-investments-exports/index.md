@@ -1,9 +1,9 @@
 ---
 slug: recovery-types-of-commercial-fraud-contracts-investments-exports
 title_zh: 商业欺诈的常见类型：合同/投资/出口骗局
-title_en: Types of Commercial Fraud: Contracts, Investments, Exports
+title_en: Types of Commercial Fraud: Contracts, Exports & More
 description_zh: 合同诈骗、投资骗局、出口欺诈是跨境商业中最常见的三类陷阱。本文梳理各类骗局的套路与识别信号，并给出发现被骗后48小时内的证据保全、止付与报案标准动作。
-description_en: Contract fraud, investment scams, and export fraud are the three most common traps in cross-border business. This guide breaks down how each scheme works, the red flags to watch for, and the standard steps — evidence, stop-payment, and reporting — to take within 48 hours of discovery.
+description_en: Cross-border business fraud: learn how contract fraud, investment scams, and export fraud work, spot red flags, and take key steps within 48 hours.
 business: recovery
 intent: I
 date: 2026-08-04
@@ -12,7 +12,7 @@ week: 3
 
 # 商业欺诈的常见类型：合同/投资/出口骗局
 
-一家做外贸的公司，接到一笔"大订单"，对方催着发货、催着收定金，货发出后对方连公司都不存在；一位投资人被高回报项目吸引，前期按时拿到"收益"，最后连本金都搭进去。商业欺诈的共同点：等你发现被骗时，钱往往已经被转移。识别骗局、固定证据、尽早行动，是挽回损失的三道闸门。本文梳理三类最常见的跨境商业欺诈，帮助你在交易前识别风险、在事发后正确应对。
+一家做外贸的公司，接到一笔"大订单"，对方催着发货、催着收定金，货发出后对方连公司都不存在；一位投资人被高回报项目吸引，前期按时拿到"收益"，最后连本金都搭进去。商业欺诈的共同点：等你发现被骗时，钱往往已经被转移——**这也意味着后续的欠款追收与判决执行难度陡增，诉讼时效一旦耗尽，追讨将彻底无门**。识别骗局、固定证据、尽早行动，是挽回损失的三道闸门。本文梳理三类最常见的跨境商业欺诈，帮助你在交易前识别风险、在事发后正确应对。
 
 ## 一、合同类欺诈：假合同、空壳公司与伪造印章
 

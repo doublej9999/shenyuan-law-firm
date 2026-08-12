@@ -3,7 +3,7 @@ slug: legacy-relative-dies-abroad-china-heirs
 title_zh: 海外亲属去世，国内继承人如何办理继承？
 title_en: Relative Dies Abroad: How Heirs in China Claim Inheritance
 description_zh: 人在国内、遗产在国外，继承手续怎么启动？本文讲清国内继承人的实操路径：文件准备、法律适用判断、海外认证程序、委托授权与资金汇回，以及常见卡点。
-description_en: Heirs living in China with an estate abroad — how do you even start? This article covers the practical path: document preparation, applicable-law analysis, overseas probate, authorizations, and remitting funds, plus the usual sticking points.
+description_en: Heirs in China with an estate abroad? Learn the practical path: document prep, applicable law analysis, overseas probate, authorizations, remitting funds, and pitfalls.
 business: legacy
 intent: T
 date: 2026-08-12

@@ -3,7 +3,7 @@ slug: recovery-debt-collection-golden-window
 title_zh: 欠款追收的黄金时间：为什么越早行动越有利
 title_en: The Golden Window for Debt Recovery: Act Early
 description_zh: 欠款追收有三个"黄金时间"：逾期30天内、债务人经营恶化前、时效届满前。错过窗口，追收难度与成本指数级上升。本文解释每个窗口的意义与行动清单。
-description_en: Debt recovery has three golden windows: within 30 days of default, before the debtor's position deteriorates, and before the limitation period expires. Miss them and recovery gets exponentially harder and costlier. Here is what each window means and what to do.
+description_en: Debt recovery has three golden windows: within 30 days, before debtor deterioration, and before the limitation period. Miss them and recovery gets harder and costlier.
 business: recovery
 intent: T
 date: 2026-08-11

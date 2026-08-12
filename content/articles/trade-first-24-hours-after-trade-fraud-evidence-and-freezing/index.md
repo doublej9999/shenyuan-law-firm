@@ -3,7 +3,7 @@ slug: trade-first-24-hours-after-trade-fraud-evidence-and-freezing
 title_zh: 被诈骗后第一时间的取证与止付动作
 title_en: First 24 Hours After Trade Fraud: Evidence and Freezing
 description_zh: 邮件里的"供应商"换了收款账户，定金转出后才发现被骗。本文给出诈骗发生后 24–72 小时黄金窗口内的止损、取证、银行止付与刑事报案动作清单，越早行动，追回概率越高。
-description_en: Your "supplier" changed bank accounts and the deposit is gone. This is a 24–72 hour playbook for trade fraud — stop payments, secure evidence, bank recalls, and criminal complaints. Every hour of earlier action raises the odds of recovery.
+description_en: Supplier changed bank accounts and deposit is gone? 24-72 hour fraud playbook: stop payments, secure evidence, bank recalls, criminal complaints. Act fast.
 business: trade
 intent: T
 date: 2026-08-10

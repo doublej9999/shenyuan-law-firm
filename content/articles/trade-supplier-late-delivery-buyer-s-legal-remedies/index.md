@@ -3,7 +3,7 @@ slug: trade-supplier-late-delivery-buyer-s-legal-remedies
 title_zh: 工厂延期交货，买家如何索赔？
 title_en: Supplier Late Delivery: Buyer's Legal Remedies
 description_zh: 货期一拖再拖，损失谁来担？本文拆解延期交货后买家的5步索赔路径：核对合同、书面催告、解除合同、损失索赔与违约金主张，并给出时间与费用预期。
-description_en: A late shipment can unravel your whole season. This guide maps the buyer's 5-step legal path after supplier delay — contract review, written notice, termination, damages, and penalty clauses — with realistic time and cost expectations.
+description_en: Late shipment? Follow the buyer's 5-step legal path: contract review, notice, termination, damages, penalty clauses, with time and cost expectations.
 business: trade
 intent: T
 date: 2026-08-10

@@ -3,7 +3,7 @@ slug: trade-payment-recovery-5-steps
 title_zh: 海外客户拖欠货款怎么办？律师教你5步合法追收
 title_en: What to Do When an Overseas Buyer Won't Pay: A 5-Step Legal Guide
 description_zh: 海外客户拖欠货款是外贸企业最常见的坏账来源。本文拆解5步合法追收路径：证据固定、催款函、协商、诉讼或仲裁、执行，并说明每步的时间与费用预期。
-description_en: An unpaid overseas invoice is the most common source of bad debt for exporters. This guide breaks down a 5-step legal recovery path — evidence, demand letter, negotiation, proceedings, enforcement — with realistic time and cost expectations.
+description_en: Unpaid overseas invoices, top exporter bad debt, follow a 5-step legal recovery path: evidence, demand letter, negotiation, proceedings, enforcement, with time and cost.
 business: trade
 intent: T
 date: 2026-08-10

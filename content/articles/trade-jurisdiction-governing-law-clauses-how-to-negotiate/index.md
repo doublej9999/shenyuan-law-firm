@@ -3,7 +3,7 @@ slug: trade-jurisdiction-governing-law-clauses-how-to-negotiate
 title_zh: 管辖条款与法律适用条款怎么谈才不吃亏？
 title_en: Jurisdiction & Governing Law Clauses: How to Negotiate
 description_zh: 合同里的管辖条款和法律适用条款，往往决定纠纷发生时你在哪里打官司、适用哪国法律。本文讲清两条条款的谈判要点、常见陷阱与让步底线，帮出口企业在签约阶段就占据主动。
-description_en: The jurisdiction and governing law clauses decide where you will litigate and which law applies when a dispute breaks out. This article explains how to negotiate both clauses, common traps, and where you can safely give ground.
+description_en: Learn to negotiate jurisdiction and governing law clauses, avoid common traps, and know when to give ground in dispute resolution.
 business: trade
 intent: C
 date: 2026-08-10

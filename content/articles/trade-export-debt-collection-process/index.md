@@ -3,7 +3,7 @@ slug: trade-export-debt-collection-process
 title_zh: 外贸货款追收全流程：从催款函到仲裁裁决
 title_en: International Debt Collection: From Demand Letter to Arbitral Award
 description_zh: 一篇讲清外贸货款追收的完整路径：内部催收、律师函、和解、仲裁/诉讼、裁决执行，每个节点的触发条件、周期与成本，以及外贸企业容易踩的坑。
-description_en: The full export debt collection pathway — internal follow-up, demand letter, settlement, arbitration or litigation, and award enforcement — with trigger points, timelines, costs, and common exporter mistakes.
+description_en: Export debt collection pathway: internal follow-up, demand letter, settlement, arbitration/litigation, award enforcement, with trigger points, timelines, costs, mistakes.
 business: trade
 intent: C
 date: 2026-08-04

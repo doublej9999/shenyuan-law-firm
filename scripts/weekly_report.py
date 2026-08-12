@@ -233,11 +233,14 @@ def main():
 
     # Site-search terms this week (user-intent signal for the content calendar).
     try:
-        rows = conn.execute(
+        slog = sqlite3.connect(DB)
+        slog.row_factory = sqlite3.Row
+        rows = slog.execute(
             "SELECT q, COUNT(*) AS n, MAX(results) AS best FROM search_log "
             "WHERE created_at >= ? GROUP BY q ORDER BY n DESC, best DESC LIMIT 5",
             (week_ago.isoformat(),),
         ).fetchall()
+        slog.close()
         if rows:
             out.append("")
             out.append("## 🔎 站内搜索词（本周）")

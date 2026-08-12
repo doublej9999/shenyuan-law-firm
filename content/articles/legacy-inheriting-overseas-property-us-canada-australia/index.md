@@ -3,7 +3,7 @@ slug: legacy-inheriting-overseas-property-us-canada-australia
 title_zh: 海外房产继承：美国/加拿大/澳洲房产如何过户？
 title_en: Inheriting Overseas Property: US, Canada, Australia
 description_zh: 父母或配偶在海外留下的房产，国内继承人如何合法过户？本文拆解遗嘱认证、税务申报、产权登记五个步骤，并说明美国、加拿大、澳洲三地的税费差异与时间成本。
-description_en: Inheriting a property left abroad in the US, Canada, or Australia involves more than paperwork. This guide walks through probate, tax clearance, and title transfer step by step, with country-specific tax notes and realistic timelines.
+description_en: Inheriting property abroad? Guide to probate, tax clearance, and title transfer in the US, Canada, and Australia, with country-specific tax notes and timelines.
 business: legacy
 intent: T
 date: 2026-08-04

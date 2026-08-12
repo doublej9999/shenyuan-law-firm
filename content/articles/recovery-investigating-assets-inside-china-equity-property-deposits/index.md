@@ -3,7 +3,7 @@ slug: recovery-investigating-assets-inside-china-equity-property-deposits
 title_zh: 中国境内资产调查：股权/房产/存款怎么查
 title_en: Investigating Assets Inside China: Equity, Property, Deposits
 description_zh: 债务人嘴上说没钱，名下却可能有股权、房产、存款。本文按"公开可查"与"须走法定程序"两类，梳理中国境内资产调查的合法途径、周期与费用，帮您找到可执行的财产线索。
-description_en: The debtor says he is broke — but may hold equity, property, and deposits. This guide separates publicly searchable sources from court-only routes for investigating assets inside China, with realistic time and cost expectations.
+description_en: Investigate debtor assets in China: separate public sources from court-only routes, covering equity, property, deposits, with time and cost expectations.
 business: recovery
 intent: C
 date: 2026-08-10

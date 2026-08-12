@@ -3,7 +3,7 @@ slug: legacy-cross-border-inheritance-from-death-certificate-to-transfer
 title_zh: 跨境继承的基本流程：从死亡证明到遗产过户
 title_en: Cross-Border Inheritance: From Death Certificate to Transfer
 description_zh: 亲属在海外去世、遗产分布在不同国家时，继承流程环环相扣：死亡证明、遗嘱认定、继承人确认、遗产清点、过户与资金汇回。本文用一张流程图式清单讲清每一步做什么、先后顺序与常见卡点。
-description_en: When a relative dies abroad and assets sit in multiple countries, inheritance is a chain of linked steps: death certificate, will validation, heir confirmation, estate inventory, transfer, and repatriation. This article lays out each step, the order, and where things typically stall.
+description_en: Inheritance abroad: death certificate, will validation, heir confirmation, estate inventory, transfer, and repatriation—step by step, plus where things stall.
 business: legacy
 intent: C
 date: 2026-08-10

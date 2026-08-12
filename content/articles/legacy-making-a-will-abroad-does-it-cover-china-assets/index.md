@@ -3,7 +3,7 @@ slug: legacy-making-a-will-abroad-does-it-cover-china-assets
 title_zh: 在海外立遗嘱，能覆盖中国境内的遗产吗？
 title_en: Making a Will Abroad: Does It Cover China Assets?
 description_zh: 长期定居海外，国内还有房有存款——海外遗嘱管不管中国资产？本文解析遗嘱形式与实质效力的认定、必留份与夫妻共同财产问题，以及公证认证和国内确认的程序路径。
-description_en: Living abroad but still owning property and deposits in China? This guide explains whether a foreign will governs Chinese assets — form and validity rules, compulsory shares, marital property, and the notarization and recognition procedures.
+description_en: Living abroad with Chinese property? Learn if a foreign will governs your Chinese assets, covering validity, compulsory shares, and notarization.
 business: legacy
 intent: T
 date: 2026-08-10

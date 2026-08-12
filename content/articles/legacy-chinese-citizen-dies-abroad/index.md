@@ -3,7 +3,7 @@ slug: legacy-chinese-citizen-dies-abroad
 title_zh: 中国公民在海外去世，遗产如何处理？
 title_en: Chinese Citizen Dies Abroad: Handling the Estate
 description_zh: 亲属在海外去世，国内继承人往往不知道从哪下手。本文梳理遗产处理全流程：死亡与身份文件、遗嘱/继承制度、遗产清单、认证程序、跨境转移与税务要点。
-description_en: A relative passes away abroad and heirs in China have no idea where to start. This article maps the full estate process: death and identity documents, wills and intestacy, asset inventory, probate, cross-border transfer, and tax points.
+description_en: Heirs in China: navigate a relative's foreign estate. Covers death docs, wills, intestacy, asset inventory, probate, cross-border transfer, and tax.
 business: legacy
 intent: T
 date: 2026-08-06
