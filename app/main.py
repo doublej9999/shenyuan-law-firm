@@ -1453,12 +1453,12 @@ def service_page_en(slug: str) -> Response:
     if svc is None:
         raise HTTPException(status_code=404, detail="Not found")
     page = _en_variant(_render_service_page(svc))
-    page = _swap_meta(page, "meta name=\"description\"", html.escape(svc["en_intro"]))
-    page = _swap_meta(page, "meta property=\"og:title\"", html.escape(svc["en_title"]) + " | Shenyuan International")
-    page = _swap_meta(page, "meta property=\"og:description\"", html.escape(svc["en_intro"]))
+    page = _swap_meta(page, "meta name=\"description\"", html.escape(svc["en_intro"])[:165])
+    page = _swap_meta(page, "meta property=\"og:title\"", html.escape(svc["en_title"])[:44] + " | Shenyuan International")
+    page = _swap_meta(page, "meta property=\"og:description\"", html.escape(svc["en_intro"])[:165])
     page = re.sub(
         r"(<title>)[^<]*(</title>)",
-        rf"\g<1>{html.escape(svc['en_title'])} | Shenyuan International\g<2>",
+        rf"\g<1>{html.escape(svc['en_title'][:44])} | Shenyuan International\g<2>",
         page,
         count=1,
     )
@@ -2213,6 +2213,7 @@ def _render_faq_page(en: bool = False) -> Response:
   <link rel="alternate" hreflang="x-default" href="{SITE_URL}/faq">
   <meta property="og:type" content="website">
   <meta property="og:title" content="{title} | Shenyuan International">
+  <meta property="og:description" content="跨境法律常见问题汇总：国际贸易争议、债务追收、判决执行、跨境继承——按国家整理的实务解答。">
   <meta property="og:image" content="{OG_IMAGE}">
   <meta name="twitter:card" content="summary_large_image">
   {faq_jsonld}
@@ -4054,12 +4055,12 @@ def country_page_en(slug: str) -> Response:
     if country is None:
         raise HTTPException(status_code=404, detail="Not found")
     page = _en_variant(_render_country_page(country, slug))
-    page = _swap_meta(page, "meta name=\"description\"", html.escape(country["en_intro"]))
-    page = _swap_meta(page, "meta property=\"og:title\"", html.escape(country["en_title"]) + " | Shenyuan International")
-    page = _swap_meta(page, "meta property=\"og:description\"", html.escape(country["en_intro"]))
+    page = _swap_meta(page, "meta name=\"description\"", html.escape(country["en_intro"])[:165])
+    page = _swap_meta(page, "meta property=\"og:title\"", html.escape(country["en_title"])[:44] + " | Shenyuan International")
+    page = _swap_meta(page, "meta property=\"og:description\"", html.escape(country["en_intro"])[:165])
     page = re.sub(
         r"(<title>)[^<]*(</title>)",
-        rf"\g<1>{html.escape(country['en_title'])} | Shenyuan International\g<2>",
+        rf"\g<1>{html.escape(country['en_title'][:44])} | Shenyuan International\g<2>",
         page,
         count=1,
     )
@@ -4076,9 +4077,14 @@ def countries_index_en() -> Response:
     page = _swap_meta(
         page,
         "meta name=\"description\"",
-        "Shenyuan International country pages: United States, Canada, Australia, "
-        "Singapore, United Kingdom — local practice notes on debt recovery, "
-        "judgment enforcement, and inheritance.",
+        "Shenyuan International country pages: the US, Canada, Australia, Singapore, "
+        "the UK — debt recovery, judgment enforcement, and inheritance practice notes.",
+    )
+    page = _swap_meta(
+        page,
+        "meta property=\"og:description\"",
+        "Shenyuan International country pages: the US, Canada, Australia, Singapore, "
+        "the UK — debt recovery, judgment enforcement, and inheritance practice notes.",
     )
     page = page.replace(
         f'<link rel="canonical" href="{SITE_URL}/countries">',

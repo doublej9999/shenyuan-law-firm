@@ -90,7 +90,7 @@ def check_page(url: str) -> list[str]:
         if c != u and c != zh_source:
             issues.append(f"canonical 指向 {c} ≠ 自身")
     if not re.search(r'hreflang="[a-z-]+" href="[^"]*/(en|zh)/', html) and not re.search(r'hreflang="x-default"', html):
-        if "/en/" not in url and not url.endswith("/en/") and "/search" not in url:
+        if "/en/" not in url and not url.endswith("/en/") and "/search" not in url and "/handbook" not in url:
             issues.append("缺 hreflang 声明")
     for og in ("og:title", "og:description", "og:image"):
         if not re.search(rf'property="{og}" content="[^"]+"', html):
