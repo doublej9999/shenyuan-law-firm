@@ -92,6 +92,14 @@ def build_html(articles: list[dict]) -> str:
 <head>
 <meta charset="utf-8">
 <title>跨境维权法律手册 · Shenyuan International</title>
+<meta name="description" content="深远国际《跨境维权法律手册》：国际贸易争议、债务追收与跨境继承的实务路径汇编，由已发布法律专栏整理而成，仅供一般信息参考。">
+<link rel="canonical" href="https://shenyuanlegal.com/handbook">
+<link rel="alternate" hreflang="zh-CN" href="https://shenyuanlegal.com/handbook">
+<meta property="og:type" content="website">
+<meta property="og:title" content="跨境维权法律手册 · Shenyuan International">
+<meta property="og:description" content="国际贸易争议、债务追收与跨境继承实务路径汇编。">
+<meta property="og:image" content="https://images.unsplash.com/photo-1526304640581-d334cdbbf45e?auto=format&fit=crop&w=1200&q=80">
+<meta name="twitter:card" content="summary_large_image">
 <style>
   @page {{ size: A4; margin: 18mm 16mm; @bottom-center {{ content: counter(page); font-size: 9px; color: #8a939b; }} }}
   * {{ box-sizing: border-box; }}
