@@ -880,6 +880,10 @@ def test_article_pages_render_bilingual(tmp_db):
             "recovery-investigating-assets-inside-china-equity-property-deposits",
             "legacy-making-a-will-abroad-does-it-cover-china-assets",
             "trade-first-24-hours-after-trade-fraud-evidence-and-freezing",
+            "trade-freight-forwarder-withholding-cargo-legal-remedies",
+            "recovery-legal-ways-to-find-us-real-estate-and-bank-accounts",
+            "legacy-drafting-a-cross-border-valid-will-key-elements",
+            "recovery-expired-limitation-period-can-you-still-collect",
         ):
             resp = client.get(f"/articles/{slug}")
             assert resp.status_code == 200, slug
