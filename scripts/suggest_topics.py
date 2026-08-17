@@ -2,16 +2,17 @@
 """内容排产建议器 — 供内容工厂 cron 每次运行前注入上下文。
 
 数据源（按可用性降级）：
-  1. GSC 机会词：排名 5-20 且有展示的查询（快进首页的词）
+  1. GSC 机会词：排名 5-20 且有展示的查询（快进首页的词），已过滤噪声词
   2. 站内搜索词：search_log 本周查询（0 命中 = 需求缺口）
   3. manifest pending 文章（未来排期）
+防重守望：机会词缺口选题与已发布文章做关键词相似度比对，撞车则提示改为内链。
 
 输出：markdown 排产建议（stdout）——cron script 模式自动注入 agent prompt。
 无 GSC 配置时仅输出站内搜索词部分（不失败）。
 """
 
 import csv
-import json
+import re
 import sqlite3
 import sys
 from datetime import datetime, timedelta, timezone
@@ -22,22 +23,33 @@ DB = ROOT / "data" / "lawyers.sqlite3"
 MANIFEST = ROOT / "docs" / "article-manifest.csv"
 
 
+# ---------- helpers ----------------------------------------------------------
+
+def _tokens(s: str) -> set:
+    s = s.lower()
+    cjk = set(re.findall(r"[\u4e00-\u9fff]{2,}", s))
+    en = set(re.findall(r"[a-z]{4,}", s))
+    return cjk | en
+
+
+def _overlap(a: str, b: str) -> int:
+    return len(_tokens(a) & _tokens(b))
+
+
 def _is_noise(q: str) -> bool:
-    """Short/garbled queries (search noise) shouldn't drive topics."""
     q2 = q.strip()
     if len(q2) < 4:
         return True
     if "{" in q2 or "}" in q2:
         return True
-    import re
     tokens = re.findall(r"[a-z]{2,}", q2.lower())
-    # all-ASCII tokens that are all very short (e.g. "ma law", "g law") = noise
     has_meaningful = any(t for t in tokens if len(t) >= 4) or any("\u4e00" <= c <= "\u9fff" for c in q2)
     return not has_meaningful
 
 
+# ---------- data sources -----------------------------------------------------
+
 def _gsc_opportunity_words(days: int = 14) -> list[dict]:
-    """Queries ranked 5-20 with impressions — just outside page 1."""
     try:
         sys.path.insert(0, str(Path(__file__).resolve().parent))
         import gsc_report
@@ -61,7 +73,6 @@ def _gsc_opportunity_words(days: int = 14) -> list[dict]:
 
 
 def _zero_hit_search_terms() -> list[tuple[str, int]]:
-    """Site-search terms that returned zero results (content gaps)."""
     if not DB.exists():
         return []
     try:
@@ -72,7 +83,6 @@ def _zero_hit_search_terms() -> list[tuple[str, int]]:
             (str(datetime.now(timezone.utc) - timedelta(days=30)),),
         ).fetchall()
         conn.close()
-        # Drop template/placeholder terms (e.g. {search_term_string} from tests)
         return [(q, n) for q, n in rows if "{" not in q and "}" not in q]
     except Exception:
         return []
@@ -88,19 +98,41 @@ def _pending_articles() -> list[dict]:
         return []
 
 
-def _overlap(a: str, b: str) -> int:
-    """Count shared CJK-2+ chars or English words between two strings."""
-    import re
-    a_tokens = set(re.findall(r"[\u4e00-\u9fff]{2,}|[a-z]{4,}", a.lower()))
-    b_tokens = set(re.findall(r"[\u4e00-\u9fff]{2,}|[a-z]{4,}", b.lower()))
-    return len(a_tokens & b_tokens)
+def _published_articles() -> list[dict]:
+    """Published article titles for the duplicate guard."""
+    out = []
+    for idx in sorted((ROOT / "content" / "articles").glob("*/index.md")):
+        text = idx.read_text(encoding="utf-8")
+        m = re.match(r"^---\n(.*?)\n---\n", text, re.S)
+        meta = {}
+        if m:
+            for line in m.group(1).splitlines():
+                if ":" in line:
+                    k, v = line.split(":", 1)
+                    meta[k.strip()] = v.strip()
+        out.append({"title_zh": meta.get("title_zh", ""), "title_en": meta.get("title_en", ""),
+                    "slug": meta.get("slug", idx.parent.name)})
+    return out
 
+
+def _conflict_slug(word: str, published: list[dict], thresh: int = 2) -> str | None:
+    """Highest-conflict published slug if a prospective topic shares keywords."""
+    best = None
+    for p in published:
+        score = max(_overlap(word, p["title_zh"]), _overlap(word, p["title_en"]))
+        if score >= thresh and (best is None or score > best[0]):
+            best = (score, p["slug"])
+    return best[1] if best else None
+
+
+# ---------- report -----------------------------------------------------------
 
 def main() -> None:
     lines = ["# 📋 本周内容排产建议（数据驱动）", ""]
     opp = _gsc_opportunity_words()
     zero = _zero_hit_search_terms()
     pending = _pending_articles()
+    published = _published_articles()
 
     if opp:
         lines.append(f"## 🎯 GSC 机会词（近 14 天，排名 5-20，共 {len(opp)} 个）")
@@ -110,7 +142,6 @@ def main() -> None:
                 f"- 「{q}」展示 {r.get('impressions', 0)} · 点击 {r.get('clicks', 0)} · 排名 {r.get('position', 0):.1f}"
             )
         lines.append("")
-        # Match pending articles against opportunity words
         if pending:
             lines.append("### 优先排产（pending 文章 vs 机会词匹配）")
             scored = []
@@ -118,11 +149,16 @@ def main() -> None:
                 hay = f"{p.get('title_zh','')} {p.get('title_en','')} {p.get('slug','')}"
                 matches = [r for r in opp if _overlap(hay, r.get("keys", ["?"])[0]) >= 1]
                 scored.append((len(matches), p, matches))
+            any_scored = False
             for n, p, matches in sorted(scored, key=lambda x: -x[0])[:6]:
                 if n:
+                    any_scored = True
                     words = "、".join(f"「{m.get('keys',['?'])[0]}」" for m in matches[:3])
                     lines.append(f"- W{p.get('week','?')} {p.get('title_zh','')}（命中 {n} 词：{words}）")
+            if not any_scored:
+                lines.append("- 无 pending 文章命中当前机会词，按 manifest 顺序或新增选题。")
             lines.append("")
+
         # Opportunity words with no matching pending article = new topic suggestions
         covered = set()
         for p in pending:
@@ -132,22 +168,36 @@ def main() -> None:
                     covered.add(r.get("keys", ["?"])[0])
         gaps = [r for r in opp if r.get("keys", ["?"])[0] not in covered][:5]
         if gaps:
-            lines.append("### 💡 建议新增选题（机会词暂无文章覆盖）")
-            for r in gaps:
-                q = r.get("keys", ["?"])[0]
-                lines.append(f"- 围绕「{q}」（展示 {r.get('impressions', 0)} · 排名 {r.get('position', 0):.1f}）写一篇")
-            lines.append("")
+            dup = [r for r in gaps if _conflict_slug(r.get("keys", ["?"])[0], published)]
+            fresh = [r for r in gaps if not _conflict_slug(r.get("keys", ["?"])[0], published)]
+            if fresh:
+                lines.append("### 💡 建议新增选题（机会词暂无文章覆盖，且不与现有重复）")
+                for r in fresh:
+                    q = r.get("keys", ["?"])[0]
+                    lines.append(f"- 围绕「{q}」（展示 {r.get('impressions', 0)} · 排名 {r.get('position', 0):.1f}）写一篇")
+                lines.append("")
+            if dup:
+                lines.append("### 🛡️ 防重提醒（机会词已被内容覆盖——建议内链，勿重复产文）")
+                for r in dup:
+                    q = r.get("keys", ["?"])[0]
+                    slug = _conflict_slug(q, published)
+                    lines.append(f"- 「{q}」→ 已有关联文章 `/articles/{slug}`：对旧文做内链/更新即可，不要新开主题。")
+                lines.append("")
 
     if zero:
-        lines.append(f"## 🔍 站内 0 命中搜索词（近 30 天，需求缺口）")
+        lines.append("## 🔍 站内 0 命中搜索词（近 30 天，需求缺口）")
         for q, n in zero:
-            lines.append(f"- 「{q}」× {n} 次搜索无结果 → 建议选题或内链到相关文章")
+            slug = _conflict_slug(q, published)
+            if slug:
+                lines.append(f"- 「{q}」× {n} 次无结果 → 已在相关方向（/articles/{slug}），建议内链/增强，不必新写。")
+            else:
+                lines.append(f"- 「{q}」× {n} 次搜索无结果 → 建议新增选题。")
         lines.append("")
 
     if not opp and not zero:
         lines.append("暂无机会词/缺口数据（新站展示少属正常），按 manifest 顺序排产即可。")
     lines.append("")
-    lines.append("> 排产优先级：机会词匹配文章 > 0 命中词选题 > manifest 原顺序。")
+    lines.append("> 排产优先级：机会词匹配文章 > 0 命中词选题（无撞车才新增）> manifest 原顺序。防重：与已发布文章共享 ≥2 个关键词即视为主题重复，改内链而非新写。")
     print("\n".join(lines))
 
 
