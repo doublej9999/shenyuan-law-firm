@@ -63,7 +63,7 @@
 16,L-C21,legacy,C,创始人去世，公司股权由谁接管？,Founder Dies: Succession of Company Control,legacy-founder-dies-succession-of-company-control,pending
 16,T-G44,trade,C,中东贸易纠纷：仲裁还是诉讼？（迪拜/沙特）,Disputes in the Middle East: Arbitration vs Litigation,trade-disputes-in-the-middle-east-arbitration-vs-litigation,pending
 16,R-C26,recovery,I,申请破产清算 vs 追收：债权人如何选择？,Bankruptcy vs Collection: Creditor's Choice,recovery-bankruptcy-vs-collection-creditor-s-choice,pending
-17,T-F36,trade,I,国际贸易诈骗的10种常见套路（货代诈骗/钓鱼邮件）,10 Common International Trade Scams and How to Spot Them,trade-10-common-international-trade-scams-and-how-to-spot-them,pending
+17,T-F36,trade,I,国际贸易诈骗的10种常见套路（货代诈骗/钓鱼邮件）,10 Common International Trade Scams and How to Spot Them,trade-10-common-international-trade-scams-and-how-to-spot-them,done
 17,R-D32,recovery,C,跨境电商欺诈：拒收、拒付与恶意退款,"E-Commerce Fraud: Chargebacks, Refusals and Abuse",recovery-e-commerce-fraud-chargebacks-refusals-and-abuse,pending
 17,L-A6,legacy,I,无人继承的遗产如何处理？,Unclaimed Estates: When No Heir Steps Forward,legacy-unclaimed-estates-when-no-heir-steps-forward,pending
 17,T-A7,trade,C,出口信用保险理赔被拒，如何与保险公司博弈,Export Credit Insurance Claim Denied? How to Fight Back,trade-export-credit-insurance-claim-denied-how-to-fight-back,pending
@@ -150,3 +150,4 @@
 39,L-F49,legacy,C,海外资产未申报的后果与补救（CRS/FATCA）,"Undeclared Overseas Assets: CRS, FATCA and Remedies",legacy-undeclared-overseas-assets-crs-fatca-and-remedies,pending
 40,L-F50,legacy,C,高净值家庭的全球资产传承架构,Global Estate Structures for High-Net-Worth Families,legacy-global-estate-structures-for-high-net-worth-families,pending
 42,gap,,,继承时效,,topic-041,pending
+43,gap,,,test,,test,pending
