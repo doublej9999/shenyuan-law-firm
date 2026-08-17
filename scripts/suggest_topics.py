@@ -26,13 +26,20 @@ MANIFEST = ROOT / "docs" / "article-manifest.csv"
 # ---------- helpers ----------------------------------------------------------
 
 def _tokens(s: str) -> set:
+    """Title-ish tokens for similarity: CJK runs + CJK bigrams + EN words.
+    Bigrams let shared 2-char cores (遗产/继承/执行) be detected even when the
+    full CJK runs differ, so genuine topic collisions are caught."""
     s = s.lower()
-    cjk = set(re.findall(r"[\u4e00-\u9fff]{2,}", s))
-    en = set(re.findall(r"[a-z]{4,}", s))
-    return cjk | en
+    toks = set()
+    for m in re.findall(r"[\u4e00-\u9fff]{2,}", s):
+        toks.add(m)                     # whole run (e.g. 遗产过户)
+        for i in range(len(m) - 1):
+            toks.add(m[i:i + 2])        # bigrams (遗产 / 产过 / 过户)
+    toks |= set(re.findall(r"[a-z]{4,}", s))
+    return toks
 
 
-def _overlap(a: str, b: str) -> int:
+def _overlap(a: str, b: str, thresh: int = 3) -> int:
     return len(_tokens(a) & _tokens(b))
 
 
@@ -115,8 +122,10 @@ def _published_articles() -> list[dict]:
     return out
 
 
-def _conflict_slug(word: str, published: list[dict], thresh: int = 2) -> str | None:
-    """Highest-conflict published slug if a prospective topic shares keywords."""
+def _conflict_slug(word: str, published: list[dict], thresh: int = 3) -> str | None:
+    """Highest-conflict published slug if a prospective topic shares keywords.
+    thresh=3 (shared tokens incl. bigrams) — the 2-char core like 遗产/继承/执行
+    alone won't trip it, only genuinely overlapping topics will."""
     best = None
     for p in published:
         score = max(_overlap(word, p["title_zh"]), _overlap(word, p["title_en"]))
