@@ -22,6 +22,20 @@ DB = ROOT / "data" / "lawyers.sqlite3"
 MANIFEST = ROOT / "docs" / "article-manifest.csv"
 
 
+def _is_noise(q: str) -> bool:
+    """Short/garbled queries (search noise) shouldn't drive topics."""
+    q2 = q.strip()
+    if len(q2) < 4:
+        return True
+    if "{" in q2 or "}" in q2:
+        return True
+    import re
+    tokens = re.findall(r"[a-z]{2,}", q2.lower())
+    # all-ASCII tokens that are all very short (e.g. "ma law", "g law") = noise
+    has_meaningful = any(t for t in tokens if len(t) >= 4) or any("\u4e00" <= c <= "\u9fff" for c in q2)
+    return not has_meaningful
+
+
 def _gsc_opportunity_words(days: int = 14) -> list[dict]:
     """Queries ranked 5-20 with impressions — just outside page 1."""
     try:
@@ -35,7 +49,12 @@ def _gsc_opportunity_words(days: int = 14) -> list[dict]:
         start = end - timedelta(days=days - 1)
         rows = gsc_report._query(token, site, start.strftime("%Y-%m-%d"),
                                  end.strftime("%Y-%m-%d"), ["query"], row_limit=50)
-        return [r for r in rows if 5 <= r.get("position", 0) <= 20 and r.get("impressions", 0) > 0]
+        return [
+            r for r in rows
+            if 5 <= r.get("position", 0) <= 20
+            and r.get("impressions", 0) > 0
+            and not _is_noise(r.get("keys", ["?"])[0])
+        ]
     except Exception as exc:
         print(f"# (GSC 不可用：{exc})", file=sys.stderr)
         return []
