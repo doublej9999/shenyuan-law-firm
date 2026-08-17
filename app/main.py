@@ -46,7 +46,7 @@ def _ga_tag() -> str:
     Read per-request (like the admin token) so tests can toggle it via the
     environment.
     """
-    parts = []
+    parts = ['<meta name="robots" content="index, follow">']
     ga_id = os.environ.get("GA_MEASUREMENT_ID", "").strip()
     if ga_id:
         parts.append(
