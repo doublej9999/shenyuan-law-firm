@@ -884,6 +884,7 @@ def test_article_pages_render_bilingual(tmp_db):
             "recovery-legal-ways-to-find-us-real-estate-and-bank-accounts",
             "legacy-drafting-a-cross-border-valid-will-key-elements",
             "recovery-expired-limitation-period-can-you-still-collect",
+            "trade-10-common-international-trade-scams-and-how-to-spot-them",
         ):
             resp = client.get(f"/articles/{slug}")
             assert resp.status_code == 200, slug
