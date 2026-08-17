@@ -134,6 +134,54 @@ def _conflict_slug(word: str, published: list[dict], thresh: int = 3) -> str | N
     return best[1] if best else None
 
 
+def _add_search_gaps_to_manifest(zero: list[tuple[str, int]], mpath: Path, published: list[dict]) -> None:
+    """Auto-add zero-hit search terms to the manifest as new pending rows."""
+    if not zero or not mpath.exists():
+        return
+    import csv
+    with open(mpath, encoding="utf-8-sig", newline="") as f:
+        reader = csv.DictReader(f)
+        existing = list(reader)
+        fieldnames = reader.fieldnames or []
+    max_week = max((int(r.get("week", 0) or 0) for r in existing), default=0)
+    existing_titles = {r.get("title_zh", "") for r in existing}
+    existing_slugs = {r.get("slug", "") for r in existing}
+    added = 0
+    for q, n in zero:
+        if q in existing_titles:
+            continue
+        slug = re.sub(r"[^a-z0-9]+", "-", q.lower()).strip("-")[:60] or ""
+        if slug in existing_slugs or not slug:
+            max_week += 1
+            slug = f"topic-{max_week:03d}"
+        if slug in existing_slugs:
+            continue
+        # Don't add if already covered by a published article (conflict guard)
+        if _conflict_slug(q, published):
+            continue
+        max_week += 1
+        existing.append({
+            "week": str(max_week),
+            "code": "gap",
+            "business": "",
+            "intent": "",
+            "title_zh": q,
+            "title_en": "",
+            "slug": slug,
+            "status": "pending",
+        })
+        existing_titles.add(q)
+        existing_slugs.add(slug)
+        added += 1
+        print(f"# (已向 manifest 追加搜索缺口选题：{q} -> {slug})", file=sys.stderr)
+    if not added:
+        return
+    with open(mpath, "w", encoding="utf-8-sig", newline="") as f:
+        writer = csv.DictWriter(f, fieldnames=fieldnames)
+        writer.writeheader()
+        writer.writerows(existing)
+
+
 # ---------- report -----------------------------------------------------------
 
 def main() -> None:
@@ -202,6 +250,9 @@ def main() -> None:
             else:
                 lines.append(f"- 「{q}」× {n} 次搜索无结果 → 建议新增选题。")
         lines.append("")
+
+    # Auto-add zero-hit search terms to manifest (if not already present)
+    _add_search_gaps_to_manifest(zero, MANIFEST, published)
 
     if not opp and not zero:
         lines.append("暂无机会词/缺口数据（新站展示少属正常），按 manifest 顺序排产即可。")

@@ -1522,7 +1522,7 @@ def _article_html(article: dict) -> tuple[str, str]:
     return render(article["zh"]), render(article["en"])
 
 
-def _related_articles(meta: dict, limit: int = 3) -> list[dict]:
+def _related_articles(meta: dict, limit: int = 5) -> list[dict]:
     """Internal-link candidates: same business line first, then latest others."""
     biz_key = _business_key(meta.get("business", ""))
     others = [a for a in _load_articles() if a["meta"]["slug"] != meta["slug"]]
