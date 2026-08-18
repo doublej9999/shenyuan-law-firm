@@ -885,6 +885,7 @@ def test_article_pages_render_bilingual(tmp_db):
             "legacy-drafting-a-cross-border-valid-will-key-elements",
             "recovery-expired-limitation-period-can-you-still-collect",
             "trade-10-common-international-trade-scams-and-how-to-spot-them",
+            "trade-common-excuses-for-late-payment-and-legal-responses",
         ):
             resp = client.get(f"/articles/{slug}")
             assert resp.status_code == 200, slug
