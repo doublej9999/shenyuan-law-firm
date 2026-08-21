@@ -6,7 +6,7 @@ description_zh: 胜诉只是第一步，执行到位才算真正回款。本文�
 description_en: Winning a judgment is only the start—collection happens at enforcement. Learn asset tracing, preservation tactics, and when to stop.
 business: recovery
 intent: T
-date: 2026-08-10
+date: 2026-08-18
 week: 4
 ---
 

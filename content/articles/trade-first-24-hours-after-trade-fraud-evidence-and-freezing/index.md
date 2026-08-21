@@ -6,7 +6,7 @@ description_zh: 邮件里的"供应商"换了收款账户，定金转出后才�
 description_en: Supplier changed bank accounts and deposit is gone? 24-72 hour fraud playbook: stop payments, secure evidence, bank recalls, criminal complaints. Act fast.
 business: trade
 intent: T
-date: 2026-08-10
+date: 2026-08-14
 week: 5
 ---
 

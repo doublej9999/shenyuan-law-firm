@@ -6,7 +6,7 @@ description_zh: 亲属在海外去世，国内继承人往往不知道从哪下�
 description_en: Heirs in China: navigate a relative's foreign estate. Covers death docs, wills, intestacy, asset inventory, probate, cross-border transfer, and tax.
 business: legacy
 intent: T
-date: 2026-08-06
+date: 2026-08-11
 week: 1
 ---
 

@@ -6,7 +6,7 @@ description_zh: 房产在中国、资产在海外，遗嘱稍有不慎就可能�
 description_en: Property spans China and abroad? A will written in one country may fail in another. Learn validity essentials, asset mapping, executor choice, and conflict risks.
 business: legacy
 intent: T
-date: 2026-08-17
+date: 2026-08-12
 week: 6
 ---
 

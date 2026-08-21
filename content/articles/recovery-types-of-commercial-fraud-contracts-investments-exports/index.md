@@ -6,7 +6,7 @@ description_zh: 合同诈骗、投资骗局、出口欺诈是跨境商业中最�
 description_en: Cross-border business fraud: learn how contract fraud, investment scams, and export fraud work, spot red flags, and take key steps within 48 hours.
 business: recovery
 intent: I
-date: 2026-08-04
+date: 2026-08-17
 week: 3
 ---
 

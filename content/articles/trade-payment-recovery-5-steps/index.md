@@ -6,7 +6,7 @@ description_zh: 海外客户拖欠货款是外贸企业最常见的坏账来源�
 description_en: Unpaid overseas invoices, top exporter bad debt, follow a 5-step legal recovery path: evidence, demand letter, negotiation, proceedings, enforcement, with time and cost.
 business: trade
 intent: T
-date: 2026-08-10
+date: 2026-08-16
 week: 2
 ---
 

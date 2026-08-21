@@ -6,7 +6,7 @@ description_zh: 《纽约公约》让160多个国家的仲裁裁决可以跨境�
 description_en: Enforce arbitral awards in 160+ countries under the New York Convention. Learn to counter defenses like jurisdiction, procedural defects, and public policy.
 business: recovery
 intent: C
-date: 2026-08-18
+date: 2026-08-08
 week: 3
 ---
 

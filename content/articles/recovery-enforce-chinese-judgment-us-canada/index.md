@@ -6,7 +6,7 @@ description_zh: 在中国赢了中国官司，如何在美加执行？本文讲�
 description_en: Enforce a Chinese judgment in the US or Canada? Learn about recognition, due process, reciprocity, public policy, costs, and alternatives.
 business: recovery
 intent: T
-date: 2026-08-07
+date: 2026-08-08
 week: 1
 ---
 

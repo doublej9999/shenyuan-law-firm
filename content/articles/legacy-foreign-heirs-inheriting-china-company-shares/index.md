@@ -6,7 +6,7 @@ description_zh: 被继承人在中国境内公司持有股权，海外继承人�
 description_en: Overseas heirs inheriting shares in a China company: notarization, identity checks, inheritance confirmation, and articles restrictions. Learn the process and documents.
 business: legacy
 intent: T
-date: 2026-08-10
+date: 2026-08-12
 week: 4
 ---
 

@@ -6,7 +6,7 @@ description_zh: 债务人嘴上说没钱，名下却可能有股权、房产、�
 description_en: Investigate debtor assets in China: separate public sources from court-only routes, covering equity, property, deposits, with time and cost expectations.
 business: recovery
 intent: C
-date: 2026-08-10
+date: 2026-08-13
 week: 5
 ---
 
