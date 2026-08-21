@@ -888,6 +888,11 @@ def test_article_pages_render_bilingual(tmp_db):
             "trade-common-excuses-for-late-payment-and-legal-responses",
             "recovery-collection-agencies-vs-lawyers-why-legal-counsel-wins",
             "recovery-international-construction-payment-disputes-recovery-strategies",
+            "recovery-can-the-debtor-pay-your-legal-costs-cost-shifting",
+            "recovery-investment-fraud-abroad-legal-recourse-for-victims",
+            "trade-terminating-a-delinquent-distributor-legal-steps",
+            "trade-platform-seller-disputes-amazon-aliexpress-legal-issues",
+            "recovery-legal-expense-insurance-what-it-covers",
         ):
             resp = client.get(f"/articles/{slug}")
             assert resp.status_code == 200, slug
