@@ -6,7 +6,7 @@ description_zh: 债务人欠款不还却疑在美国有房产或存款，如何�
 description_en: Suspect a debtor owns US property or bank accounts? Here are the lawful ways to trace assets via public records, court processes, and counsel tools before enforcement.
 business: recovery
 intent: C
-date: 2026-08-17
+date: 2026-08-11
 week: 6
 ---
 

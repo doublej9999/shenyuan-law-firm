@@ -6,7 +6,7 @@ description_zh: 长期定居海外，国内还有房有存款——海外遗嘱�
 description_en: Living abroad with Chinese property? Learn if a foreign will governs your Chinese assets, covering validity, compulsory shares, and notarization.
 business: legacy
 intent: T
-date: 2026-08-10
+date: 2026-08-20
 week: 5
 ---
 

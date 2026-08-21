@@ -6,7 +6,7 @@ description_zh: 国际买卖合同90%的风险集中在10个条款：价格与�
 description_en: 90% of international sales contract risk sits in just 10 clauses. Learn which ones and how to fix them.
 business: trade
 intent: C
-date: 2026-08-17
+date: 2026-08-13
 week: 3
 ---
 

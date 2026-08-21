@@ -6,7 +6,7 @@ description_zh: 货代以欠费、垫资未付为由扣下提单或货物，货�
 description_en: Forwarder withholding bills of lading or cargo over unpaid fees? Know what is lawful, how to negotiate, and the legal routes to reclaim your goods before orders default.
 business: trade
 intent: T
-date: 2026-08-17
+date: 2026-08-18
 week: 6
 ---
 

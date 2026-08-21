@@ -6,7 +6,7 @@ description_zh: 合同里的管辖条款和法律适用条款，往往决定纠�
 description_en: Learn to negotiate jurisdiction and governing law clauses, avoid common traps, and know when to give ground in dispute resolution.
 business: trade
 intent: C
-date: 2026-08-10
+date: 2026-08-11
 week: 4
 ---
 

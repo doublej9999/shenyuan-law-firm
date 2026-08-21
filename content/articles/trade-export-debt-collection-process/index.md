@@ -6,7 +6,7 @@ description_zh: 一篇讲清外贸货款追收的完整路径：内部催收、�
 description_en: Export debt collection pathway: internal follow-up, demand letter, settlement, arbitration/litigation, award enforcement, with trigger points, timelines, costs, mistakes.
 business: trade
 intent: C
-date: 2026-08-04
+date: 2026-08-12
 week: 1
 ---
 

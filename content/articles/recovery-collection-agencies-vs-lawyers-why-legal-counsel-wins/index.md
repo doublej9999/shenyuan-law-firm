@@ -6,7 +6,7 @@ description_zh: 海外客户欠款拖而不还，是找追债公司还是律师�
 description_en: Owed money abroad and won't pay? Collection agency or lawyer? We compare authority, tools, and costs to show why counsel wins.
 business: recovery
 intent: I
-date: 2026-08-20
+date: 2026-08-10
 week: 18
 ---
 

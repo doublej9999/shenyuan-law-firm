@@ -6,7 +6,7 @@ description_zh: 欠款拖了多年、眼看超过诉讼时效，还能追收吗�
 description_en: Debt past the limitation period — can you still collect? Learn how the clock runs and interrupts, plus negotiation and written-acknowledgment ways to revive a claim.
 business: recovery
 intent: T
-date: 2026-08-17
+date: 2026-08-08
 week: 6
 ---
 

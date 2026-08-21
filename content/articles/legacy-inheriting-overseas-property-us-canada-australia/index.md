@@ -6,7 +6,7 @@ description_zh: 父母或配偶在海外留下的房产，国内继承人如何�
 description_en: Inheriting property abroad? Guide to probate, tax clearance, and title transfer in the US, Canada, and Australia, with country-specific tax notes and timelines.
 business: legacy
 intent: T
-date: 2026-08-04
+date: 2026-08-16
 week: 3
 ---
 

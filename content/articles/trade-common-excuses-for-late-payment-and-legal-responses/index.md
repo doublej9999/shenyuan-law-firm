@@ -6,7 +6,7 @@ description_zh: 客户拖欠货款时总会说出各种借口：资金紧张、�
 description_en: Buyers stall payment with familiar excuses. This guide breaks down each and maps the legal response and evidence points to help exporters prevent bad debt.
 business: trade
 intent: I
-date: 2026-08-19
+date: 2026-08-12
 week: 18
 ---
 

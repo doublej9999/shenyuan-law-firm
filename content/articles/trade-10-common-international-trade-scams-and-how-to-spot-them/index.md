@@ -6,7 +6,7 @@ description_zh: 国际贸易诈骗花样翻新：货代卷款、钓鱼邮件篡�
 description_en: Ten common international trade scams—freight forwarder fraud, BEC phishing, fake orders—plus red flags to spot them and recovery steps. Free case assessment.
 business: trade
 intent: I
-date: 2026-08-18
+date: 2026-08-14
 week: 17
 ---
 

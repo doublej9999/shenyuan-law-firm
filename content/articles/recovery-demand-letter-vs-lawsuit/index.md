@@ -6,7 +6,7 @@ description_zh: 欠款追收不是非黑即白。律师函成本低、周期短�
 description_en: Compare demand letter vs lawsuit for debt recovery: cost, timeline, risk. Choose the most cost-effective path.
 business: recovery
 intent: C
-date: 2026-08-05
+date: 2026-08-19
 week: 1
 ---
 

@@ -6,7 +6,7 @@ description_zh: 欠款追收有三个"黄金时间"：逾期30天内、债务人
 description_en: Debt recovery has three golden windows: within 30 days, before debtor deterioration, and before the limitation period. Miss them and recovery gets harder and costlier.
 business: recovery
 intent: T
-date: 2026-08-11
+date: 2026-08-10
 week: 2
 ---
 
