@@ -34,11 +34,11 @@
 9,T-C18,trade,C,货物质量不合格：拒收还是索赔？,Defective Goods: Rejection vs Damages,trade-defective-goods-rejection-vs-damages,pending
 9,R-A4,recovery,C,债务人失联、跑路的6个应对策略,Debtor Vanished? 6 Strategies to Find and Recover,recovery-debtor-vanished-6-strategies-to-find-and-recover,pending
 9,L-B12,legacy,T,中国房产由海外继承人继承：流程与税费,Foreign Heirs Inheriting China Property: Process and Tax,legacy-foreign-heirs-inheriting-china-property-process-and-tax,pending
-9,R-D30,recovery,C,遭遇海外投资诈骗如何维权？,Investment Fraud Abroad: Legal Recourse for Victims,recovery-investment-fraud-abroad-legal-recourse-for-victims,pending
-10,T-D24,trade,T,海外经销商拖欠货款：如何终止合作并追款？,Terminating a Delinquent Distributor: Legal Steps,trade-terminating-a-delinquent-distributor-legal-steps,pending
+9,R-D30,recovery,C,遭遇海外投资诈骗如何维权？,Investment Fraud Abroad: Legal Recourse for Victims,recovery-investment-fraud-abroad-legal-recourse-for-victims,done
+10,T-D24,trade,T,海外经销商拖欠货款：如何终止合作并追款？,Terminating a Delinquent Distributor: Legal Steps,trade-terminating-a-delinquent-distributor-legal-steps,done
 10,R-C23,recovery,C,新加坡/香港仲裁裁决在内地的执行,Enforcing HK and Singapore Awards in Mainland China,recovery-enforcing-hk-and-singapore-awards-in-mainland-china,pending
 10,L-B13,legacy,T,父母在国内的房产，海外子女如何继承？,Overseas Children Inheriting Parents' Property in China,legacy-overseas-children-inheriting-parents-property-in-china,pending
-10,T-B14,trade,C,跨境电商平台（亚马逊/速卖通）商家合同纠纷处理,Platform Seller Disputes: Amazon & AliExpress Legal Issues,trade-platform-seller-disputes-amazon-aliexpress-legal-issues,pending
+10,T-B14,trade,C,跨境电商平台（亚马逊/速卖通）商家合同纠纷处理,Platform Seller Disputes: Amazon & AliExpress Legal Issues,trade-platform-seller-disputes-amazon-aliexpress-legal-issues,done
 11,T-B13,trade,T,INCOTERMS 2020 实务：FOB/CIF/DDP 选错要赔钱,INCOTERMS 2020: Choosing the Right Term,trade-incoterms-2020-choosing-the-right-term,pending
 11,R-A10,recovery,C,老赖在国外怎么办：跨境追收策略总览,Cross-Border Collection Playbook: Debtor Abroad,recovery-cross-border-collection-playbook-debtor-abroad,pending
 11,L-D28,legacy,C,中国立遗嘱 vs 海外立遗嘱：效力与冲突,China Wills vs Foreign Wills: Validity and Conflicts,legacy-china-wills-vs-foreign-wills-validity-and-conflicts,pending
@@ -89,10 +89,10 @@
 22,T-D26,trade,C,独家经销协议中的最低采购量与区域限制条款,Minimum Purchase & Territorial Restrictions in Distribution,trade-minimum-purchase-territorial-restrictions-in-distribution,pending
 23,L-A7,legacy,I,跨境继承中的继承人顺序差异（中国 vs 普通法）,Intestacy Rules Compared: China vs Common Law,legacy-intestacy-rules-compared-china-vs-common-law,pending
 23,T-G48,trade,C,香港公司作为中间商的合同风险与追收,Hong Kong Trading Companies: Contract and Collection Risks,trade-hong-kong-trading-companies-contract-and-collection-risks,pending
-23,R-E42,recovery,I,诉讼保险（Legal Expense Insurance）实务,Legal Expense Insurance: What It Covers,recovery-legal-expense-insurance-what-it-covers,pending
+23,R-E42,recovery,I,诉讼保险（Legal Expense Insurance）实务,Legal Expense Insurance: What It Covers,recovery-legal-expense-insurance-what-it-covers,done
 23,L-D32,legacy,I,生前安排：赠与、保险与信托的传承对比,Lifetime Gifting vs Insurance vs Trusts: A Comparison,legacy-lifetime-gifting-vs-insurance-vs-trusts-a-comparison,pending
 24,T-B15,trade,I,电子合同与电子邮件往来的证据效力,Are Emails and E-Signatures Enforceable in Trade Disputes?,trade-are-emails-and-e-signatures-enforceable-in-trade-disputes,pending
-24,R-C27,recovery,I,海外执行中，律师费能让债务人承担吗？,Can the Debtor Pay Your Legal Costs? Cost-Shifting,recovery-can-the-debtor-pay-your-legal-costs-cost-shifting,pending
+24,R-C27,recovery,I,海外执行中，律师费能让债务人承担吗？,Can the Debtor Pay Your Legal Costs? Cost-Shifting,recovery-can-the-debtor-pay-your-legal-costs-cost-shifting,done
 24,L-E39,legacy,I,继子女、非婚生子女的继承权利,Inheritance Rights of Stepchildren and Non-Marital Children,legacy-inheritance-rights-of-stepchildren-and-non-marital-children,pending
 24,T-D28,trade,C,终止经销协议需要了解的当地法律（美国/欧盟/中东）,Terminating Distribution Agreements: Local Law Risks,trade-terminating-distribution-agreements-local-law-risks,pending
 25,R-B17,recovery,I,私家侦探 vs 律师调查：合法性与证据效力,Private Investigators vs Lawyers: Admissibility,recovery-private-investigators-vs-lawyers-admissibility,pending
