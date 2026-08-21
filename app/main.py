@@ -1533,6 +1533,29 @@ def _related_articles(meta: dict, limit: int = 5) -> list[dict]:
     return (same + rest)[:limit]
 
 
+def _inline_related(meta: dict, max_count: int = 3) -> str:
+    """Inline further-reading block inserted between the article body and CTA.
+    Renders as a sidebar-style list with contextual descriptions — higher SEO
+    value than the footer-only related block because the links sit inside the
+    content region."""
+    articles = _related_articles(meta, limit=max_count)
+    if not articles:
+        return ""
+    items = []
+    for a in articles:
+        m = a["meta"]
+        desc = m.get("description_zh", "")[:40]
+        items.append(
+            f'<li>关于「<a href="/articles/{m["slug"]}">{m.get("title_zh", "")}</a>」'
+            f'——{desc}…</li>'
+        )
+    return (
+        '<div class="inline-related">'
+        '<h3 data-zh="📖 延伸阅读" data-en="📖 Further reading">📖 延伸阅读</h3>'
+        f"<ul>{''.join(items)}</ul></div>"
+    )
+
+
 def _related_html(articles: list[dict], base: str = "/articles") -> str:
     """Bilingual 'related reading' block (empty when no candidates)."""
     if not articles:
@@ -3035,7 +3058,12 @@ _ARTICLE_PAGE_TEMPLATE = """<!doctype html>
     .related ul {{ margin:0; padding-left:0; list-style:none; }}
     .related li {{ margin:8px 0; }}
     .related a {{ color:var(--teal); font-weight:600; font-size:14px; }}
-    .article-faq {{ margin:30px 0 10px; padding:20px 24px; background:var(--surface); border:1px solid var(--line); border-radius:10px; }}
+        .inline-related {{ margin:20px 0; padding:16px 20px; background:var(--surface); border-left:3px solid var(--gold); border-radius:0 8px 8px 0; }}
+        .inline-related h3 {{ font-size:16px; margin-bottom:8px; color:var(--ink); }}
+        .inline-related ul {{ margin:0; padding-left:18px; }}
+        .inline-related li {{ margin:6px 0; font-size:14px; line-height:1.6; }}
+        .inline-related a {{ color:var(--teal); font-weight:600; }}
+        .article-faq {{ margin:30px 0 10px; padding:20px 24px; background:var(--surface); border:1px solid var(--line); border-radi...[truncated]
     .article-faq h3 {{ font-size:16px; margin:0 0 12px; color:var(--teal-deep); }}
     .a-faq {{ border-top:1px dashed var(--line); padding:10px 0; }}
     .a-faq:first-of-type {{ border-top:0; }}
@@ -3061,6 +3089,7 @@ _ARTICLE_PAGE_TEMPLATE = """<!doctype html>
   </div>
   <div class="wrap article-body" id="bodyZh">{body_zh}</div>
   <div class="wrap article-body" id="bodyEn" hidden>{body_en}</div>
+  {inline_related}
   <div class="wrap cta-box">
     <h2 data-zh="您的案件需要评估？" data-en="Need your case assessed?">您的案件需要评估？</h2>
     <p data-zh="提交基本信息，我们会判断时效、证据与可行路径——免费评估，不承诺结果。" data-en="Share the basics and we will review the limitation period, evidence, and viable paths — free, honest, no promised outcomes.">提交基本信息，我们会判断时效、证据与可行路径——免费评估，不承诺结果。</p>
@@ -3167,6 +3196,7 @@ def article_page(slug: str) -> Response:
         breadcrumb_jsonld=crumbs_jsonld,
         article_faq=article_faq,
         article_faq_jsonld=article_faq_jsonld,
+        inline_related=_inline_related(meta),
         related=_related_html(_related_articles(meta)),
         cookie_banner=_cookie_banner(),
         # JSON-LD values MUST be json-escaped (article text can contain ASCII
