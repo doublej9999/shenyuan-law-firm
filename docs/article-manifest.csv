@@ -23,8 +23,8 @@
 6,R-B12,recovery,C,美国房产/银行账户调查的合法途径,Legal Ways to Find US Real Estate and Bank Accounts,recovery-legal-ways-to-find-us-real-estate-and-bank-accounts,done
 6,L-D30,legacy,T,如何制定一份「跨境有效」的遗嘱？,Drafting a Cross-Border-Valid Will: Key Elements,legacy-drafting-a-cross-border-valid-will-key-elements,done
 6,R-A5,recovery,T,欠款超过诉讼时效还能追吗？,Expired Limitation Period: Can You Still Collect?,recovery-expired-limitation-period-can-you-still-collect,done
-7,T-G42,trade,T,美国客户拖欠货款：从催收到诉讼的全流程,Collecting from US Buyers: From Demand to Lawsuit,trade-collecting-from-us-buyers-from-demand-to-lawsuit,pending
-7,R-C21,recovery,T,美国判决在中国法院申请承认与执行,Enforcing US Judgments in Chinese Courts,recovery-enforcing-us-judgments-in-chinese-courts,pending
+7,T-G42,trade,T,美国客户拖欠货款：从催收到诉讼的全流程,Collecting from US Buyers: From Demand to Lawsuit,trade-collecting-from-us-buyers-from-demand-to-lawsuit,done
+7,R-C21,recovery,T,美国判决在中国法院申请承认与执行,Enforcing US Judgments in Chinese Courts,recovery-enforcing-us-judgments-in-chinese-courts,done
 7,L-C19,legacy,C,海外公司的股权继承：从章程到股东变更,Inheriting Shares in an Overseas Company,legacy-inheriting-shares-in-an-overseas-company,pending
 7,R-B15,recovery,C,债务人用离岸公司、信托藏匿资产怎么查？,Offshore Companies and Trusts: Uncovering Hidden Assets,recovery-offshore-companies-and-trusts-uncovering-hidden-assets,pending
 8,T-F38,trade,T,收到「假客户」邮件被骗定金，钱能追回吗？,Business Email Compromise: Recovering Funds After Fraud,trade-business-email-compromise-recovering-funds-after-fraud,pending
@@ -95,7 +95,7 @@
 24,R-C27,recovery,I,海外执行中，律师费能让债务人承担吗？,Can the Debtor Pay Your Legal Costs? Cost-Shifting,recovery-can-the-debtor-pay-your-legal-costs-cost-shifting,done
 24,L-E39,legacy,I,继子女、非婚生子女的继承权利,Inheritance Rights of Stepchildren and Non-Marital Children,legacy-inheritance-rights-of-stepchildren-and-non-marital-children,pending
 24,T-D28,trade,C,终止经销协议需要了解的当地法律（美国/欧盟/中东）,Terminating Distribution Agreements: Local Law Risks,trade-terminating-distribution-agreements-local-law-risks,pending
-25,R-B17,recovery,I,私家侦探 vs 律师调查：合法性与证据效力,Private Investigators vs Lawyers: Admissibility,recovery-private-investigators-vs-lawyers-admissibility,pending
+25,R-B17,recovery,I,私家侦探 vs 律师调查：合法性与证据效力,Private Investigators vs Lawyers: Admissibility,recovery-private-investigators-vs-lawyers-admissibility,done
 25,L-C23,legacy,C,家族企业传承规划：如何避免下一代内斗？,Family Business Succession: Avoiding Sibling Wars,legacy-family-business-succession-avoiding-sibling-wars,pending
 25,T-G49,trade,I,新加坡商事争议解决：诉讼、仲裁与调解,Commercial Disputes in Singapore: Options Compared,trade-commercial-disputes-in-singapore-options-compared,pending
 25,R-E43,recovery,I,跨境案件的证据开示（Discovery）与保密义务,Cross-Border Discovery and Confidentiality,recovery-cross-border-discovery-and-confidentiality,pending
@@ -149,5 +149,6 @@
 38,L-F48,legacy,C,继承款汇回中国：税务申报与合规,Reporting Inherited Funds in China: Tax Compliance,legacy-reporting-inherited-funds-in-china-tax-compliance,pending
 39,L-F49,legacy,C,海外资产未申报的后果与补救（CRS/FATCA）,"Undeclared Overseas Assets: CRS, FATCA and Remedies",legacy-undeclared-overseas-assets-crs-fatca-and-remedies,pending
 40,L-F50,legacy,C,高净值家庭的全球资产传承架构,Global Estate Structures for High-Net-Worth Families,legacy-global-estate-structures-for-high-net-worth-families,pending
-42,gap,,,继承时效,,topic-041,pending
+42,gap,legacy,C,继承时效,Inheritance Limitation Periods: Don't Miss the Deadline,topic-041,done
 43,gap,,,test,,test,pending
+44,R-F52,recovery,I,事務律師 vs 大律師：跨境案件该找谁？,Solicitor vs Barrister: Who Handles Your Cross-Border Case?,recovery-what-is-a-solicitor-vs-barrister-cross-border,done

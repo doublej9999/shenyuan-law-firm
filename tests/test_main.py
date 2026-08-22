@@ -893,6 +893,11 @@ def test_article_pages_render_bilingual(tmp_db):
             "trade-terminating-a-delinquent-distributor-legal-steps",
             "trade-platform-seller-disputes-amazon-aliexpress-legal-issues",
             "recovery-legal-expense-insurance-what-it-covers",
+            "recovery-private-investigators-vs-lawyers-admissibility",
+            "recovery-what-is-a-solicitor-vs-barrister-cross-border",
+            "trade-collecting-from-us-buyers-from-demand-to-lawsuit",
+            "recovery-enforcing-us-judgments-in-chinese-courts",
+            "topic-041",
         ):
             resp = client.get(f"/articles/{slug}")
             assert resp.status_code == 200, slug
