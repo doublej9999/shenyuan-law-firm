@@ -25,10 +25,10 @@
 6,R-A5,recovery,T,欠款超过诉讼时效还能追吗？,Expired Limitation Period: Can You Still Collect?,recovery-expired-limitation-period-can-you-still-collect,done
 7,T-G42,trade,T,美国客户拖欠货款：从催收到诉讼的全流程,Collecting from US Buyers: From Demand to Lawsuit,trade-collecting-from-us-buyers-from-demand-to-lawsuit,done
 7,R-C21,recovery,T,美国判决在中国法院申请承认与执行,Enforcing US Judgments in Chinese Courts,recovery-enforcing-us-judgments-in-chinese-courts,done
-7,L-C19,legacy,C,海外公司的股权继承：从章程到股东变更,Inheriting Shares in an Overseas Company,legacy-inheriting-shares-in-an-overseas-company,pending
-7,R-B15,recovery,C,债务人用离岸公司、信托藏匿资产怎么查？,Offshore Companies and Trusts: Uncovering Hidden Assets,recovery-offshore-companies-and-trusts-uncovering-hidden-assets,pending
-8,T-F38,trade,T,收到「假客户」邮件被骗定金，钱能追回吗？,Business Email Compromise: Recovering Funds After Fraud,trade-business-email-compromise-recovering-funds-after-fraud,pending
-8,R-B18,recovery,T,查到资产后的保全动作：冻结令与禁止令,Freezing Injunctions and Asset Preservation Orders,recovery-freezing-injunctions-and-asset-preservation-orders,pending
+7,L-C19,legacy,C,海外公司的股权继承：从章程到股东变更,Inheriting Shares in an Overseas Company,legacy-inheriting-shares-in-an-overseas-company,done
+7,R-B15,recovery,C,债务人用离岸公司、信托藏匿资产怎么查？,Offshore Companies and Trusts: Uncovering Hidden Assets,recovery-offshore-companies-and-trusts-uncovering-hidden-assets,done
+8,T-F38,trade,T,收到「假客户」邮件被骗定金，钱能追回吗？,Business Email Compromise: Recovering Funds After Fraud,trade-business-email-compromise-recovering-funds-after-fraud,done
+8,R-B18,recovery,T,查到资产后的保全动作：冻结令与禁止令,Freezing Injunctions and Asset Preservation Orders,recovery-freezing-injunctions-and-asset-preservation-orders,done
 8,L-E35,legacy,T,海外亲属失联多年：如何确认其生死与遗产？,Missing Relative Abroad: Locating Person and Estate,legacy-missing-relative-abroad-locating-person-and-estate,pending
 8,T-A6,trade,I,海外客户破产了，货款还能要回来吗？,Buyer Bankruptcy: Can You Still Recover Your Export Debt?,trade-buyer-bankruptcy-can-you-still-recover-your-export-debt,pending
 9,T-C18,trade,C,货物质量不合格：拒收还是索赔？,Defective Goods: Rejection vs Damages,trade-defective-goods-rejection-vs-damages,pending
@@ -152,3 +152,4 @@
 42,gap,legacy,C,继承时效,Inheritance Limitation Periods: Don't Miss the Deadline,topic-041,done
 43,gap,,,test,,test,pending
 44,R-F52,recovery,I,事務律師 vs 大律師：跨境案件该找谁？,Solicitor vs Barrister: Who Handles Your Cross-Border Case?,recovery-what-is-a-solicitor-vs-barrister-cross-border,done
+45,gap,recovery,I,事务律师：跨国案件中的角色与如何选择,Solicitor in Cross-Border Cases: Role and How to Choose,recovery-solicitor-role-cross-border-how-to-choose,done

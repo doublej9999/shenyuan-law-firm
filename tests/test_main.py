@@ -898,6 +898,11 @@ def test_article_pages_render_bilingual(tmp_db):
             "trade-collecting-from-us-buyers-from-demand-to-lawsuit",
             "recovery-enforcing-us-judgments-in-chinese-courts",
             "topic-041",
+            "recovery-solicitor-role-cross-border-how-to-choose",
+            "legacy-inheriting-shares-in-an-overseas-company",
+            "recovery-offshore-companies-and-trusts-uncovering-hidden-assets",
+            "trade-business-email-compromise-recovering-funds-after-fraud",
+            "recovery-freezing-injunctions-and-asset-preservation-orders",
         ):
             resp = client.get(f"/articles/{slug}")
             assert resp.status_code == 200, slug
