@@ -903,6 +903,11 @@ def test_article_pages_render_bilingual(tmp_db):
             "recovery-offshore-companies-and-trusts-uncovering-hidden-assets",
             "trade-business-email-compromise-recovering-funds-after-fraud",
             "recovery-freezing-injunctions-and-asset-preservation-orders",
+            "legacy-missing-relative-abroad-locating-person-and-estate",
+            "trade-buyer-bankruptcy-can-you-still-recover-your-export-debt",
+            "trade-defective-goods-rejection-vs-damages",
+            "recovery-debtor-vanished-6-strategies-to-find-and-recover",
+            "legacy-foreign-heirs-inheriting-china-property-process-and-tax",
         ):
             resp = client.get(f"/articles/{slug}")
             assert resp.status_code == 200, slug
@@ -1797,7 +1802,7 @@ def test_llms_txt_curates_site(tmp_db):
         for slug in ("united-states", "hong-kong", "germany", "switzerland"):
             assert f"/countries/{slug}" in text, slug
         assert "## Legal guides (articles)" in text
-        assert "/articles/trade-payment-recovery-5-steps" in text
+        assert "/articles/legacy-foreign-heirs-inheriting-china-property-process-and-tax" in text
 
 
 def test_head_requests_supported_on_core_pages(tmp_db):
