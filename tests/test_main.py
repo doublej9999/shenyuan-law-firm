@@ -908,6 +908,11 @@ def test_article_pages_render_bilingual(tmp_db):
             "trade-defective-goods-rejection-vs-damages",
             "recovery-debtor-vanished-6-strategies-to-find-and-recover",
             "legacy-foreign-heirs-inheriting-china-property-process-and-tax",
+            "recovery-enforcing-hk-and-singapore-awards-in-mainland-china",
+            "legacy-overseas-children-inheriting-parents-property-in-china",
+            "trade-incoterms-2020-choosing-the-right-term",
+            "recovery-cross-border-collection-playbook-debtor-abroad",
+            "legacy-china-wills-vs-foreign-wills-validity-and-conflicts",
         ):
             resp = client.get(f"/articles/{slug}")
             assert resp.status_code == 200, slug
