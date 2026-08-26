@@ -913,6 +913,11 @@ def test_article_pages_render_bilingual(tmp_db):
             "trade-incoterms-2020-choosing-the-right-term",
             "recovery-cross-border-collection-playbook-debtor-abroad",
             "legacy-china-wills-vs-foreign-wills-validity-and-conflicts",
+            "trade-supplier-disputes-in-southeast-asia-practical-guide",
+            "recovery-litigation-arbitration-or-mediation-choosing-the-path",
+            "trade-disputes-in-the-middle-east-arbitration-vs-litigation",
+            "trade-trading-with-russia-cis-contract-and-payment-risks",
+            "trade-cultural-differences-in-cross-border-negotiation",
         ):
             resp = client.get(f"/articles/{slug}")
             assert resp.status_code == 200, slug
