@@ -918,6 +918,11 @@ def test_article_pages_render_bilingual(tmp_db):
             "trade-disputes-in-the-middle-east-arbitration-vs-litigation",
             "trade-trading-with-russia-cis-contract-and-payment-risks",
             "trade-cultural-differences-in-cross-border-negotiation",
+            "recovery-executive-misappropriation-shareholder-remedies",
+            "trade-commission-disputes-with-overseas-sales-agents",
+            "legacy-inheriting-beneficially-owned-nominee-shares",
+            "legacy-time-limits-for-contesting-estates-don-t-miss-the-deadline",
+            "legacy-beneficiary-disputes-resolving-claims-to-the-estate",
         ):
             resp = client.get(f"/articles/{slug}")
             assert resp.status_code == 200, slug
