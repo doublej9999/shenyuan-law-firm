@@ -117,7 +117,7 @@
 30,R-C28,recovery,C,执行和解：以物抵债与债务重组的法律操作,Enforcement Settlements: Asset-for-Debt Restructuring,recovery-enforcement-settlements-asset-for-debt-restructuring,pending
 30,L-B16,legacy,C,房产代持与继承：代持人去世后的产权归属,Nominee Holdings: Who Owns the Property After Death,legacy-nominee-holdings-who-owns-the-property-after-death,pending
 30,T-E34,trade,I,海关查验产生的费用与延误，能向谁索赔？,Customs Inspection Delays: Who Pays?,trade-customs-inspection-delays-who-pays,pending
-30,R-D34,recovery,C,公司高管挪用资金、关联交易侵占：股东如何追责？,Executive Misappropriation: Shareholder Remedies,recovery-executive-misappropriation-shareholder-remedies,pending
+30,R-D34,recovery,C,公司高管挪用资金、关联交易侵占：股东如何追责？,Executive Misappropriation: Shareholder Remedies,recovery-executive-misappropriation-shareholder-remedies,done
 31,T-F39,trade,I,尼日利亚/中东「国家采购骗局」识别指南,Government Procurement Scams: Red Flags,trade-government-procurement-scams-red-flags,pending
 31,L-C24,legacy,I,海外信托在家族传承中的作用,Trusts in Family Wealth Transfer: Benefits and Risks,legacy-trusts-in-family-wealth-transfer-benefits-and-risks,pending
 31,T-G47,trade,I,非洲市场：信用证结算与信用证诈骗防范,African Markets: LC Settlement and Fraud Prevention,trade-african-markets-lc-settlement-and-fraud-prevention,pending
@@ -126,7 +126,7 @@
 32,T-F40,trade,C,如何调查海外公司的真实背景与资信？,How to Verify an Overseas Company's Credibility,trade-how-to-verify-an-overseas-company-s-credibility,pending
 32,R-F50,recovery,T,追收案件的证据准备清单：从合同到聊天记录,Evidence Checklist for Collection Cases,recovery-evidence-checklist-for-collection-cases,pending
 32,L-B17,legacy,I,遗产房还有抵押贷款：继承还是放弃？,Inheriting Mortgaged Property: Accept or Renounce?,legacy-inheriting-mortgaged-property-accept-or-renounce,pending
-33,T-D29,trade,I,佣金纠纷：海外中介与业务员讨要佣金怎么办,Commission Disputes with Overseas Sales Agents,trade-commission-disputes-with-overseas-sales-agents,pending
+33,T-D29,trade,I,佣金纠纷：海外中介与业务员讨要佣金怎么办,Commission Disputes with Overseas Sales Agents,trade-commission-disputes-with-overseas-sales-agents,done
 33,L-B18,legacy,C,多位继承人共同继承房产：如何分割与出售？,Co-Inheriting Property: Partition and Sale Options,legacy-co-inheriting-property-partition-and-sale-options,pending
 33,R-E39,recovery,I,跨境诉讼中证人证言的取证规则,Taking Evidence Across Borders: Witness Testimony Rules,recovery-taking-evidence-across-borders-witness-testimony-rules,pending
 33,T-F37,trade,C,客户伪造提单、质检报告，如何识别与追责？,Forged Trade Documents: Detection and Liability,trade-forged-trade-documents-detection-and-liability,pending
@@ -136,14 +136,14 @@
 34,L-A9,legacy,C,跨境继承需要公证哪些文件？,Notarization and Apostille for Cross-Border Inheritance,legacy-notarization-and-apostille-for-cross-border-inheritance,pending
 35,L-F46,legacy,C,移民身份变化对遗产规划的影响,Immigration Status and Estate Planning: Key Interactions,legacy-immigration-status-and-estate-planning-key-interactions,pending
 35,T-B16,trade,C,违约金条款怎么约定，才能在外国法院站得住？,Drafting Penalty Clauses That Survive Foreign Courts,trade-drafting-penalty-clauses-that-survive-foreign-courts,pending
-35,L-C25,legacy,C,股权代持与继承纠纷,Inheriting Beneficially-Owned (Nominee) Shares,legacy-inheriting-beneficially-owned-nominee-shares,pending
+35,L-C25,legacy,C,股权代持与继承纠纷,Inheriting Beneficially-Owned (Nominee) Shares,legacy-inheriting-beneficially-owned-nominee-shares,done
 35,R-D35,recovery,T,海外项目被骗的止损：证据保全与资金追踪,Stopping the Bleeding: Freezing Funds After Fraud,recovery-stopping-the-bleeding-freezing-funds-after-fraud,pending
-36,L-A10,legacy,I,继承纠纷的诉讼时效与主张期限,Time Limits for Contesting Estates: Don't Miss the Deadline,legacy-time-limits-for-contesting-estates-don-t-miss-the-deadline,pending
+36,L-A10,legacy,I,继承纠纷的诉讼时效与主张期限,Time Limits for Contesting Estates: Don't Miss the Deadline,legacy-time-limits-for-contesting-estates-don-t-miss-the-deadline,done
 36,R-D36,recovery,I,为什么聪明人也会被骗：受害者的决策陷阱,Avoiding Scam Psychology: Decision Traps for Victims,recovery-avoiding-scam-psychology-decision-traps-for-victims,pending
 36,T-D27,trade,I,经销商欠款，能否追索其母公司？,Piercing the Corporate Veil: Chasing the Parent Company,trade-piercing-the-corporate-veil-chasing-the-parent-company,pending
 37,L-C26,legacy,I,企业经营贷款与遗产债务的清偿顺序,Estate Debts: Business Loans and Creditor Claims,legacy-estate-debts-business-loans-and-creditor-claims,pending
 37,T-E35,trade,C,危险品出口被查扣的法律应对,Dangerous Goods Seizure: Legal Response for Exporters,trade-dangerous-goods-seizure-legal-response-for-exporters,pending
-37,L-E38,legacy,C,遗嘱受益人之间的纠纷如何解决？,Beneficiary Disputes: Resolving Claims to the Estate,legacy-beneficiary-disputes-resolving-claims-to-the-estate,pending
+37,L-E38,legacy,C,遗嘱受益人之间的纠纷如何解决？,Beneficiary Disputes: Resolving Claims to the Estate,legacy-beneficiary-disputes-resolving-claims-to-the-estate,done
 38,R-E41,recovery,I,第三方资助（Third-Party Funding）能否用于你的案件？,Third-Party Funding: Financing Your Claim,recovery-third-party-funding-financing-your-claim,pending
 38,L-F47,legacy,T,外汇管制下如何合法转移继承款？,Transferring Inherited Funds Across Borders: Compliance,legacy-transferring-inherited-funds-across-borders-compliance,pending
 38,L-F48,legacy,C,继承款汇回中国：税务申报与合规,Reporting Inherited Funds in China: Tax Compliance,legacy-reporting-inherited-funds-in-china-tax-compliance,pending
