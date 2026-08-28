@@ -923,6 +923,9 @@ def test_article_pages_render_bilingual(tmp_db):
             "legacy-inheriting-beneficially-owned-nominee-shares",
             "legacy-time-limits-for-contesting-estates-don-t-miss-the-deadline",
             "legacy-beneficiary-disputes-resolving-claims-to-the-estate",
+            "international-law-firm-cross-border-business-disputes",
+            "international-lawyer-cross-border-case-coordination",
+            "xiteng-outsourcing-trade-dispute-evidence-response",
         ):
             resp = client.get(f"/articles/{slug}")
             assert resp.status_code == 200, slug
