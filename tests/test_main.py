@@ -931,6 +931,11 @@ def test_article_pages_render_bilingual(tmp_db):
             "legacy-family-inheritance-disputes-mediation-litigation-settlement",
             "recovery-10-asset-investigation-sources-registries-and-records",
             "trade-exclusive-agency-vs-distribution-which-to-choose",
+            "recovery-drafting-settlement-agreements-installments-and-guarantees",
+            "legacy-which-law-applies-inheritance-conflicts-of-law",
+            "trade-oem-factory-sells-your-product-under-its-own-brand",
+            "trade-distributor-registered-your-trademark-recovery-strategies",
+            "recovery-recognition-and-enforcement-time-limits-and-procedure",
         ):
             resp = client.get(f"/articles/{slug}")
             assert resp.status_code == 200, slug
@@ -1825,7 +1830,7 @@ def test_llms_txt_curates_site(tmp_db):
         for slug in ("united-states", "hong-kong", "germany", "switzerland"):
             assert f"/countries/{slug}" in text, slug
         assert "## Legal guides (articles)" in text
-        assert "/articles/legacy-foreign-heirs-inheriting-china-property-process-and-tax" in text
+        assert "/articles/trade-oem-factory-sells-your-product-under-its-own-brand" in text
 
 
 def test_head_requests_supported_on_core_pages(tmp_db):
