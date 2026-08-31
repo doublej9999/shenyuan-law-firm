@@ -926,6 +926,11 @@ def test_article_pages_render_bilingual(tmp_db):
             "international-law-firm-cross-border-business-disputes",
             "international-lawyer-cross-border-case-coordination",
             "xiteng-outsourcing-trade-dispute-evidence-response",
+            "trade-t-t-deposit-payments-contract-clauses-that-protect-exporters",
+            "recovery-fraudulent-transfers-setting-aside-asset-transfers",
+            "legacy-family-inheritance-disputes-mediation-litigation-settlement",
+            "recovery-10-asset-investigation-sources-registries-and-records",
+            "trade-exclusive-agency-vs-distribution-which-to-choose",
         ):
             resp = client.get(f"/articles/{slug}")
             assert resp.status_code == 200, slug
