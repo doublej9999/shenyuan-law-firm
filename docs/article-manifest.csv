@@ -42,7 +42,7 @@
 11,T-B13,trade,T,INCOTERMS 2020 实务：FOB/CIF/DDP 选错要赔钱,INCOTERMS 2020: Choosing the Right Term,trade-incoterms-2020-choosing-the-right-term,done
 11,R-A10,recovery,C,老赖在国外怎么办：跨境追收策略总览,Cross-Border Collection Playbook: Debtor Abroad,recovery-cross-border-collection-playbook-debtor-abroad,done
 11,L-D28,legacy,C,中国立遗嘱 vs 海外立遗嘱：效力与冲突,China Wills vs Foreign Wills: Validity and Conflicts,legacy-china-wills-vs-foreign-wills-validity-and-conflicts,done
-11,T-A5,trade,T,T/T 30%定金模式的风险与合同保护条款设计,T/T Deposit Payments: Contract Clauses That Protect Exporters,trade-t-t-deposit-payments-contract-clauses-that-protect-exporters,pending
+11,T-A5,trade,T,T/T 30%定金模式的风险与合同保护条款设计,T/T Deposit Payments: Contract Clauses That Protect Exporters,trade-t-t-deposit-payments-contract-clauses-that-protect-exporters,done
 12,T-G45,trade,C,东南亚（越南/印尼/泰国）供应商纠纷处理实务,Supplier Disputes in Southeast Asia: Practical Guide,trade-supplier-disputes-in-southeast-asia-practical-guide,done
 12,R-A8,recovery,C,债务人转移资产逃债，如何撤销与追回？,Fraudulent Transfers: Setting Aside Asset Transfers,recovery-fraudulent-transfers-setting-aside-asset-transfers,done
 12,L-E37,legacy,C,家庭成员争夺遗产：调解、诉讼与和解,"Family Inheritance Disputes: Mediation, Litigation, Settlement",legacy-family-inheritance-disputes-mediation-litigation-settlement,done
@@ -59,12 +59,12 @@
 15,L-D29,legacy,C,遗嘱被质疑无效的常见原因,Why Wills Get Challenged: Common Grounds,legacy-why-wills-get-challenged-common-grounds,done
 15,T-A3,trade,C,客户收到货后拒不付款，怎么证明对方违约？,Non-Payment After Delivery: Proving Breach in Cross-Border Sales,trade-non-payment-after-delivery-proving-breach-in-cross-border-sales,done
 16,R-D31,recovery,C,伪造公章、伪造签名的合同效力问题,Forged Seals and Signatures: Contract Validity,recovery-forged-seals-and-signatures-contract-validity,done
-16,L-C21,legacy,C,创始人去世，公司股权由谁接管？,Founder Dies: Succession of Company Control,legacy-founder-dies-succession-of-company-control,pending
+16,L-C21,legacy,C,创始人去世，公司股权由谁接管？,Founder Dies: Succession of Company Control,legacy-founder-dies-succession-of-company-control,done
 16,T-G44,trade,C,中东贸易纠纷：仲裁还是诉讼？（迪拜/沙特）,Disputes in the Middle East: Arbitration vs Litigation,trade-disputes-in-the-middle-east-arbitration-vs-litigation,done
-16,R-C26,recovery,I,申请破产清算 vs 追收：债权人如何选择？,Bankruptcy vs Collection: Creditor's Choice,recovery-bankruptcy-vs-collection-creditor-s-choice,pending
+16,R-C26,recovery,I,申请破产清算 vs 追收：债权人如何选择？,Bankruptcy vs Collection: Creditor's Choice,recovery-bankruptcy-vs-collection-creditor-s-choice,done
 17,T-F36,trade,I,国际贸易诈骗的10种常见套路（货代诈骗/钓鱼邮件）,10 Common International Trade Scams and How to Spot Them,trade-10-common-international-trade-scams-and-how-to-spot-them,done
-17,R-D32,recovery,C,跨境电商欺诈：拒收、拒付与恶意退款,"E-Commerce Fraud: Chargebacks, Refusals and Abuse",recovery-e-commerce-fraud-chargebacks-refusals-and-abuse,pending
-17,L-A6,legacy,I,无人继承的遗产如何处理？,Unclaimed Estates: When No Heir Steps Forward,legacy-unclaimed-estates-when-no-heir-steps-forward,pending
+17,R-D32,recovery,C,跨境电商欺诈：拒收、拒付与恶意退款,"E-Commerce Fraud: Chargebacks, Refusals and Abuse",recovery-e-commerce-fraud-chargebacks-refusals-and-abuse,done
+17,L-A6,legacy,I,无人继承的遗产如何处理？,Unclaimed Estates: When No Heir Steps Forward,legacy-unclaimed-estates-when-no-heir-steps-forward,done
 17,T-A7,trade,C,出口信用保险理赔被拒，如何与保险公司博弈,Export Credit Insurance Claim Denied? How to Fight Back,trade-export-credit-insurance-claim-denied-how-to-fight-back,pending
 18,R-A3,recovery,T,小额欠款（5万以下）如何低成本追收？,Low-Cost Collection for Small Debts,recovery-low-cost-collection-for-small-debts,pending
 18,T-A8,trade,I,客户拖延付款的5个常见借口与法律应对,Common Excuses for Late Payment and Legal Responses,trade-common-excuses-for-late-payment-and-legal-responses,done

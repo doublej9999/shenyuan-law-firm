@@ -941,6 +941,10 @@ def test_article_pages_render_bilingual(tmp_db):
             "legacy-why-wills-get-challenged-common-grounds",
             "trade-non-payment-after-delivery-proving-breach-in-cross-border-sales",
             "recovery-forged-seals-and-signatures-contract-validity",
+            "legacy-founder-dies-succession-of-company-control",
+            "recovery-bankruptcy-vs-collection-creditor-s-choice",
+            "recovery-e-commerce-fraud-chargebacks-refusals-and-abuse",
+            "legacy-unclaimed-estates-when-no-heir-steps-forward",
         ):
             resp = client.get(f"/articles/{slug}")
             assert resp.status_code == 200, slug
