@@ -1946,11 +1946,32 @@ def test_content_cms_draft_crud_requires_admin_and_persists(tmp_db, monkeypatch)
         assert updated.json()["title_zh"].endswith("更新）")
 
 
-def test_cms_publish_updates_sitemap_and_creates_version(tmp_db, monkeypatch):
+def test_cms_publish_rejects_seo_incomplete_draft(tmp_db, monkeypatch):
     monkeypatch.setenv("ADMIN_TOKEN", "cms-secret")
     with TestClient(m.app) as client:
         h = {"Authorization": "Bearer cms-secret"}
-        p = {"title_zh":"可收录 CMS 文章","title_en":"Indexable CMS Article","slug":"indexable-cms-article","body_zh":"正文","body_en":"Body","description_zh":"跨境法律 CMS 文章描述，长度足够用于搜索摘要。","description_en":"A publishable CMS cross-border legal article description.","business":"trade","intent":"I","status":"draft"}
+        p = {"title_zh":"短","title_en":"Short","slug":"bad-seo-cms","body_zh":"短正文","body_en":"short","description_zh":"短","description_en":"short","business":"trade","intent":"I","status":"draft"}
+        created = client.post("/admin/api/content", headers=h, json=p).json()
+        published = client.post(f"/admin/api/content/{created['id']}/publish", headers=h)
+        assert published.status_code == 422
+        assert published.json()["detail"]["code"] == "seo_quality_gate"
+        assert client.get("/articles/bad-seo-cms").status_code == 404
+
+
+def test_cms_publish_returns_indexing_hook_status(tmp_db, monkeypatch):
+    monkeypatch.setenv("ADMIN_TOKEN", "cms-secret")
+    with TestClient(m.app) as client:
+        h = {"Authorization": "Bearer cms-secret"}
+        p = {"title_zh":"完整的跨境贸易争议文章标题","title_en":"A Complete Cross-Border Trade Dispute Article","slug":"indexing-hook-cms","body_zh":"贸易 合同 违约 国际 货款 [免费咨询 →](/#intake) " + "这是正文。" * 250,"body_en":"Trade contract breach international payment recovery [Free consultation →](/#intake) " + "This is content. " * 35,"description_zh":"跨境贸易合同和货款争议的法律处理路径、证据准备、时效判断与执行策略说明，帮助企业识别风险并准备初步咨询材料。内容仅供一般信息参考。","description_en":"A practical guide to cross-border trade contract and payment disputes, covering evidence, limitation periods, and enforcement strategy.","business":"trade","intent":"I","status":"draft"}
+        created = client.post("/admin/api/content", headers=h, json=p).json()
+        out = client.post(f"/admin/api/content/{created['id']}/publish", headers=h)
+        assert out.status_code == 200
+        assert out.json()["indexing"]["status"] in {"queued", "disabled"}
+
+    monkeypatch.setenv("ADMIN_TOKEN", "cms-secret")
+    with TestClient(m.app) as client:
+        h = {"Authorization": "Bearer cms-secret"}
+        p = {"title_zh":"可收录 CMS 文章标题","title_en":"Indexable CMS Article","slug":"indexable-cms-article","body_zh":"贸易 合同 国际 货款 [免费咨询 →](/#intake) " + "这是完整正文。" * 200,"body_en":"Trade contract international payment [Free consultation →](/#intake) " + "This is complete content. " * 20,"description_zh":"跨境法律 CMS 文章描述，覆盖贸易争议、证据准备、时效判断和执行路径，供企业进行初步风险评估。内容仅供一般信息参考，具体情况应咨询专业律师。","description_en":"A publishable CMS cross-border legal article covering trade disputes, evidence, limitation periods, enforcement, and risk assessment.","business":"trade","intent":"I","status":"draft"}
         created = client.post("/admin/api/content", headers=h, json=p).json()
         published = client.post(f"/admin/api/content/{created['id']}/publish", headers=h).json()
         assert published["status"] == "published"
@@ -1977,8 +1998,10 @@ def test_cms_import_markdown_is_idempotent(tmp_db, monkeypatch):
         created = client.post("/admin/api/content", headers=headers, json={
             "title_zh": "发布测试文章", "title_en": "Publish Test",
             "slug": "publish-test-cms", "body_zh": "正文", "body_en": "Body",
-            "description_zh": "这是用于测试的跨境法律文章描述。",
-            "description_en": "A test cross-border legal article description.",
+            "description_zh": "这是用于测试的跨境法律文章描述，覆盖国际贸易争议、证据准备、时效判断与执行路径，帮助企业准备初步咨询材料。内容仅供一般信息参考。",
+            "description_en": "A test cross-border legal article description covering trade disputes, evidence, limitation periods, and enforcement.",
+            "body_zh": "贸易 合同 国际 货款 [免费咨询 →](/#intake) " + "这是完整的测试正文。" * 100,
+            "body_en": "Trade contract international payment [Free consultation →](/#intake) " + "This is complete test content. " * 20,
             "business": "trade", "intent": "I", "status": "draft",
         }).json()
         preview = client.get(f"/admin/api/content/{created['id']}/preview", headers=headers)

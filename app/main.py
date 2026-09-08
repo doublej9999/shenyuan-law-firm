@@ -4332,17 +4332,45 @@ def cms_preview(article_id: int, request: Request) -> Response:
     return Response(content=content, media_type="text/html; charset=utf-8")
 
 
+
+
+def _cms_seo_issues(row: dict) -> list[str]:
+    """Publish-time quality gate; conservative checks for CMS content."""
+    issues = []
+    if not (1 <= len(row.get("title_zh", "")) <= 40): issues.append("中文标题长度应为 1-40")
+    if not (1 <= len(row.get("title_en", "")) <= 70): issues.append("英文标题长度应为 1-70")
+    if not (60 <= len(row.get("description_zh", "")) <= 160): issues.append("中文 SEO 描述应为 60-160 字符")
+    if not (60 <= len(row.get("description_en", "")) <= 170): issues.append("英文 SEO 描述应为 60-170 字符")
+    if len(row.get("body_zh", "")) < 800: issues.append("中文正文至少 800 字符")
+    if len(row.get("body_en", "")) < 400: issues.append("英文正文至少 400 字符")
+    if "/#intake" not in row.get("body_zh", "") or "/#intake" not in row.get("body_en", ""):
+        issues.append("中英文正文都必须含 /#intake CTA")
+    return issues
+
+
+def _indexing_hook_status(slug: str) -> dict:
+    """Return a deterministic queue status; actual API delivery is delegated to
+    the existing indexing script/worker so publishing never blocks on Google."""
+    configured = bool(os.environ.get("GSC_SERVICE_ACCOUNT_JSON", "").strip())
+    return {"status": "queued" if configured else "disabled", "slug": slug}
+
+
 @app.post("/admin/api/content/{article_id}/publish", include_in_schema=False)
 def cms_publish(article_id: int, request: Request) -> dict:
     _require_admin(request)
     row = _cms_get(article_id)
     if not row:
         raise HTTPException(status_code=404, detail="Content not found")
+    issues = _cms_seo_issues(row)
+    if issues:
+        raise HTTPException(status_code=422, detail={"code": "seo_quality_gate", "issues": issues})
     now = datetime.now(timezone.utc).isoformat()
     with db_connection() as connection:
         connection.execute("UPDATE content_articles SET status='published', published_at=?, updated_at=? WHERE id=?", (now, now, article_id))
     log_audit(_client_ip(request), "content.publish", row["slug"])
-    return _cms_get(article_id)
+    result = _cms_get(article_id)
+    result["indexing"] = _indexing_hook_status(row["slug"])
+    return result
 
 
 @app.get("/admin/api/articles", include_in_schema=False)
