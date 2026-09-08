@@ -1946,7 +1946,31 @@ def test_content_cms_draft_crud_requires_admin_and_persists(tmp_db, monkeypatch)
         assert updated.json()["title_zh"].endswith("更新）")
 
 
-def test_content_cms_preview_and_publish_are_separate(tmp_db, monkeypatch):
+def test_cms_publish_updates_sitemap_and_creates_version(tmp_db, monkeypatch):
+    monkeypatch.setenv("ADMIN_TOKEN", "cms-secret")
+    with TestClient(m.app) as client:
+        h = {"Authorization": "Bearer cms-secret"}
+        p = {"title_zh":"可收录 CMS 文章","title_en":"Indexable CMS Article","slug":"indexable-cms-article","body_zh":"正文","body_en":"Body","description_zh":"跨境法律 CMS 文章描述，长度足够用于搜索摘要。","description_en":"A publishable CMS cross-border legal article description.","business":"trade","intent":"I","status":"draft"}
+        created = client.post("/admin/api/content", headers=h, json=p).json()
+        published = client.post(f"/admin/api/content/{created['id']}/publish", headers=h).json()
+        assert published["status"] == "published"
+        assert client.get("/articles/indexable-cms-article").status_code == 200
+        assert "indexable-cms-article" in client.get("/sitemap.xml").text
+        versions = client.get(f"/admin/api/content/{created['id']}/versions", headers=h)
+        assert versions.status_code == 200
+        assert versions.json()["items"]
+
+
+def test_cms_import_markdown_is_idempotent(tmp_db, monkeypatch):
+    monkeypatch.setenv("ADMIN_TOKEN", "cms-secret")
+    with TestClient(m.app) as client:
+        h = {"Authorization": "Bearer cms-secret"}
+        first = client.post("/admin/api/content/import-markdown", headers=h)
+        second = client.post("/admin/api/content/import-markdown", headers=h)
+        assert first.status_code == 200
+        assert second.status_code == 200
+        assert second.json()["created"] == 0
+
     monkeypatch.setenv("ADMIN_TOKEN", "cms-secret")
     with TestClient(m.app) as client:
         headers = {"Authorization": "Bearer cms-secret"}
