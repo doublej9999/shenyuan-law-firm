@@ -19,7 +19,7 @@ from typing import Annotated, Iterator
 
 import markdown
 
-from fastapi import BackgroundTasks, FastAPI, HTTPException, Request
+from fastapi import BackgroundTasks, Body, FastAPI, HTTPException, Request
 from fastapi.responses import FileResponse, JSONResponse, Response
 from pydantic import BaseModel, EmailStr, Field, field_validator
 from slowapi import Limiter
@@ -33,7 +33,7 @@ logging.basicConfig(level=logging.INFO)
 ROOT_DIR = Path(__file__).resolve().parent.parent
 DB_PATH = ROOT_DIR / "data" / "lawyers.sqlite3"
 FILES_DIR = DB_PATH.parent / "files"
-SCHEMA_VERSION = 7
+SCHEMA_VERSION = 8
 
 # Public base URL used for canonical/OG/sitemap links. Override in prod.
 SITE_URL = os.environ.get("SITE_URL", "http://localhost:8000").rstrip("/")
@@ -297,7 +297,9 @@ def migrate_schema(connection: sqlite3.Connection) -> None:
     """
     version = connection.execute("PRAGMA user_version").fetchone()[0]
     if version >= SCHEMA_VERSION:
-        return
+        # Keep idempotent CREATE TABLE steps below running for databases that
+        # reached the version before a later additive table was introduced.
+        version = SCHEMA_VERSION - 1
 
     columns = [row["name"] for row in connection.execute("PRAGMA table_info(intakes)")]
     if "country_or_region" not in columns:
@@ -421,6 +423,27 @@ def migrate_schema(connection: sqlite3.Connection) -> None:
         """
     )
 
+    connection.execute(
+        """
+        CREATE TABLE IF NOT EXISTS content_articles (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            slug TEXT NOT NULL UNIQUE,
+            title_zh TEXT NOT NULL DEFAULT '',
+            title_en TEXT NOT NULL DEFAULT '',
+            description_zh TEXT NOT NULL DEFAULT '',
+            description_en TEXT NOT NULL DEFAULT '',
+            body_zh TEXT NOT NULL DEFAULT '',
+            body_en TEXT NOT NULL DEFAULT '',
+            business TEXT NOT NULL DEFAULT 'general',
+            intent TEXT NOT NULL DEFAULT 'I',
+            status TEXT NOT NULL DEFAULT 'draft',
+            published_at TEXT,
+            created_at TEXT NOT NULL,
+            updated_at TEXT NOT NULL
+        )
+        """
+    )
+    connection.execute("CREATE INDEX IF NOT EXISTS idx_content_status ON content_articles(status)")
     logger.info("Migrating intakes schema to version %d", SCHEMA_VERSION)
     connection.execute(f"PRAGMA user_version = {SCHEMA_VERSION}")
 
@@ -3168,6 +3191,12 @@ def articles_index_en() -> Response:
 def article_page(slug: str) -> Response:
     if not _SLUG_RE.match(slug):
         raise HTTPException(status_code=404, detail="Not found")
+    # CMS-published articles take precedence over Markdown files.
+    with db_connection() as connection:
+        cms = connection.execute("SELECT * FROM content_articles WHERE slug = ? AND status = 'published'", (slug,)).fetchone()
+    if cms:
+        body = markdown.markdown(cms["body_zh"], extensions=["extra", "sane_lists"])
+        return Response(content=f"<html><head><meta charset='utf-8'><meta name='description' content='{html.escape(cms['description_zh'])}'><title>{html.escape(cms['title_zh'])} | Shenyuan International</title></head><body><main><h1>{html.escape(cms['title_zh'])}</h1>{body}</main></body></html>", media_type="text/html; charset=utf-8")
     article = next((a for a in _load_articles() if a["meta"]["slug"] == slug), None)
     if article is None:
         raise HTTPException(status_code=404, detail="Not found")
@@ -4165,6 +4194,11 @@ def vcard() -> Response:
     return Response(content="\n".join(lines) + "\n", media_type="text/vcard; charset=utf-8")
 
 
+@app.get("/admin/content", include_in_schema=False)
+def admin_content_page() -> FileResponse:
+    return FileResponse(ROOT_DIR / "admin_content.html")
+
+
 @app.get("/admin", include_in_schema=False)
 def admin_page() -> FileResponse:
     """Admin dashboard shell. The page itself is unauthenticated; every API
@@ -4176,6 +4210,106 @@ def admin_page() -> FileResponse:
 def admin_marketing_page() -> FileResponse:
     """Marketing Agent console: generate & copy the full collateral bundle."""
     return FileResponse(ROOT_DIR / "admin_marketing.html")
+
+
+
+
+# ---------- Content CMS (draft/review/publish phase 1) -----------------------
+def _content_row(row: sqlite3.Row) -> dict:
+    return {k: row[k] for k in row.keys()}
+
+
+def _cms_get(article_id: int) -> dict | None:
+    with db_connection() as connection:
+        row = connection.execute("SELECT * FROM content_articles WHERE id = ?", (article_id,)).fetchone()
+    return _content_row(row) if row else None
+
+
+def _cms_list(status: str | None = None) -> list[dict]:
+    with db_connection() as connection:
+        if status:
+            rows = connection.execute("SELECT * FROM content_articles WHERE status = ? ORDER BY updated_at DESC", (status,)).fetchall()
+        else:
+            rows = connection.execute("SELECT * FROM content_articles ORDER BY updated_at DESC").fetchall()
+    return [_content_row(r) for r in rows]
+
+
+@app.get("/admin/api/content", include_in_schema=False)
+@limiter.limit(ADMIN_RATE_LIMIT)
+def cms_list(request: Request, status: str | None = None) -> dict:
+    _require_admin(request)
+    return {"items": _cms_list(status), "count": len(_cms_list(status))}
+
+
+@app.post("/admin/api/content", status_code=201, include_in_schema=False)
+@limiter.limit(ADMIN_RATE_LIMIT)
+def cms_create(request: Request, payload: dict = Body(...)) -> dict:
+    _require_admin(request)
+    now = datetime.now(timezone.utc).isoformat()
+    fields = {k: str(payload.get(k, "")) for k in ("slug", "title_zh", "title_en", "description_zh", "description_en", "body_zh", "body_en", "business", "intent")}
+    fields["status"] = payload.get("status", "draft") if payload.get("status") in {"draft", "review"} else "draft"
+    try:
+        with db_connection() as connection:
+            cur = connection.execute("""INSERT INTO content_articles
+                (slug,title_zh,title_en,description_zh,description_en,body_zh,body_en,business,intent,status,created_at,updated_at)
+                VALUES (?,?,?,?,?,?,?,?,?,?,?,?)""", tuple(fields[k] for k in ("slug","title_zh","title_en","description_zh","description_en","body_zh","body_en","business","intent","status")) + (now, now))
+            row = connection.execute("SELECT * FROM content_articles WHERE id = ?", (cur.lastrowid,)).fetchone()
+    except sqlite3.IntegrityError as exc:
+        raise HTTPException(status_code=409, detail=f"slug already exists: {exc}")
+    log_audit(_client_ip(request), "content.create", fields["slug"])
+    return _content_row(row)
+
+
+@app.get("/admin/api/content/{article_id}", include_in_schema=False)
+def cms_get(article_id: int, request: Request) -> dict:
+    _require_admin(request)
+    row = _cms_get(article_id)
+    if not row:
+        raise HTTPException(status_code=404, detail="Content not found")
+    return row
+
+
+@app.put("/admin/api/content/{article_id}", include_in_schema=False)
+def cms_update(article_id: int, request: Request, payload: dict = Body(...)) -> dict:
+    _require_admin(request)
+    current = _cms_get(article_id)
+    if not current:
+        raise HTTPException(status_code=404, detail="Content not found")
+    allowed = {k for k in current if k in {"slug","title_zh","title_en","description_zh","description_en","body_zh","body_en","business","intent","status"}}
+    updates = {k: str(v) for k, v in payload.items() if k in allowed}
+    if updates.get("status") not in {None, "draft", "review", "published", "archived"}:
+        raise HTTPException(status_code=422, detail="invalid status")
+    updates["updated_at"] = datetime.now(timezone.utc).isoformat()
+    with db_connection() as connection:
+        for k, v in updates.items():
+            connection.execute(f"UPDATE content_articles SET {k} = ? WHERE id = ?", (v, article_id))
+    updated = _cms_get(article_id)
+    log_audit(_client_ip(request), "content.update", str(article_id))
+    return updated
+
+
+@app.get("/admin/api/content/{article_id}/preview", include_in_schema=False)
+def cms_preview(article_id: int, request: Request) -> Response:
+    _require_admin(request)
+    row = _cms_get(article_id)
+    if not row:
+        raise HTTPException(status_code=404, detail="Content not found")
+    body = markdown.markdown(row["body_zh"], extensions=["extra", "sane_lists"])
+    content = f"<html><head><meta charset='utf-8'><title>{html.escape(row['title_zh'])}</title></head><body><main><h1>{html.escape(row['title_zh'])}</h1>{body}</main></body></html>"
+    return Response(content=content, media_type="text/html; charset=utf-8")
+
+
+@app.post("/admin/api/content/{article_id}/publish", include_in_schema=False)
+def cms_publish(article_id: int, request: Request) -> dict:
+    _require_admin(request)
+    row = _cms_get(article_id)
+    if not row:
+        raise HTTPException(status_code=404, detail="Content not found")
+    now = datetime.now(timezone.utc).isoformat()
+    with db_connection() as connection:
+        connection.execute("UPDATE content_articles SET status='published', published_at=?, updated_at=? WHERE id=?", (now, now, article_id))
+    log_audit(_client_ip(request), "content.publish", row["slug"])
+    return _cms_get(article_id)
 
 
 @app.get("/admin/api/articles", include_in_schema=False)

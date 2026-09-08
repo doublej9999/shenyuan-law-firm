@@ -2,53 +2,48 @@
 slug: trade-t-t-deposit-payments-contract-clauses-that-protect-exporters
 title_zh: T/T 30%定金模式的风险与合同保护条款设计
 title_en: T/T Deposit Payments: Contract Clauses That Protect Exporters
-description_zh: 贸易企业采用30%定金、70%尾款的T/T付款模式时，真正的风险不只在客户迟付，还在于定金性质、发货条件、验收与违约责任没有写清。本文提供合同审查和收款节点清单，帮助出口商降低货款与证据风险。
-description_en: This guide helps exporters using 30% T/T deposits define payment milestones, evidence, and remedies before shipment.
+description_zh: T/T 30%定金并不等于收款安全。本文从付款节点、单据控制、违约责任和争议解决四个方面，说明外贸合同如何降低客户拒付、取消订单与资金占用风险，帮助企业把收款安排落到可执行条款上。
+description_en: A 30% T/T deposit does not make an export sale safe. This guide covers milestones, document control, remedies, and dispute clauses that reduce non-payment risk.
 business: trade
 intent: T
-date: 2026-08-31
+date: 2026-09-09
 week: 11
 ---
 
 # T/T 30%定金模式的风险与合同保护条款设计
 
-## 先判断付款结构与风险位置
+“先收30%定金，出货前收70%尾款”看似安全，但定制生产、原料采购和排产已经占用现金。客户若拖延验货、改变规格或拒付尾款，企业可能面对滞销货物、仓储费和无法转卖的损失。定金比例不能替代合同设计，付款应与可验证的履约节点绑定。
 
-先把交易流程画成时间线：签约、定金到账、备货、验货、装船、提交单据、尾款到期和放单。合同必须明确每个节点的付款义务、付款到账的认定标准以及谁承担银行手续费。仅收到付款截图不能视为到账，应以约定账户实际入账为准。定金究竟是预付款、保证金还是违约金预付款，要结合适用法律和合同文字确认；中国法与买方所在地法律对其性质、返还和没收可能有不同规则。
+## 第一步：把付款节点写成可核验事件
 
-## 把发货条件写成可操作的触发器
+明确订单确认、原料采购、生产完成、第三方验货、装船和交单等节点，并写明到期日、币种、银行费用和到账标准。对定制货物，约定逾期时暂停生产、转售或处理货物的权利，但应以适用法律允许为前提。
 
-建议将生产和发货拆成条件：定金到账后开始采购；尾款到账或银行确认不可撤销的付款安排后交付正本提单；买方逾期时，卖方可以暂停生产、暂停装运或要求补充担保。不要只写“卖方有权暂停”，还要写通知方式、宽限期、仓储费和货物处置方式。涉及信用证、托收或平台支付时，应另行核对单据规则，不能把T/T条款机械套用。
+## 第二步：规定验货和尾款规则
 
-## 设计证据与验收机制
+写清验货机构、抽检标准、通知期限以及客户不参加验货的后果。可以约定客户在收到报告后若干工作日内未提出具体书面异议视为接受，但有效性以准据法为准。附上技术规格、容差、照片和样品确认记录，不要只写“客户满意”。
 
-合同应列明规格、抽检比例、第三方验货机构、异议期限和未提出异议的法律后果，但不能用一句“签收即视为全部合格”替代具体质量标准。保存报价版本、订单确认、生产照片、检验报告、装箱单、提单、银行流水、邮件和聊天原始记录。每次变更都要求对方从公司邮箱或授权系统确认，并保留发件账号、时间和附件版本。
+## 第三步：设置违约与止损工具
 
-## 设置违约责任与争议解决路径
+可约定逾期利息、合理仓储费、取消订单损失和律师费承担，但金额必须具有可执行性。高风险客户可考虑信用证、备用信用证、母公司担保或分批出货。保留提单、控制放货文件也须结合运输方式与当地强制规则，不能假定卖方永远可以扣货。
 
-尾款逾期可约定利息、合理催收费用、暂停履行和损失赔偿，但违约金是否可调整、利息上限和损失证明要求取决于适用法。管辖、仲裁地、语言、送达地址和临时措施要相互配套；判决或裁决能否在买方所在地承认执行，须以当地法律和专业意见为准。重大订单可要求母公司保证、备用信用证或分阶段付款。
+## 第四步：提前设计争议解决路径
+
+写清适用法律、仲裁机构或法院、语言、送达方式和保全地点。中国法律与外国法对合同解释、违约金和所有权的规则可能不同；涉及客户所在地资产时，提前确认判决或裁决能否执行。
 
 ## 时间与费用预期（经验区间）
 
-| 工作环节 | 经验区间 | 主要变量 |
+| 工作 | 经验周期 | 主要成本 |
 |---|---|---|
-| 文件整理与初步评估 | 3天至2周 | 材料完整度、法域数量 |
-| 合同审查或调查 | 2周至6周 | 条款复杂度、登记查询 |
-| 谈判、保全或程序启动 | 通常1至6个月，视法域而定 | 对方配合、法院和证据 |
-| 诉讼、仲裁或执行 | 通常6个月至数年，视法域而定 | 争议金额、资产和救济 |
+| 合同与付款审查 | 1–5个工作日 | 律师审查费 |
+| 验货及单据流程 | 1–3周 | 验货和内部管理成本 |
+| 催款与协商 | 1–6周 | 律师函及谈判费 |
+| 仲裁/诉讼与执行 | 通常3–24个月，视法域而定 | 律师、机构、保全和执行费 |
 
-以上是经验区间，不是报价或结果预测。**我们不承诺结果**，费用和周期以材料、当地法律及正式委托为准。
+以上是经验区间，不是报价或结果保证。我们不承诺结果，实际成本取决于合同、货物、资产和法域。
 
 ## 风险提示
 
-- 不要把中国法律意见直接用于外国法院或登记程序；外国法问题以当地律师意见为准。
-- 不要伪造、删改、非法取得证据，也不要因未经核实的线索指控对方。
-- 不要忽略时效、保全担保、税费、数据保护和第三人权利。
-- 不要相信包赢、包追回或保证特定继承份额的承诺。
-
-## 免费咨询
-
-可提交合同、付款记录、登记资料或遗产文件，我们会先按法域、证据和目标梳理可行路径。
+不要把定金当然写成不可退；不要凭付款截图放货；不要威胁、骚扰或扣押无权控制的货物；外国法条款应由当地专业人士复核。
 
 [免费咨询 →](/#intake)
 
@@ -58,43 +53,38 @@ week: 11
 
 # T/T Deposit Payments: Contract Clauses That Protect Exporters
 
-## 先判断付款结构与风险位置
+“30% upfront and 70% before shipment” sounds safe, but custom production may consume most of the exporter’s cash. If the buyer delays inspection, changes specifications, or refuses the balance, the seller may face stranded goods and storage charges. The deposit percentage is not a substitute for a well-designed contract.
 
-先把交易流程画成时间线：签约、定金到账、备货、验货、装船、提交单据、尾款到期和放单。合同必须明确每个节点的付款义务、付款到账的认定标准以及谁承担银行手续费。仅收到付款截图不能视为到账，应以约定账户实际入账为准。定金究竟是预付款、保证金还是违约金预付款，要结合适用法律和合同文字确认；中国法与买方所在地法律对其性质、返还和没收可能有不同规则。
+## Step 1: Tie payment to verifiable milestones
 
-## 把发货条件写成可操作的触发器
+Define order confirmation, raw-material purchase, production completion, inspection, loading, and document release. State the due date, currency, bank charges, and what counts as receipt. For custom goods, address suspension, resale, and handling rights if the buyer does not pay, subject to governing law.
 
-建议将生产和发货拆成条件：定金到账后开始采购；尾款到账或银行确认不可撤销的付款安排后交付正本提单；买方逾期时，卖方可以暂停生产、暂停装运或要求补充担保。不要只写“卖方有权暂停”，还要写通知方式、宽限期、仓储费和货物处置方式。涉及信用证、托收或平台支付时，应另行核对单据规则，不能把T/T条款机械套用。
+## Step 2: Control inspection and the balance
 
-## 设计证据与验收机制
+Specify the inspection body, sampling standard, notice period, and consequence of silence. A deemed-acceptance clause may help if no specific written objection is made within the agreed days, but enforceability depends on local law. Attach specifications, tolerances, approved samples, and photographs rather than relying on “buyer satisfaction.”
 
-合同应列明规格、抽检比例、第三方验货机构、异议期限和未提出异议的法律后果，但不能用一句“签收即视为全部合格”替代具体质量标准。保存报价版本、订单确认、生产照片、检验报告、装箱单、提单、银行流水、邮件和聊天原始记录。每次变更都要求对方从公司邮箱或授权系统确认，并保留发件账号、时间和附件版本。
+## Step 3: Add workable remedies
 
-## 设置违约责任与争议解决路径
+Late interest, reasonable storage charges, cancellation formulas, and legal-cost clauses may help, but they must remain enforceable rather than punitive. Higher-risk buyers may require a letter of credit, standby credit, parent guarantee, or staged shipments. Control of bills of lading must fit the transport arrangement and mandatory rules.
 
-尾款逾期可约定利息、合理催收费用、暂停履行和损失赔偿，但违约金是否可调整、利息上限和损失证明要求取决于适用法。管辖、仲裁地、语言、送达地址和临时措施要相互配套；判决或裁决能否在买方所在地承认执行，须以当地法律和专业意见为准。重大订单可要求母公司保证、备用信用证或分阶段付款。
+## Step 4: Choose the dispute path early
+
+State governing law, court or arbitral institution, language, service method, and the place for interim relief. Chinese and foreign rules may differ on interpretation, liquidated damages, and title. Confirm whether a judgment or award can reach assets where the buyer operates.
 
 ## Time and cost expectations (experience ranges)
 
-| Work stage | Experience range | Main variables |
+| Work | Typical range | Main costs |
 |---|---|---|
-| Document review and initial assessment | 3 days to 2 weeks | Completeness and jurisdictions |
-| Contract review or investigation | 2 to 6 weeks | Complexity and records |
-| Negotiation, preservation, or filing | Usually 1 to 6 months, by jurisdiction | Cooperation, court, evidence |
-| Litigation, arbitration, or enforcement | Usually 6 months to several years, by jurisdiction | Value, assets, remedies |
+| Contract and payment review | 1–5 business days | Legal review fee |
+| Inspection and document workflow | 1–3 weeks | Inspection and internal costs |
+| Demand and negotiation | 1–6 weeks | Counsel and negotiation fees |
+| Proceedings and enforcement | Usually 3–24 months, jurisdiction-dependent | Counsel, tribunal, preservation and enforcement costs |
 
-These are experience ranges, not a quote or prediction. **We do not promise results**. Fees and timing depend on the documents, local law, and signed engagement.
+These are experience ranges, not a quote or promise. We do not promise results; actual cost depends on the contract, goods, assets, and jurisdiction.
 
-## Risk warnings
+## Key risks
 
-- Do not use PRC-law advice as foreign-court or registry advice; obtain qualified local advice.
-- Do not fabricate, alter, unlawfully obtain, or publicly misstate evidence.
-- Check limitation periods, security for costs, taxes, privacy rules, and third-party rights.
-- Be cautious of guaranteed wins, recovery, or inheritance shares.
-
-## Free consultation
-
-Submit the contract, payment records, registry material, or estate documents for an initial jurisdiction and evidence review.
+Do not assume a deposit is automatically non-refundable. Do not release goods based only on a payment screenshot. Do not use threats or unauthorized detention as self-help collection. Have foreign-law terms reviewed by local counsel.
 
 [Free consultation →](/#intake)
 
