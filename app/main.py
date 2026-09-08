@@ -1450,6 +1450,12 @@ def sitemap() -> Response:
                 entries.append(f"  <url><loc>{SITE_URL}{path}</loc><lastmod>{date}</lastmod></url>\n")
             else:
                 entries.append(f"  <url><loc>{SITE_URL}{path}</loc></url>\n")
+    with db_connection() as connection:
+        cms_rows = connection.execute("SELECT slug, published_at FROM content_articles WHERE status = 'published'").fetchall()
+    for row in cms_rows:
+        lastmod = (row["published_at"] or "")[:10]
+        entries.append(f"  <url><loc>{SITE_URL}/articles/{html.escape(row['slug'])}</loc><lastmod>{lastmod}</lastmod></url>\n")
+
     xml = (
         '<?xml version="1.0" encoding="UTF-8"?>\n'
         '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
@@ -4232,6 +4238,33 @@ def _cms_list(status: str | None = None) -> list[dict]:
         else:
             rows = connection.execute("SELECT * FROM content_articles ORDER BY updated_at DESC").fetchall()
     return [_content_row(r) for r in rows]
+
+
+@app.post("/admin/api/content/import-markdown", include_in_schema=False)
+def cms_import_markdown(request: Request) -> dict:
+    _require_admin(request)
+    created = 0
+    for article in _load_articles():
+        m = article["meta"]
+        slug = m["slug"]
+        with db_connection() as connection:
+            exists = connection.execute("SELECT 1 FROM content_articles WHERE slug = ?", (slug,)).fetchone()
+            if exists:
+                continue
+            now = datetime.now(timezone.utc).isoformat()
+            connection.execute("""INSERT INTO content_articles (slug,title_zh,title_en,description_zh,description_en,body_zh,body_en,business,intent,status,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)""", (slug,m.get("title_zh",""),m.get("title_en",""),m.get("description_zh",""),m.get("description_en",""),article["zh"],article["en"],m.get("business","general"),m.get("intent","I"),"published",now,now))
+            created += 1
+    log_audit(_client_ip(request), "content.import_markdown", str(created))
+    return {"created": created}
+
+
+@app.get("/admin/api/content/{article_id}/versions", include_in_schema=False)
+def cms_versions(article_id: int, request: Request) -> dict:
+    _require_admin(request)
+    row = _cms_get(article_id)
+    if not row:
+        raise HTTPException(status_code=404, detail="Content not found")
+    return {"items": [{"version": 1, "created_at": row["updated_at"], "status": row["status"], "title_zh": row["title_zh"]}]}
 
 
 @app.get("/admin/api/content", include_in_schema=False)
