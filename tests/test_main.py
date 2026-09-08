@@ -1905,3 +1905,59 @@ def test_ga_tag_injected_when_configured(tmp_db):
                 assert "gtag('config','G-TEST123')" in text, path
     finally:
         monkeypatch.undo()
+
+
+def test_content_cms_draft_crud_requires_admin_and_persists(tmp_db, monkeypatch):
+    """Phase 1 CMS: list/create/edit drafts without touching Markdown files."""
+    monkeypatch.setenv("ADMIN_TOKEN", "cms-secret")
+    with TestClient(m.app) as client:
+        assert client.get("/admin/api/content").status_code == 401
+        headers = {"Authorization": "Bearer cms-secret"}
+        listing = client.get("/admin/api/content", headers=headers)
+        assert listing.status_code == 200
+        assert listing.json()["items"] == []
+        created = client.post("/admin/api/content", headers=headers, json={
+            "title_zh": "跨境债务追收草稿",
+            "title_en": "Cross-Border Debt Recovery Draft",
+            "slug": "draft-cross-border-debt-recovery",
+            "body_zh": "中文正文",
+            "body_en": "English body",
+            "description_zh": "跨境债务追收实务草稿，含证据与执行路径。",
+            "description_en": "A draft guide to cross-border debt recovery and enforcement.",
+            "business": "recovery",
+            "intent": "I",
+            "status": "draft",
+        })
+        assert created.status_code == 201
+        article_id = created.json()["id"]
+        fetched = client.get(f"/admin/api/content/{article_id}", headers=headers)
+        assert fetched.status_code == 200
+        assert fetched.json()["title_zh"] == "跨境债务追收草稿"
+        updated = client.put(f"/admin/api/content/{article_id}", headers=headers, json={
+            "title_zh": "跨境债务追收草稿（更新）",
+            "status": "review",
+        })
+        assert updated.status_code == 200
+        assert updated.json()["status"] == "review"
+        assert updated.json()["title_zh"].endswith("更新）")
+
+
+def test_content_cms_preview_and_publish_are_separate(tmp_db, monkeypatch):
+    monkeypatch.setenv("ADMIN_TOKEN", "cms-secret")
+    with TestClient(m.app) as client:
+        headers = {"Authorization": "Bearer cms-secret"}
+        created = client.post("/admin/api/content", headers=headers, json={
+            "title_zh": "发布测试文章", "title_en": "Publish Test",
+            "slug": "publish-test-cms", "body_zh": "正文", "body_en": "Body",
+            "description_zh": "这是用于测试的跨境法律文章描述。",
+            "description_en": "A test cross-border legal article description.",
+            "business": "trade", "intent": "I", "status": "draft",
+        }).json()
+        preview = client.get(f"/admin/api/content/{created['id']}/preview", headers=headers)
+        assert preview.status_code == 200
+        assert "发布测试文章" in preview.text
+        publish = client.post(f"/admin/api/content/{created['id']}/publish", headers=headers)
+        assert publish.status_code == 200
+        assert publish.json()["status"] == "published"
+        assert client.get("/articles/publish-test-cms").status_code == 200
+
