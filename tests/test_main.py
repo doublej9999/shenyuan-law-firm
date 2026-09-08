@@ -1946,7 +1946,34 @@ def test_content_cms_draft_crud_requires_admin_and_persists(tmp_db, monkeypatch)
         assert updated.json()["title_zh"].endswith("更新）")
 
 
-def test_cms_publish_rejects_seo_incomplete_draft(tmp_db, monkeypatch):
+def test_cms_versions_capture_updates_and_rollback(tmp_db, monkeypatch):
+    monkeypatch.setenv("ADMIN_TOKEN", "cms-secret")
+    with TestClient(m.app) as client:
+        h = {"Authorization": "Bearer cms-secret"}
+        p = {"title_zh":"版本文章标题","title_en":"Versioned Article Title","slug":"versioned-cms","body_zh":"正文内容 " * 200,"body_en":"Body content " * 50,"description_zh":"跨境法律文章版本测试描述，覆盖贸易合同、证据、时效和执行路径。","description_en":"Versioned cross-border legal article description covering contracts, evidence, limitation, and enforcement.","business":"trade","intent":"I","status":"draft"}
+        created = client.post("/admin/api/content", headers=h, json=p).json()
+        changed = client.put(f"/admin/api/content/{created['id']}", headers=h, json={"title_zh":"第二版标题"})
+        assert changed.status_code == 200
+        versions = client.get(f"/admin/api/content/{created['id']}/versions", headers=h).json()["items"]
+        assert len(versions) >= 2
+        rolled = client.post(f"/admin/api/content/{created['id']}/rollback/1", headers=h)
+        assert rolled.status_code == 200
+        assert rolled.json()["title_zh"] == "版本文章标题"
+
+
+def test_cms_bulk_review_and_publish(tmp_db, monkeypatch):
+    monkeypatch.setenv("ADMIN_TOKEN", "cms-secret")
+    with TestClient(m.app) as client:
+        h = {"Authorization": "Bearer cms-secret"}
+        ids = []
+        for n in (1, 2):
+            p = {"title_zh":f"批量文章标题{n}","title_en":f"Bulk Article Title {n}","slug":f"bulk-cms-{n}","body_zh":"贸易 合同 国际 [免费咨询 →](/#intake) " + "完整正文。" * 220,"body_en":"Trade contract [Free consultation →](/#intake) " + "Complete body. " * 25,"description_zh":"跨境贸易争议批量发布测试描述，覆盖证据、时效和执行路径，供企业参考并帮助管理人员准备初步咨询材料。内容仅供一般信息参考。","description_en":"Bulk cross-border trade dispute description covering evidence, limitation and enforcement for businesses.","business":"trade","intent":"I","status":"draft"}
+            ids.append(client.post("/admin/api/content", headers=h, json=p).json()["id"])
+        reviewed = client.post("/admin/api/content/bulk-review", headers=h, json={"ids":ids}).json()
+        assert reviewed["updated"] == 2
+        published = client.post("/admin/api/content/bulk-publish", headers=h, json={"ids":ids})
+        assert published.status_code == 200
+        assert published.json()["published"] == 2
     monkeypatch.setenv("ADMIN_TOKEN", "cms-secret")
     with TestClient(m.app) as client:
         h = {"Authorization": "Bearer cms-secret"}
@@ -1980,7 +2007,6 @@ def test_cms_publish_returns_indexing_hook_status(tmp_db, monkeypatch):
         versions = client.get(f"/admin/api/content/{created['id']}/versions", headers=h)
         assert versions.status_code == 200
         assert versions.json()["items"]
-
 
 def test_cms_import_markdown_is_idempotent(tmp_db, monkeypatch):
     monkeypatch.setenv("ADMIN_TOKEN", "cms-secret")

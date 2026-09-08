@@ -444,6 +444,11 @@ def migrate_schema(connection: sqlite3.Connection) -> None:
         """
     )
     connection.execute("CREATE INDEX IF NOT EXISTS idx_content_status ON content_articles(status)")
+    connection.execute("""CREATE TABLE IF NOT EXISTS content_article_versions (
+        id INTEGER PRIMARY KEY AUTOINCREMENT, article_id INTEGER NOT NULL,
+        version INTEGER NOT NULL, snapshot TEXT NOT NULL, created_at TEXT NOT NULL,
+        UNIQUE(article_id, version)
+    )""")
     logger.info("Migrating intakes schema to version %d", SCHEMA_VERSION)
     connection.execute(f"PRAGMA user_version = {SCHEMA_VERSION}")
 
@@ -4258,14 +4263,49 @@ def cms_import_markdown(request: Request) -> dict:
     return {"created": created}
 
 
+
+
+def _content_snapshot(row: dict) -> str:
+    return json.dumps({k: row.get(k) for k in ("slug","title_zh","title_en","description_zh","description_en","body_zh","body_en","business","intent","status")}, ensure_ascii=False)
+
+
+def _save_content_version(article_id: int, row: dict) -> None:
+    with db_connection() as connection:
+        n = connection.execute("SELECT COALESCE(MAX(version),0)+1 FROM content_article_versions WHERE article_id=?", (article_id,)).fetchone()[0]
+        connection.execute("INSERT INTO content_article_versions(article_id,version,snapshot,created_at) VALUES(?,?,?,?)", (article_id,n,_content_snapshot(row),datetime.now(timezone.utc).isoformat()))
+
 @app.get("/admin/api/content/{article_id}/versions", include_in_schema=False)
 def cms_versions(article_id: int, request: Request) -> dict:
     _require_admin(request)
     row = _cms_get(article_id)
     if not row:
         raise HTTPException(status_code=404, detail="Content not found")
-    return {"items": [{"version": 1, "created_at": row["updated_at"], "status": row["status"], "title_zh": row["title_zh"]}]}
+    with db_connection() as connection:
+        rows = connection.execute("SELECT version, created_at, snapshot FROM content_article_versions WHERE article_id=? ORDER BY version", (article_id,)).fetchall()
+    return {"items": [{"version":r["version"],"created_at":r["created_at"],**json.loads(r["snapshot"])} for r in rows] or [{"version":1,"created_at":row["updated_at"],"status":row["status"],"title_zh":row["title_zh"]}]}
 
+
+
+
+@app.post("/admin/api/content/{article_id}/rollback/{version}", include_in_schema=False)
+def cms_rollback(article_id: int, version: int, request: Request) -> dict:
+    _require_admin(request)
+    row = _cms_get(article_id)
+    if not row:
+        raise HTTPException(status_code=404, detail="Content not found")
+    with db_connection() as connection:
+        item = connection.execute("SELECT snapshot FROM content_article_versions WHERE article_id=? AND version=?", (article_id, version)).fetchone()
+    if not item:
+        raise HTTPException(status_code=404, detail="Version not found")
+    snap = json.loads(item["snapshot"])
+    snap["updated_at"] = datetime.now(timezone.utc).isoformat()
+    with db_connection() as connection:
+        for k in ("slug","title_zh","title_en","description_zh","description_en","body_zh","body_en","business","intent","status"):
+            connection.execute(f"UPDATE content_articles SET {k}=? WHERE id=?", (snap.get(k, ""), article_id))
+    restored = _cms_get(article_id)
+    _save_content_version(article_id, restored or row)
+    log_audit(_client_ip(request), "content.rollback", f"{article_id}:{version}")
+    return restored or row
 
 @app.get("/admin/api/content", include_in_schema=False)
 @limiter.limit(ADMIN_RATE_LIMIT)
@@ -4290,7 +4330,9 @@ def cms_create(request: Request, payload: dict = Body(...)) -> dict:
     except sqlite3.IntegrityError as exc:
         raise HTTPException(status_code=409, detail=f"slug already exists: {exc}")
     log_audit(_client_ip(request), "content.create", fields["slug"])
-    return _content_row(row)
+    result = _content_row(row)
+    _save_content_version(int(result["id"]), result)
+    return result
 
 
 @app.get("/admin/api/content/{article_id}", include_in_schema=False)
@@ -4317,6 +4359,7 @@ def cms_update(article_id: int, request: Request, payload: dict = Body(...)) -> 
         for k, v in updates.items():
             connection.execute(f"UPDATE content_articles SET {k} = ? WHERE id = ?", (v, article_id))
     updated = _cms_get(article_id)
+    _save_content_version(article_id, updated or current)
     log_audit(_client_ip(request), "content.update", str(article_id))
     return updated
 
@@ -4372,6 +4415,44 @@ def cms_publish(article_id: int, request: Request) -> dict:
     result["indexing"] = _indexing_hook_status(row["slug"])
     return result
 
+
+
+
+def _bulk_ids(request: Request, payload: dict) -> list[int]:
+    _require_admin(request)
+    return [int(x) for x in payload.get("ids", [])]
+
+
+@app.post("/admin/api/content/bulk-review", include_in_schema=False)
+def cms_bulk_review(request: Request, payload: dict = Body(...)) -> dict:
+    ids = _bulk_ids(request, payload)
+    with db_connection() as connection:
+        for article_id in ids:
+            connection.execute("UPDATE content_articles SET status='review', updated_at=? WHERE id=?", (datetime.now(timezone.utc).isoformat(), article_id))
+    log_audit(_client_ip(request), "content.bulk_review", str(ids))
+    return {"updated": len(ids)}
+
+
+@app.post("/admin/api/content/bulk-publish", include_in_schema=False)
+def cms_bulk_publish(request: Request, payload: dict = Body(...)) -> dict:
+    ids = _bulk_ids(request, payload)
+    published = 0
+    errors = []
+    for article_id in ids:
+        row = _cms_get(article_id)
+        if not row:
+            errors.append({"id": article_id, "error": "not found"})
+            continue
+        issues = _cms_seo_issues(row)
+        if issues:
+            errors.append({"id": article_id, "error": issues})
+            continue
+        now = datetime.now(timezone.utc).isoformat()
+        with db_connection() as connection:
+            connection.execute("UPDATE content_articles SET status='published', published_at=?, updated_at=? WHERE id=?", (now, now, article_id))
+        published += 1
+    log_audit(_client_ip(request), "content.bulk_publish", str(ids))
+    return {"published": published, "errors": errors}
 
 @app.get("/admin/api/articles", include_in_schema=False)
 @limiter.limit(ADMIN_RATE_LIMIT)
