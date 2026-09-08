@@ -936,6 +936,11 @@ def test_article_pages_render_bilingual(tmp_db):
             "trade-oem-factory-sells-your-product-under-its-own-brand",
             "trade-distributor-registered-your-trademark-recovery-strategies",
             "recovery-recognition-and-enforcement-time-limits-and-procedure",
+            "legacy-marital-vs-separate-property-in-estate-division",
+            "recovery-judgment-debtor-obstruction-set-aside-stay",
+            "legacy-why-wills-get-challenged-common-grounds",
+            "trade-non-payment-after-delivery-proving-breach-in-cross-border-sales",
+            "recovery-forged-seals-and-signatures-contract-validity",
         ):
             resp = client.get(f"/articles/{slug}")
             assert resp.status_code == 200, slug
