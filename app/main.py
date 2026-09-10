@@ -1455,11 +1455,17 @@ def sitemap() -> Response:
                 entries.append(f"  <url><loc>{SITE_URL}{path}</loc><lastmod>{date}</lastmod></url>\n")
             else:
                 entries.append(f"  <url><loc>{SITE_URL}{path}</loc></url>\n")
+    markdown_slugs = {a["meta"].get("slug") for a in _load_articles()}
     with db_connection() as connection:
-        cms_rows = connection.execute("SELECT slug, published_at FROM content_articles WHERE status = 'published'").fetchall()
+        cms_rows = connection.execute("SELECT slug, published_at, updated_at FROM content_articles WHERE status = 'published'").fetchall()
     for row in cms_rows:
-        lastmod = (row["published_at"] or "")[:10]
-        entries.append(f"  <url><loc>{SITE_URL}/articles/{html.escape(row['slug'])}</loc><lastmod>{lastmod}</lastmod></url>\n")
+        # Imported Markdown articles already have canonical sitemap entries;
+        # avoid duplicates. CMS-only articles use a valid ISO date fallback.
+        if row["slug"] in markdown_slugs:
+            continue
+        lastmod = (row["published_at"] or row["updated_at"] or "")[:10]
+        loc = f"{SITE_URL}/articles/{html.escape(row['slug'])}"
+        entries.append(f"  <url><loc>{loc}</loc>" + (f"<lastmod>{lastmod}</lastmod>" if lastmod else "") + "</url>\n")
 
     xml = (
         '<?xml version="1.0" encoding="UTF-8"?>\n'
