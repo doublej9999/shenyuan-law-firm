@@ -1,0 +1,26 @@
+services:
+  - type: web
+    name: shenyuan-django-backend
+    runtime: python
+    repo: https://github.com/doublej9999/shenyuan-law-firm
+    region: singapore
+    plan: free
+    branch: refactor/django-vue-supabase
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: python -m gunicorn shenyuan_legal.wsgi:application --bind 0.0.0.0:$PORT
+    envVars:
+      - key: DJANGO_SECRET_KEY
+        generateValue: true
+      - key: DEBUG
+        value: "False"
+      - key: PYTHON_VERSION
+        value: 3.11.9
+      - key: SUPABASE_URL
+        value: https://jaevfeneyjcvljwgmfxv.supabase.co
+      - key: SUPABASE_DB_URL
+        sync: false
+      - key: SUPABASE_KEY
+        sync: false
+      - key: ADMIN_TOKEN
+        generateValue: true
