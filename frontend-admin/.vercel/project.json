@@ -1,0 +1,16 @@
+{
+  "projectId": "prj_tvXHzFOyEXD2ogO9q39t6QRNNfHa",
+  "orgId": "team_baQbEk5gnm89oRwBuZzA7ppi",
+  "projectName": "shenyuan-admin",
+  "settings": {
+    "createdAt": 1789993254371,
+    "framework": "vite",
+    "devCommand": null,
+    "installCommand": null,
+    "buildCommand": null,
+    "outputDirectory": null,
+    "rootDirectory": null,
+    "directoryListing": false,
+    "nodeVersion": "24.x"
+  }
+}

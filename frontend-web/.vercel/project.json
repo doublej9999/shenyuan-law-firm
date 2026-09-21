@@ -1,0 +1,16 @@
+{
+  "projectId": "prj_m8JgVn2LrsKnibdyhl9UQ1a5VD1c",
+  "orgId": "team_baQbEk5gnm89oRwBuZzA7ppi",
+  "projectName": "shenyuan-web",
+  "settings": {
+    "createdAt": 1789993206234,
+    "framework": "vite",
+    "devCommand": null,
+    "installCommand": null,
+    "buildCommand": null,
+    "outputDirectory": null,
+    "rootDirectory": null,
+    "directoryListing": false,
+    "nodeVersion": "24.x"
+  }
+}
