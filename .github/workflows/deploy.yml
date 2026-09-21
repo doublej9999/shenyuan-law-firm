@@ -22,10 +22,13 @@ jobs:
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
           SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
-        if: env.SUPABASE_ACCESS_TOKEN != '' && env.SUPABASE_DB_PASSWORD != ''
         run: |
-          supabase link --project-ref jaevfeneyjcvljwgmfxv --password "$SUPABASE_DB_PASSWORD"
-          supabase db push
+          if [ -n "$SUPABASE_ACCESS_TOKEN" ] && [ -n "$SUPABASE_DB_PASSWORD" ]; then
+            supabase link --project-ref jaevfeneyjcvljwgmfxv --password "$SUPABASE_DB_PASSWORD"
+            supabase db push
+          else
+            echo "Supabase credentials not configured in secrets. Skipping."
+          fi
 
   deploy-render:
     name: Render Django Backend
@@ -34,9 +37,12 @@ jobs:
       - name: Trigger Render Deploy Hook
         env:
           RENDER_DEPLOY_HOOK_URL: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
-        if: env.RENDER_DEPLOY_HOOK_URL != ''
         run: |
-          curl -X POST "$RENDER_DEPLOY_HOOK_URL"
+          if [ -n "$RENDER_DEPLOY_HOOK_URL" ]; then
+            curl -X POST "$RENDER_DEPLOY_HOOK_URL"
+          else
+            echo "Render deploy hook URL not configured. (Render will use native Git Auto-Deploy on commit push)."
+          fi
 
   deploy-frontend-web:
     name: Vercel Frontend Web
@@ -65,9 +71,12 @@ jobs:
         working-directory: frontend-web
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-        if: env.VERCEL_TOKEN != ''
         run: |
-          npx --yes vercel deploy --prod --yes --token="$VERCEL_TOKEN"
+          if [ -n "$VERCEL_TOKEN" ]; then
+            npx --yes vercel deploy --prod --yes --token="$VERCEL_TOKEN"
+          else
+            echo "VERCEL_TOKEN not detected in secrets. Skipping Vercel deploy."
+          fi
 
   deploy-frontend-admin:
     name: Vercel Frontend Admin
@@ -96,6 +105,9 @@ jobs:
         working-directory: frontend-admin
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-        if: env.VERCEL_TOKEN != ''
         run: |
-          npx --yes vercel deploy --prod --yes --token="$VERCEL_TOKEN"
+          if [ -n "$VERCEL_TOKEN" ]; then
+            npx --yes vercel deploy --prod --yes --token="$VERCEL_TOKEN"
+          else
+            echo "VERCEL_TOKEN not detected in secrets. Skipping Vercel deploy."
+          fi
