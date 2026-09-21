@@ -1,0 +1,44 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: shenyuan-django-backend
+    restart: always
+    ports:
+      - "8000:8000"
+    environment:
+      - DJANGO_SECRET_KEY=shenyuan-production-secure-key-2025
+      - DEBUG=False
+      - SUPABASE_DB_URL=${SUPABASE_DB_URL}
+      - SUPABASE_URL=${SUPABASE_URL}
+      - SUPABASE_KEY=${SUPABASE_KEY}
+      - ADMIN_TOKEN=${ADMIN_TOKEN:-shenyuan-admin-key}
+      - RESEND_API_KEY=${RESEND_API_KEY}
+      - NOTIFY_WEBHOOK_URL=${NOTIFY_WEBHOOK_URL}
+    volumes:
+      - ./data:/app/data
+
+  frontend-admin:
+    build:
+      context: ./frontend-admin
+      dockerfile: Dockerfile
+    container_name: shenyuan-vue-admin
+    restart: always
+    ports:
+      - "3001:80"
+    depends_on:
+      - backend
+
+  frontend-web:
+    build:
+      context: ./frontend-web
+      dockerfile: Dockerfile
+    container_name: shenyuan-vue-web
+    restart: always
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend

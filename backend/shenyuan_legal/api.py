@@ -1,0 +1,20 @@
+from ninja import NinjaAPI
+from apps.intakes.api import router as intakes_router
+from apps.content.api import router as content_router
+from apps.research.api import router as research_router
+from apps.marketing.api import router as marketing_router
+
+api = NinjaAPI(
+    title="申远律师事务所 API (Django Ninja)",
+    version="2.0.0",
+    description="涉外法律事务、在线线索流转 CRM、多语言 CMS 与法律智能调研助手",
+)
+
+@api.get("/api/health")
+def health_check(request):
+    return {"status": "ok", "framework": "Django Ninja", "storage": "Supabase"}
+
+api.add_router("", intakes_router)
+api.add_router("", content_router)
+api.add_router("", research_router)
+api.add_router("", marketing_router)
