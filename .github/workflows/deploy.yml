@@ -22,7 +22,7 @@ jobs:
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
           SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
-        if: env.SUPABASE_ACCESS_TOKEN != ''
+        if: env.SUPABASE_ACCESS_TOKEN != '' && env.SUPABASE_DB_PASSWORD != ''
         run: |
           supabase link --project-ref jaevfeneyjcvljwgmfxv --password "$SUPABASE_DB_PASSWORD"
           supabase db push
@@ -55,21 +55,19 @@ jobs:
           cache: 'pnpm'
           cache-dependency-path: 'frontend-web/pnpm-lock.yaml'
 
-      - name: Install Dependencies
+      - name: Install Dependencies & Build
         working-directory: frontend-web
-        run: pnpm install
+        run: |
+          pnpm install
+          pnpm run build
 
-      - name: Pull Vercel Environment Information
+      - name: Deploy to Vercel
         working-directory: frontend-web
-        run: npx vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
-
-      - name: Build Project Artifacts
-        working-directory: frontend-web
-        run: npx vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
-
-      - name: Deploy Project Artifacts to Vercel
-        working-directory: frontend-web
-        run: npx vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }}
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        if: env.VERCEL_TOKEN != ''
+        run: |
+          npx --yes vercel deploy --prod --yes --token="$VERCEL_TOKEN"
 
   deploy-frontend-admin:
     name: Vercel Frontend Admin
@@ -88,18 +86,16 @@ jobs:
           cache: 'pnpm'
           cache-dependency-path: 'frontend-admin/pnpm-lock.yaml'
 
-      - name: Install Dependencies
+      - name: Install Dependencies & Build
         working-directory: frontend-admin
-        run: pnpm install
+        run: |
+          pnpm install
+          pnpm run build
 
-      - name: Pull Vercel Environment Information
+      - name: Deploy to Vercel
         working-directory: frontend-admin
-        run: npx vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
-
-      - name: Build Project Artifacts
-        working-directory: frontend-admin
-        run: npx vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
-
-      - name: Deploy Project Artifacts to Vercel
-        working-directory: frontend-admin
-        run: npx vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }}
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        if: env.VERCEL_TOKEN != ''
+        run: |
+          npx --yes vercel deploy --prod --yes --token="$VERCEL_TOKEN"
