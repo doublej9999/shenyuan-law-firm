@@ -1,16 +1,20 @@
 <template>
   <el-container style="height: 100vh;">
-    <el-aside width="240px" style="background-color: #1a2234; color: #fff;">
-      <div style="padding: 24px 20px; font-weight: bold; font-size: 18px; border-bottom: 1px solid #2d3748;">
-        ⚖️ 申远涉外律所中台
+    <el-aside width="240px" class="admin-aside">
+      <div class="aside-brand">
+        <span class="brand-badge">深</span>
+        <div class="brand-titles">
+          <strong>Shenyuan Legal</strong>
+          <small>咨询管理与业务中台</small>
+        </div>
       </div>
       <el-menu
         router
         :default-active="$route.path"
-        background-color="#1a2234"
-        text-color="#a0aec0"
-        active-text-color="#409eff"
-        style="border-right: none; margin-top: 10px;"
+        background-color="#084d50"
+        text-color="#b4d5d4"
+        active-text-color="#f1b68f"
+        class="admin-menu"
       >
         <el-menu-item index="/crm">
           <el-icon><UserFilled /></el-icon>
@@ -22,23 +26,31 @@
         </el-menu-item>
         <el-menu-item index="/research">
           <el-icon><Search /></el-icon>
-          <span>涉外法律调研</span>
+          <span>案件法律研究</span>
         </el-menu-item>
         <el-menu-item index="/marketing">
           <el-icon><Promotion /></el-icon>
           <span>出海营销助手</span>
         </el-menu-item>
       </el-menu>
+      <div class="aside-footer">
+        <a href="https://shenyuan-web.vercel.app" target="_blank" class="preview-portal-link">
+          🌐 访问官网门户 ↗
+        </a>
+      </div>
     </el-aside>
     <el-container>
-      <el-header style="height: 60px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e2e8f0; background: #fff;">
-        <div style="font-weight: 600; font-size: 16px; color: #2d3748;">{{ $route.meta.title }}</div>
-        <div>
-          <el-tag type="success" style="margin-right: 15px;">Supabase Postgres 在线</el-tag>
-          <el-button size="small" type="danger" plain @click="logout">退出登录</el-button>
+      <el-header class="admin-header">
+        <div class="header-title">{{ $route.meta.title || '申远涉外律所管理中台' }}</div>
+        <div class="header-right">
+          <span class="db-status-pill">
+            <span class="status-dot"></span>
+            Supabase Postgres 在线
+          </span>
+          <el-button size="small" class="logout-btn" @click="logout">退出登录</el-button>
         </div>
       </el-header>
-      <el-main style="background-color: #f7fafc; padding: 20px;">
+      <el-main class="admin-main">
         <router-view />
       </el-main>
     </el-container>
@@ -55,3 +67,147 @@ const logout = () => {
   router.push('/login')
 }
 </script>
+
+<style scoped>
+.admin-aside {
+  background-color: #084d50;
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid rgba(255,255,255,0.08);
+}
+
+.aside-brand {
+  padding: 20px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border-bottom: 1px solid rgba(255,255,255,0.12);
+}
+
+.brand-badge {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  background: #f7f2e9;
+  color: #084d50;
+  border-radius: 6px;
+  font-weight: 800;
+  font-size: 17px;
+  font-family: serif;
+}
+
+.brand-titles {
+  display: flex;
+  flex-direction: column;
+}
+
+.brand-titles strong {
+  font-size: 14.5px;
+  color: #fff;
+}
+
+.brand-titles small {
+  font-size: 11px;
+  color: rgba(255,255,255,0.65);
+}
+
+.admin-menu {
+  border-right: none;
+  margin-top: 10px;
+  flex: 1;
+}
+
+.admin-menu :deep(.el-menu-item) {
+  font-size: 13.5px;
+  font-weight: 500;
+}
+
+.admin-menu :deep(.el-menu-item.is-active) {
+  background-color: #06393b !important;
+  font-weight: 700;
+  border-left: 3px solid #f1b68f;
+}
+
+.aside-footer {
+  padding: 16px;
+  border-top: 1px solid rgba(255,255,255,0.12);
+}
+
+.preview-portal-link {
+  display: block;
+  text-align: center;
+  color: #b4d5d4;
+  font-size: 12.5px;
+  text-decoration: none;
+  padding: 6px;
+  border: 1px dashed rgba(255,255,255,0.25);
+  border-radius: 6px;
+  transition: all 0.2s;
+}
+
+.preview-portal-link:hover {
+  color: #fff;
+  border-color: rgba(255,255,255,0.6);
+}
+
+.admin-header {
+  height: 60px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #d9d9d2;
+  background: #fffdf9;
+  padding: 0 24px;
+}
+
+.header-title {
+  font-weight: 700;
+  font-size: 16px;
+  color: #084d50;
+  font-family: serif;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.db-status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #deefea;
+  color: #084d50;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 12px;
+  border-radius: 20px;
+  border: 1px solid #b9d8d0;
+}
+
+.status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #2e7d32;
+}
+
+.logout-btn {
+  background: transparent;
+  color: #627180;
+  border-color: #d9d9d2;
+}
+
+.logout-btn:hover {
+  color: #d76e39;
+  border-color: #d76e39;
+}
+
+.admin-main {
+  background-color: #f6f3ed;
+  padding: 24px;
+}
+</style>
