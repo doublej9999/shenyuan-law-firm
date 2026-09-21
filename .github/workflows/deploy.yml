@@ -55,20 +55,21 @@ jobs:
           cache: 'pnpm'
           cache-dependency-path: 'frontend-web/pnpm-lock.yaml'
 
-      - name: Install Dependencies & Build
+      - name: Install Dependencies
         working-directory: frontend-web
-        run: |
-          pnpm install
-          pnpm run build
+        run: pnpm install
 
-      - name: Deploy to Vercel (Production)
-        uses: amondnet/vercel-action@v25
-        with:
-          vercel-token: ${{ secrets.VERCEL_TOKEN }}
-          vercel-org-id: "team_baQbEk5gnm89oRwBuZzA7ppi"
-          vercel-project-id: "prj_m8JgVn2LrsKnibdyhl9UQ1a5VD1c"
-          working-directory: frontend-web
-          vercel-args: '--prod --prebuilt'
+      - name: Pull Vercel Environment Information
+        working-directory: frontend-web
+        run: npx vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Build Project Artifacts
+        working-directory: frontend-web
+        run: npx vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Deploy Project Artifacts to Vercel
+        working-directory: frontend-web
+        run: npx vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }}
 
   deploy-frontend-admin:
     name: Vercel Frontend Admin
@@ -87,17 +88,18 @@ jobs:
           cache: 'pnpm'
           cache-dependency-path: 'frontend-admin/pnpm-lock.yaml'
 
-      - name: Install Dependencies & Build
+      - name: Install Dependencies
         working-directory: frontend-admin
-        run: |
-          pnpm install
-          pnpm run build
+        run: pnpm install
 
-      - name: Deploy to Vercel (Production)
-        uses: amondnet/vercel-action@v25
-        with:
-          vercel-token: ${{ secrets.VERCEL_TOKEN }}
-          vercel-org-id: "team_baQbEk5gnm89oRwBuZzA7ppi"
-          vercel-project-id: "prj_tvXHzFOyEXD2ogO9q39t6QRNNfHa"
-          working-directory: frontend-admin
-          vercel-args: '--prod --prebuilt'
+      - name: Pull Vercel Environment Information
+        working-directory: frontend-admin
+        run: npx vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Build Project Artifacts
+        working-directory: frontend-admin
+        run: npx vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Deploy Project Artifacts to Vercel
+        working-directory: frontend-admin
+        run: npx vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }}
