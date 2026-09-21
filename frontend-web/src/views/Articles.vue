@@ -33,6 +33,8 @@ import { ref, computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import axios from 'axios'
 
+axios.defaults.baseURL = import.meta.env.VITE_API_URL || ''
+
 const route = useRoute()
 const isEn = computed(() => route.path.startsWith('/en'))
 const articles = ref<any[]>([])
