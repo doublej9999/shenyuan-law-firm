@@ -68,9 +68,9 @@ if SUPABASE_DB_URL:
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.postgresql",
-            "NAME": url.path[1:],
-            "USER": url.username,
-            "PASSWORD": url.password,
+            "NAME": url.path.lstrip("/"),
+            "USER": up.unquote(url.username) if url.username else "",
+            "PASSWORD": up.unquote(url.password) if url.password else "",
             "HOST": url.hostname,
             "PORT": url.port or 5432,
             "OPTIONS": {
@@ -79,10 +79,12 @@ if SUPABASE_DB_URL:
         }
     }
 else:
+    sqlite_dir = BASE_DIR / "data"
+    sqlite_dir.mkdir(parents=True, exist_ok=True)
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.sqlite3",
-            "NAME": BASE_DIR.parent / "data" / "lawyers.sqlite3",
+            "NAME": sqlite_dir / "lawyers.sqlite3",
         }
     }
 

@@ -51,21 +51,37 @@ import Card from '../components/ui/Card.vue'
 import Button from '../components/ui/Button.vue'
 import Input from '../components/ui/Input.vue'
 import { Key } from 'lucide-vue-next'
+import api from '../api/client'
 
 const router = useRouter()
 const token = ref('')
 const loading = ref(false)
 
-const handleLogin = () => {
+const handleLogin = async () => {
   if (!token.value) {
     alert('请输入管理访问 Token')
     return
   }
   loading.value = true
-  localStorage.setItem('shenyuan_admin_token', token.value)
-  setTimeout(() => {
-    loading.value = false
+  try {
+    // 预校验 Token 权限
+    await api.get('/admin/api/marketing/generate?topic=healthcheck', {
+      headers: {
+        Authorization: `Bearer ${token.value}`
+      }
+    })
+    localStorage.setItem('shenyuan_admin_token', token.value)
     router.push('/dashboard')
-  }, 400)
+  } catch (err: any) {
+    if (err.response && err.response.status === 401) {
+      alert('访问令牌无效，请核对后重试')
+    } else {
+      // 容错：若为网络/后端临时异常，仍允许存入进入
+      localStorage.setItem('shenyuan_admin_token', token.value)
+      router.push('/dashboard')
+    }
+  } finally {
+    loading.value = false
+  }
 }
 </script>

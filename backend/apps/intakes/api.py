@@ -80,10 +80,13 @@ def create_intake(request, payload: IntakeIn):
         source=payload.source,
     )
 
-    # 异步或后台触发通知
-    if payload.email:
-        send_intake_email(intake.name, intake.email, intake.matter, intake.language)
-    send_lead_webhook(intake)
+    # 异步或后台触发通知（异常捕获保护，避免未配置网络服务时抛出 500）
+    try:
+        if payload.email:
+            send_intake_email(intake.name, intake.email, intake.matter, intake.language)
+        send_lead_webhook(intake)
+    except Exception as exc:
+        pass
 
     return 201, {"id": intake.id, "status": intake.status, "message": "咨询提交成功，律师将尽快与您联系"}
 

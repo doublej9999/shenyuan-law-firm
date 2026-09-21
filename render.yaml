@@ -7,7 +7,7 @@ services:
     plan: free
     branch: refactor/django-vue-supabase
     rootDir: backend
-    buildCommand: pip install -r requirements.txt
+    buildCommand: pip install -r requirements.txt && python manage.py migrate --noinput
     startCommand: python -m gunicorn shenyuan_legal.wsgi:application --bind 0.0.0.0:$PORT
     envVars:
       - key: DJANGO_SECRET_KEY
