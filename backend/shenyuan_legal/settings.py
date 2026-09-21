@@ -60,7 +60,7 @@ TEMPLATES = [
 WSGI_APPLICATION = "shenyuan_legal.wsgi.application"
 ASGI_APPLICATION = "shenyuan_legal.asgi.application"
 
-# 数据库配置: 支持通过 SUPABASE_DB_URL (PostgreSQL) 或本地备用 SQLite
+# 数据库配置: 生产环境强制连接云端 Supabase (PostgreSQL)，杜绝使用无盘 SQLite 造成数据丢失
 SUPABASE_DB_URL = os.environ.get("SUPABASE_DB_URL") or os.environ.get("DATABASE_URL")
 if SUPABASE_DB_URL:
     import urllib.parse as up
@@ -79,6 +79,14 @@ if SUPABASE_DB_URL:
         }
     }
 else:
+    # 如果处于生产环境 (DEBUG=False 或 Render 环境)，严禁使用易失的 SQLite，直接明确抛出异常
+    if not DEBUG or os.environ.get("RENDER"):
+        raise ValueError(
+            "【严重安全错误】生产环境未检测到有效的 SUPABASE_DB_URL。"
+            "Render 属于无状态临时容器，严禁使用本地 SQLite 存储业务数据，否则重启或重新部署会导致所有客户线索全部丢失！"
+            "请在 Render Dashboard -> Environment 中配置 SUPABASE_DB_URL。"
+        )
+    # 本地脱机开发调试备用
     sqlite_dir = BASE_DIR / "data"
     sqlite_dir.mkdir(parents=True, exist_ok=True)
     DATABASES = {
