@@ -1,26 +1,54 @@
 import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router'
-import Layout from '../views/Layout.vue'
+import AdminLayout from '../layouts/AdminLayout.vue'
 import Login from '../views/Login.vue'
-import CrmIntakes from '../views/CrmIntakes.vue'
-import ContentList from '../views/ContentList.vue'
-import LegalResearch from '../views/LegalResearch.vue'
-import MarketingAssistant from '../views/MarketingAssistant.vue'
+import DashboardView from '../views/dashboard/DashboardView.vue'
+import CrmListView from '../views/crm/ListView.vue'
+import ArticleList from '../views/content/ArticleList.vue'
+import ResearchStudio from '../views/research/ResearchStudio.vue'
+import GeneratorView from '../views/marketing/GeneratorView.vue'
 
 const routes: RouteRecordRaw[] = [
   {
     path: '/login',
     name: 'Login',
     component: Login,
+    meta: { title: '管理登录' },
   },
   {
     path: '/',
-    component: Layout,
-    redirect: '/crm',
+    component: AdminLayout,
+    redirect: '/dashboard',
     children: [
-      { path: 'crm', name: 'CRM', component: CrmIntakes, meta: { title: '线索管理 (CRM)' } },
-      { path: 'content', name: 'CMS', component: ContentList, meta: { title: '内容中心 (CMS)' } },
-      { path: 'research', name: 'Research', component: LegalResearch, meta: { title: '法律智能调研' } },
-      { path: 'marketing', name: 'Marketing', component: MarketingAssistant, meta: { title: '出海营销助手' } },
+      {
+        path: 'dashboard',
+        name: 'Dashboard',
+        component: DashboardView,
+        meta: { title: '经营概览大盘' },
+      },
+      {
+        path: 'crm',
+        name: 'CRM',
+        component: CrmListView,
+        meta: { title: '涉外商事线索中枢' },
+      },
+      {
+        path: 'content',
+        name: 'CMS',
+        component: ArticleList,
+        meta: { title: '多语言内容中心' },
+      },
+      {
+        path: 'research',
+        name: 'Research',
+        component: ResearchStudio,
+        meta: { title: '涉外法律智能调研' },
+      },
+      {
+        path: 'marketing',
+        name: 'Marketing',
+        component: GeneratorView,
+        meta: { title: '出海营销获客矩阵' },
+      },
     ],
   },
 ]

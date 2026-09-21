@@ -1,4 +1,4 @@
--- 申远涉外律所初始化迁移 schema
+-- 深远涉外律所初始化迁移 schema
 -- 1. 核心线索表 intakes
 CREATE TABLE IF NOT EXISTS intakes (
     id BIGSERIAL PRIMARY KEY,

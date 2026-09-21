@@ -8,13 +8,13 @@ def send_intake_email(name: str, to_email: str, matter: str, language: str = "zh
     if not settings.RESEND_API_KEY or not to_email:
         return False
     try:
-        subject = "【申远法律】咨询材料与后续跟进告知" if language == "zh" else "[Shenyuan Legal] Intake Received & Next Steps"
+        subject = "【深远法律】咨询材料与后续跟进告知" if language == "zh" else "[Shenyuan Legal] Intake Received & Next Steps"
         body = f"""您好 {name}：
 
 我们已收到您关于【{matter}】的法律咨询。涉外合伙人律师将在 24 小时内与您联系并评估案情。
 
 感谢信任，
-申远涉外法律服务团队"""
+深远涉外法律服务团队"""
         resp = requests.post(
             "https://api.resend.com/emails",
             headers={

@@ -5,7 +5,7 @@ from apps.research.api import router as research_router
 from apps.marketing.api import router as marketing_router
 
 api = NinjaAPI(
-    title="申远律师事务所 API (Django Ninja)",
+    title="深远律师事务所 API (Django Ninja)",
     version="2.0.0",
     description="涉外法律事务、在线线索流转 CRM、多语言 CMS 与法律智能调研助手",
 )

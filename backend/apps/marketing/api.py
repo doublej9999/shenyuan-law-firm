@@ -19,7 +19,7 @@ def generate_marketing(request, topic: str):
         wechat_post=(
             f"【涉外法务精要】{topic}\n\n"
             f"随着跨国经贸合作与海外合规审查日趋严格，企业在落地与争议解决过程中面临全新合规挑战。"
-            f"申远涉外律师团队梳理了核心实务要点与操作避坑清单，助您稳健出海！"
+            f"深远涉外律师团队梳理了核心实务要点与操作避坑清单，助您稳健出海！"
         ),
         linkedin_post=(
             f"Navigating cross-border legal challenges: {topic}.\n"

@@ -41,7 +41,7 @@
     </el-aside>
     <el-container>
       <el-header class="admin-header">
-        <div class="header-title">{{ $route.meta.title || '申远涉外律所管理中台' }}</div>
+        <div class="header-title">{{ $route.meta.title || '深远涉外律所管理中台' }}</div>
         <div class="header-right">
           <span class="db-status-pill">
             <span class="status-dot"></span>

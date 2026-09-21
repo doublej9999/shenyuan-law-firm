@@ -1,9 +1,8 @@
 import axios from 'axios'
-import { ElMessage } from 'element-plus'
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL || '',
-  timeout: 10000,
+  timeout: 15000,
 })
 
 api.interceptors.request.use((config) => {
@@ -18,11 +17,14 @@ api.interceptors.response.use(
   (res) => res.data,
   (err) => {
     if (err.response && err.response.status === 401) {
-      ElMessage.error('Token 无效或已过期，请重新登录')
       localStorage.removeItem('shenyuan_admin_token')
-      window.location.href = '/login'
+      if (window.location.pathname !== '/login') {
+        alert('登录 Token 无效或已过期，请重新登录')
+        window.location.href = '/login'
+      }
     } else {
-      ElMessage.error(err.response?.data?.detail || '网络请求错误')
+      const msg = err.response?.data?.detail || '网络请求错误，请稍后重试'
+      console.error('API Error:', msg)
     }
     return Promise.reject(err)
   }

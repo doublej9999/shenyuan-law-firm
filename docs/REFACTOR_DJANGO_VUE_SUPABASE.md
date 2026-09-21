@@ -1,4 +1,4 @@
-# 申远律师事务所（Shenyuan Law Firm）技术重构方案
+# 深远律师事务所（Shenyuan Law Firm）技术重构方案
 ## Django + Vue 3 + Supabase 全栈架构升级设计
 
 > **版本**：v1.0.0  
