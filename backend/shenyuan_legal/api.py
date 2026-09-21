@@ -12,7 +12,24 @@ api = NinjaAPI(
 
 @api.get("/api/health")
 def health_check(request):
-    return {"status": "ok", "framework": "Django Ninja", "storage": "Supabase"}
+    db_status = "unknown"
+    db_error = None
+    try:
+        from django.db import connection
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT 1")
+            row = cursor.fetchone()
+            db_status = f"connected ({row[0]})"
+    except Exception as exc:
+        db_status = "error"
+        db_error = str(exc)
+    return {
+        "status": "ok",
+        "framework": "Django Ninja",
+        "storage": "Supabase",
+        "db": db_status,
+        "db_error": db_error,
+    }
 
 api.add_router("", intakes_router)
 api.add_router("", content_router)
