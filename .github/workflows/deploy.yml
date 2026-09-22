@@ -6,8 +6,33 @@ on:
       - refactor/django-vue-supabase
 
 jobs:
+  filter:
+    name: Detect Changed Paths
+    runs-on: ubuntu-latest
+    outputs:
+      backend: ${{ steps.filter.outputs.backend }}
+      frontend-web: ${{ steps.filter.outputs.frontend-web }}
+      frontend-admin: ${{ steps.filter.outputs.frontend-admin }}
+      supabase: ${{ steps.filter.outputs.supabase }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            backend:
+              - 'backend/**'
+            frontend-web:
+              - 'frontend-web/**'
+            frontend-admin:
+              - 'frontend-admin/**'
+            supabase:
+              - 'supabase/**'
+
   deploy-supabase:
     name: Supabase DB Migrations
+    needs: filter
+    if: ${{ needs.filter.outputs.supabase == 'true' }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
@@ -32,6 +57,8 @@ jobs:
 
   deploy-backend:
     name: Vercel Django Backend
+    needs: filter
+    if: ${{ needs.filter.outputs.backend == 'true' }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
@@ -49,6 +76,7 @@ jobs:
         run: |
           pip install -r requirements.txt
           python manage.py check
+          python manage.py collectstatic --noinput
 
       - name: Deploy Backend to Vercel
         working-directory: backend
@@ -66,6 +94,8 @@ jobs:
 
   deploy-frontend-web:
     name: Vercel Frontend Web
+    needs: filter
+    if: ${{ needs.filter.outputs.frontend-web == 'true' }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
@@ -103,6 +133,8 @@ jobs:
 
   deploy-frontend-admin:
     name: Vercel Frontend Admin
+    needs: filter
+    if: ${{ needs.filter.outputs.frontend-admin == 'true' }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code

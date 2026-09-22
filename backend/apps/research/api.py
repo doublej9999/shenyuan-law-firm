@@ -15,8 +15,10 @@ class SearchResult(Schema):
 
 @router.get("/admin/api/research/search", response=List[SearchResult], auth=GlobalAdminAuth())
 def search_legal_kb(request, q: str):
-    base_dir = Path(__file__).resolve().parent.parent.parent.parent
-    kb_dir = base_dir / "legal_kb"
+    backend_dir = Path(__file__).resolve().parent.parent.parent
+    kb_dir = backend_dir / "legal_kb"
+    if not kb_dir.exists():
+        kb_dir = backend_dir.parent / "legal_kb"
     results = []
 
     if not q or not kb_dir.exists():

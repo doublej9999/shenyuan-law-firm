@@ -3,9 +3,10 @@ import sys
 from pathlib import Path
 from dotenv import load_dotenv
 
-BASE_DIR = Path(__file__).resolve().parent.parent.parent
+BASE_DIR = Path(__file__).resolve().parent.parent
+REPO_DIR = BASE_DIR.parent
 load_dotenv(BASE_DIR / ".env")
-load_dotenv(BASE_DIR.parent / ".env")
+load_dotenv(REPO_DIR / ".env")
 
 SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY", "django-insecure-shenyuan-legal-firm-secret-key-2025")
 DEBUG = os.environ.get("DEBUG", "True").lower() in ("true", "1", "yes")
@@ -29,6 +30,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "corsheaders.middleware.CorsMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -73,6 +75,8 @@ if SUPABASE_DB_URL:
             "PASSWORD": up.unquote(url.password) if url.password else "",
             "HOST": url.hostname,
             "PORT": url.port or 5432,
+            "CONN_MAX_AGE": 60,  # 允许 Serverless 热实例复用连接（适配 Supabase 连接池）
+            "CONN_HEALTH_CHECKS": True,  # 避免因空闲被断开导致的连接异常
             "OPTIONS": {
                 "sslmode": "require",
             },
@@ -110,11 +114,23 @@ USE_TZ = True
 
 STATIC_URL = "static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-# CORS 配置
-CORS_ALLOW_ALL_ORIGINS = True
+# CORS 配置：默认开放前端域名及本地开发环境，支持环境变量灵活扩展
+CORS_ALLOW_ALL_ORIGINS = os.environ.get("CORS_ALLOW_ALL_ORIGINS", "False").lower() in ("true", "1")
+CORS_ALLOWED_ORIGINS = [
+    origin.strip()
+    for origin in os.environ.get(
+        "CORS_ALLOWED_ORIGINS",
+        "https://shenyuan-web.vercel.app,https://shenyuan-admin.vercel.app,http://localhost:5173,http://127.0.0.1:5173,http://localhost:3000",
+    ).split(",")
+    if origin.strip()
+]
+CORS_ALLOWED_ORIGIN_REGEXES = [
+    r"^https:\/\/.*\.vercel\.app$",
+]
 CORS_ALLOW_CREDENTIALS = True
 
 # Supabase 配置

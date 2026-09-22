@@ -15,3 +15,8 @@ htmlcov/
 
 # secrets
 .secrets/
+
+# static files
+staticfiles/
+backend/staticfiles/
+
