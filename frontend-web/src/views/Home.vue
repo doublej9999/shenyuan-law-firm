@@ -9,7 +9,7 @@
           </div>
           <h1>
             <span>{{ isEn ? 'Cross-border disputes, ' : '跨境争议，' }}</span>
-            <span class="highlight">{{ isEn ? 'resolved in your language.' : '全球落地执行。' }}</span>
+            <span class="highlight">{{ isEn ? 'executed globally.' : '全球落地执行。' }}</span>
           </h1>
           <p>
             {{ isEn 

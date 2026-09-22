@@ -221,7 +221,7 @@
       color: #fff;
       background-color: #18383a;
       background-image: url("https://images.unsplash.com/photo-1526304640581-d334cdbbf45e?auto=format&fit=crop&w=1800&q=85");
-      background-position: center;
+      background-position: center top;
       background-size: cover;
       isolation: isolate;
     }
@@ -373,10 +373,62 @@
       line-height: 1.5;
     }
     .consent input { margin-top: 2px; flex: none; }
-    .privacy { margin-top: 6px; border-top: 0; font-size: 12px; color: var(--muted); }
-    .privacy summary { justify-content: flex-start; font-weight: 700; }
-    .privacy summary::after { margin-left: 6px; }
-    .privacy p { margin-top: 8px; max-width: none; line-height: 1.6; }
+    .privacy-link {
+      color: var(--teal);
+      font-weight: 600;
+      text-decoration: underline;
+      text-underline-offset: 2px;
+      cursor: pointer;
+    }
+    .privacy-link:hover {
+      color: var(--teal-deep);
+    }
+    .privacy-trigger-row {
+      margin-top: 6px;
+      display: flex;
+    }
+    .privacy-trigger-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 2px 0;
+      background: transparent;
+      border: none;
+      color: var(--teal);
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: color 0.15s ease;
+    }
+    .privacy-trigger-btn:hover {
+      color: var(--teal-deep);
+    }
+    .privacy-modal-panel {
+      max-width: 560px;
+    }
+    .privacy-modal-body {
+      margin-top: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .privacy-point {
+      padding: 12px 14px;
+      background: #fbf9f4;
+      border: 1px solid #ebdccb;
+      border-radius: 8px;
+    }
+    .privacy-point-title {
+      font-weight: 700;
+      font-size: 13px;
+      color: var(--teal-deep);
+      margin-bottom: 4px;
+    }
+    .privacy-point p {
+      font-size: 12px;
+      color: var(--ink);
+      line-height: 1.6;
+    }
 
     .trust-strip { border-bottom: 1px solid var(--line); background: var(--surface); }
     .trust-strip .wrap { display: grid; grid-template-columns: repeat(4, 1fr); }
@@ -763,7 +815,7 @@
           <div class="eyebrow" data-zh="跨境争议解决与家族资产保护" data-en="Cross-border dispute resolution & family asset protection">跨境争议解决与家族资产保护</div>
           <h1>
             <span data-zh="跨境争议，" data-en="Cross-border disputes,">跨境争议，</span>
-            <span class="highlight" data-zh="全球落地执行。" data-en="resolved in your language.">全球落地执行。</span>
+            <span class="highlight" data-zh="全球落地执行。" data-en="executed globally.">全球落地执行。</span>
           </h1>
           <p data-zh="深远国际律师事务所为中国企业与家庭提供国际贸易争议、跨境债务追收、继承与家族资产法律服务——用中文理解你的处境，用全球合作律所网络在当地落地执行。" data-en="Shenyuan International helps Chinese businesses and families resolve international trade disputes, recover cross-border debts, and protect inherited family assets — understood in your language, executed through a global network of local counsel.">深远国际律师事务所为中国企业与家庭提供国际贸易争议、跨境债务追收、继承与家族资产法律服务——用中文理解你的处境，用全球合作律所网络在当地落地执行。</p>
           <div class="hero-actions">
@@ -1243,6 +1295,19 @@
         document.querySelectorAll("option[data-zh][data-en]").forEach(function (option) {
           option.textContent = currentLang === "zh" ? option.getAttribute("data-zh") : option.getAttribute("data-en");
         });
+        var consentText = document.getElementById("consentText");
+        if (consentText) {
+          consentText.innerHTML = currentLang === "zh"
+            ? '我已阅读并同意<a href="#privacy" class="privacy-link" id="privacyLink">《隐私说明》</a>，同意提交以上信息用于咨询沟通。'
+            : 'I have read and agree to the <a href="#privacy" class="privacy-link" id="privacyLink">Privacy Notice</a> and consent to this information being used for consultation.';
+          var dynamicLink = document.getElementById("privacyLink");
+          if (dynamicLink) {
+            dynamicLink.addEventListener("click", function (e) {
+              e.preventDefault();
+              openPrivacyModal();
+            });
+          }
+        }
         document.querySelectorAll("input[placeholder], textarea[placeholder]").forEach(function (field) {
           if (!field.dataset.zhPlaceholder) field.dataset.zhPlaceholder = field.getAttribute("placeholder");
           if (!field.dataset.enPlaceholder) {
@@ -1341,8 +1406,40 @@
       successMessage.addEventListener("click", function (event) {
         if (event.target === successMessage) closeSuccessModal();
       });
+      // 隐私说明模态弹窗交互
+      var privacyModal = document.getElementById("privacyModal");
+      var openPrivacyModalBtn = document.getElementById("openPrivacyModal");
+      var closePrivacyModalBtn = document.getElementById("closePrivacyModal");
+      var confirmPrivacyModalBtn = document.getElementById("confirmPrivacyModal");
+
+      function openPrivacyModal() {
+        if (privacyModal) privacyModal.classList.add("is-visible");
+      }
+      function closePrivacyModal() {
+        if (privacyModal) privacyModal.classList.remove("is-visible");
+      }
+
+      if (openPrivacyModalBtn) openPrivacyModalBtn.addEventListener("click", openPrivacyModal);
+      var initialPrivacyLink = document.getElementById("privacyLink");
+      if (initialPrivacyLink) {
+        initialPrivacyLink.addEventListener("click", function (e) {
+          e.preventDefault();
+          openPrivacyModal();
+        });
+      }
+      if (closePrivacyModalBtn) closePrivacyModalBtn.addEventListener("click", closePrivacyModal);
+      if (confirmPrivacyModalBtn) confirmPrivacyModalBtn.addEventListener("click", closePrivacyModal);
+      if (privacyModal) {
+        privacyModal.addEventListener("click", function (event) {
+          if (event.target === privacyModal) closePrivacyModal();
+        });
+      }
+
       document.addEventListener("keydown", function (event) {
-        if (event.key === "Escape" && successMessage.classList.contains("is-visible")) closeSuccessModal();
+        if (event.key === "Escape") {
+          if (successMessage.classList.contains("is-visible")) closeSuccessModal();
+          if (privacyModal && privacyModal.classList.contains("is-visible")) closePrivacyModal();
+        }
       });
     }());
   </script>

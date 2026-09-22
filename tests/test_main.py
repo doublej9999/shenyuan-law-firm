@@ -1009,7 +1009,7 @@ def test_en_homepage(tmp_db):
         assert resp.status_code == 200
         assert '<html lang="en">' in resp.text
         assert "Cross-border disputes," in resp.text
-        assert "resolved in your language." in resp.text
+        assert "executed globally." in resp.text
         assert 'var currentLang = "en";' in resp.text
         assert 'hreflang="en" href="http://localhost:8000/en/"' in resp.text
         assert client.get("/en").status_code == 200
