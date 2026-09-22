@@ -14,12 +14,15 @@ api = NinjaAPI(
 def health_check(request):
     db_status = "unknown"
     db_error = None
+    db_tables = []
     try:
         from django.db import connection
         with connection.cursor() as cursor:
             cursor.execute("SELECT 1")
             row = cursor.fetchone()
             db_status = f"connected ({row[0]})"
+            cursor.execute("SELECT table_name FROM information_schema.tables WHERE table_schema = 'public'")
+            db_tables = [r[0] for r in cursor.fetchall()]
     except Exception as exc:
         db_status = "error"
         db_error = str(exc)
@@ -29,6 +32,7 @@ def health_check(request):
         "storage": "Supabase",
         "db": db_status,
         "db_error": db_error,
+        "tables": db_tables,
     }
 
 api.add_router("", intakes_router)

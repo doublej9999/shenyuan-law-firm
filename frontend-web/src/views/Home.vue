@@ -78,20 +78,25 @@
           <label class="consent" for="consent">
             <input type="checkbox" id="consent" v-model="form.consent" required>
             <span>
-              {{ isEn 
-                ? 'I have read and agree to the Privacy Notice and consent to this information being used for consultation.' 
-                : '我已阅读并同意《隐私说明》，同意提交以上信息用于咨询沟通。' }}
+              <template v-if="isEn">
+                I have read and agree to the <a href="#privacy" class="privacy-link" @click.prevent.stop="privacyModalOpen = true">Privacy Notice</a> and consent to this information being used for consultation.
+              </template>
+              <template v-else>
+                我已阅读并同意<a href="#privacy" class="privacy-link" @click.prevent.stop="privacyModalOpen = true">《隐私说明》</a>，同意提交以上信息用于咨询沟通。
+              </template>
             </span>
           </label>
 
-          <details class="privacy">
-            <summary>{{ isEn ? 'View privacy notice' : '查看隐私说明' }}</summary>
-            <p>
-              {{ isEn 
-                ? 'The information you submit is used solely for initial assessment and follow-up communication and will not be disclosed. An initial consultation does not create an attorney-client relationship. Please do not submit sensitive identifiers such as ID numbers, bank details, or passport numbers.' 
-                : '您提交的信息仅用于初步评估与后续沟通，我们不会对外披露。初步咨询不构成委托关系。请勿提交身份证号、银行账号、护照号码等敏感信息。' }}
-            </p>
-          </details>
+          <div class="privacy-trigger-row">
+            <button type="button" class="privacy-trigger-btn" @click="privacyModalOpen = true">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="16" x2="12" y2="12"></line>
+                <line x1="12" y1="8" x2="12.01" y2="8"></line>
+              </svg>
+              <span>{{ isEn ? 'View privacy notice' : '查看隐私说明' }}</span>
+            </button>
+          </div>
 
           <button class="button button-primary" type="submit" :disabled="submitting">
             {{ submitting 
@@ -549,13 +554,49 @@
         </div>
       </div>
     </div>
+
+    <!-- 隐私政策与保密说明弹窗 Modal -->
+    <div class="modal-backdrop" :class="{ 'is-visible': privacyModalOpen }" role="dialog" aria-modal="true" @click.self="privacyModalOpen = false">
+      <div class="success-panel privacy-modal-panel">
+        <button class="modal-close" type="button" @click="privacyModalOpen = false" aria-label="关闭">×</button>
+        <h3>{{ isEn ? 'Privacy Notice & Confidentiality' : '隐私保护与保密说明' }}</h3>
+        
+        <div class="privacy-modal-body">
+          <div class="privacy-point">
+            <div class="privacy-point-title">{{ isEn ? 'Information Collection & Usage' : '信息使用范围' }}</div>
+            <p>{{ isEn 
+              ? 'The information you submit via this consultation form is strictly used for initial matter assessment, conflict-of-interest checks, and follow-up communication by our legal team.' 
+              : '您在咨询表单中提交的称呼、联系方式和案件描述，仅供本所涉外律师团队进行初步案情评估、利益冲突检索及后续沟通联系，绝不向任何未经授权的第三方披露。' }}</p>
+          </div>
+
+          <div class="privacy-point">
+            <div class="privacy-point-title">{{ isEn ? 'Security & Compliance' : '数据安全与合规' }}</div>
+            <p>{{ isEn 
+              ? 'All data transmission is encrypted (SSL/TLS) in strict accordance with the Personal Information Protection Law (PIPL) and applicable international data protection standards.' 
+              : '咨询数据全程通过 SSL/TLS 加密传输并加密存储，遵循《中华人民共和国个人信息保护法》(PIPL) 与相关跨境数据合规要求，确保您的商业与私人信息安全。' }}</p>
+          </div>
+
+          <div class="urgent-note" style="margin-top: 14px;">
+            {{ isEn 
+              ? 'Notice: An initial consultation does not create an attorney-client relationship. Please do not submit sensitive identifiers such as ID numbers, bank card numbers, or passwords.' 
+              : '特别提醒：初步咨询沟通不构成正式委托代理关系。请勿在此阶段提供身份证件原件号码、银行卡密码或最高机密等敏感信息。' }}
+          </div>
+        </div>
+
+        <div class="success-actions" style="margin-top: 20px;">
+          <button class="button button-primary" type="button" @click="privacyModalOpen = false">
+            {{ isEn ? 'I Understand' : '我已了解' }}
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { useRoute } from 'vue-router'
-import axios from 'axios'
+import { apiClient, parseApiError } from '@/api/client'
 
 const route = useRoute()
 const isEn = computed(() => route.path.startsWith('/en'))
@@ -571,6 +612,7 @@ const form = ref({
 
 const submitting = ref(false)
 const successModalOpen = ref(false)
+const privacyModalOpen = ref(false)
 
 const materialGuides = {
   trade: {
@@ -617,17 +659,18 @@ const handleIntakeSubmit = async () => {
 
   submitting.value = true
   try {
-    await axios.post('/api/intakes', {
+    await apiClient.post('/api/intakes', {
       name: form.value.name,
       phone: form.value.phone,
-      email: form.value.email,
+      email: form.value.email || undefined,
       matter: form.value.matter,
       summary: form.value.summary,
+      consent: form.value.consent,
       language: isEn.value ? 'en' : 'zh'
     })
     successModalOpen.value = true
   } catch (err: any) {
-    const errorMsg = err.response?.data?.detail || (isEn.value ? 'Submission failed, please try again.' : '提交失败，请稍后重试。')
+    const errorMsg = parseApiError(err, isEn.value)
     alert(errorMsg)
   } finally {
     submitting.value = false
@@ -677,7 +720,7 @@ h3 { font-size: 20px; line-height: 1.3; }
   color: #fff;
   background-color: #18383a;
   background-image: url("https://images.unsplash.com/photo-1526304640581-d334cdbbf45e?auto=format&fit=crop&w=1800&q=85");
-  background-position: center;
+  background-position: center top;
   background-size: cover;
   isolation: isolate;
 }
@@ -806,9 +849,62 @@ h3 { font-size: 20px; line-height: 1.3; }
   line-height: 1.5;
 }
 .consent input { margin-top: 2px; flex: none; }
-.privacy { margin-top: 6px; border-top: 0; font-size: 12px; color: var(--muted); }
-.privacy summary { font-weight: 700; cursor: pointer; color: var(--teal); }
-.privacy p { margin-top: 6px; line-height: 1.6; }
+.privacy-link {
+  color: var(--teal);
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+.privacy-link:hover {
+  color: var(--teal-deep);
+}
+.privacy-trigger-row {
+  margin-top: 6px;
+  display: flex;
+}
+.privacy-trigger-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 0;
+  background: transparent;
+  border: none;
+  color: var(--teal);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: color 0.15s ease;
+}
+.privacy-trigger-btn:hover {
+  color: var(--teal-deep);
+}
+.privacy-modal-panel {
+  max-width: 560px;
+}
+.privacy-modal-body {
+  margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.privacy-point {
+  padding: 12px 14px;
+  background: #fbf9f4;
+  border: 1px solid #ebdccb;
+  border-radius: 8px;
+}
+.privacy-point-title {
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--teal-deep);
+  margin-bottom: 4px;
+}
+.privacy-point p {
+  font-size: 12px;
+  color: var(--ink);
+  line-height: 1.6;
+}
 
 /* 02 信任徽章条 */
 .trust-strip { border-bottom: 1px solid var(--line); background: var(--surface); }

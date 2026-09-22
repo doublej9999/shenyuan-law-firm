@@ -154,9 +154,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import axios from 'axios'
-
-axios.defaults.baseURL = import.meta.env.VITE_API_URL || ''
+import { apiClient, parseApiError } from '@/api/client'
 
 const route = useRoute()
 const router = useRouter()
@@ -238,14 +236,24 @@ const openQuickConsult = () => {
 }
 
 const submitDrawerForm = async () => {
+  if (!drawerForm.value.name || !drawerForm.value.phone || !drawerForm.value.summary) {
+    alert(isEn.value ? 'Please fill in the required fields (Name, Phone, Description).' : '请填写必要字段（称呼、电话、问题描述）。')
+    return
+  }
+  if (!drawerForm.value.consent) {
+    alert(isEn.value ? 'Please agree to the privacy statement.' : '请勾选同意隐私说明。')
+    return
+  }
+
   drawerSubmitting.value = true
   try {
-    await axios.post('/api/intakes', {
+    await apiClient.post('/api/intakes', {
       name: drawerForm.value.name,
       phone: drawerForm.value.phone,
-      email: drawerForm.value.email,
+      email: drawerForm.value.email || undefined,
       matter: drawerForm.value.matter,
       summary: drawerForm.value.summary,
+      consent: drawerForm.value.consent,
       language: isEn.value ? 'en' : 'zh'
     })
     drawerOpen.value = false
@@ -261,7 +269,7 @@ const submitDrawerForm = async () => {
       ? 'Thank you! Your inquiry has been received. Our team will contact you within 24 hours.' 
       : '感谢您的信任！案件评估信息已收到，涉外律师将在 24 小时内与您联系。')
   } catch (err: any) {
-    const errorDetail = err.response?.data?.detail || (isEn.value ? 'Submission failed, please try again.' : '提交失败，请稍后重试。')
+    const errorDetail = parseApiError(err, isEn.value)
     alert(errorDetail)
   } finally {
     drawerSubmitting.value = false

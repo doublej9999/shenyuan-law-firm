@@ -41,54 +41,59 @@ class IntakeUpdateIn(Schema):
     note: Optional[str] = None
     score: Optional[int] = None
 
-@router.post("/api/intakes", response={201: dict, 409: dict, 422: dict})
+@router.post("/api/intakes", response={201: dict, 409: dict, 422: dict, 500: dict})
 def create_intake(request, payload: IntakeIn):
     if not payload.consent:
         return 422, {"detail": "提交前必须同意隐私权保护政策"}
 
-    # 24小时防重校验
-    dedupe_cutoff = timezone.now() - timedelta(hours=24)
-    q_filter = Q()
-    if payload.phone:
-        q_filter |= Q(phone=payload.phone)
-    if payload.email:
-        q_filter |= Q(email=payload.email)
-
-    if q_filter and Intake.objects.filter(q_filter, created_at__gte=dedupe_cutoff).exists():
-        return 409, {"detail": "您在 24 小时内已提交过咨询，我们的律师正在加紧处理，请勿重复提交"}
-
-    # 计算初步意向分
-    score = 10
-    if payload.phone:
-        score += 20
-    if len(payload.summary) > 50:
-        score += 20
-    if payload.country_or_region:
-        score += 10
-
-    intake = Intake.objects.create(
-        name=payload.name,
-        email=payload.email,
-        phone=payload.phone,
-        matter=payload.matter,
-        summary=payload.summary,
-        country_or_region=payload.country_or_region,
-        language=payload.language or "zh",
-        user_agent=request.META.get("HTTP_USER_AGENT", ""),
-        consent_at=timezone.now(),
-        score=score,
-        source=payload.source,
-    )
-
-    # 异步或后台触发通知（异常捕获保护，避免未配置网络服务时抛出 500）
     try:
+        # 24小时防重校验
+        dedupe_cutoff = timezone.now() - timedelta(hours=24)
+        q_filter = Q()
+        if payload.phone:
+            q_filter |= Q(phone=payload.phone)
         if payload.email:
-            send_intake_email(intake.name, intake.email, intake.matter, intake.language)
-        send_lead_webhook(intake)
-    except Exception as exc:
-        pass
+            q_filter |= Q(email=payload.email)
 
-    return 201, {"id": intake.id, "status": intake.status, "message": "咨询提交成功，律师将尽快与您联系"}
+        if q_filter and Intake.objects.filter(q_filter, created_at__gte=dedupe_cutoff).exists():
+            return 409, {"detail": "您在 24 小时内已提交过咨询，我们的律师正在加紧处理，请勿重复提交"}
+
+        # 计算初步意向分
+        score = 10
+        if payload.phone:
+            score += 20
+        if len(payload.summary) > 50:
+            score += 20
+        if payload.country_or_region:
+            score += 10
+
+        intake = Intake.objects.create(
+            name=payload.name,
+            email=payload.email,
+            phone=payload.phone,
+            matter=payload.matter,
+            summary=payload.summary,
+            country_or_region=payload.country_or_region,
+            language=payload.language or "zh",
+            user_agent=request.META.get("HTTP_USER_AGENT", ""),
+            consent_at=timezone.now(),
+            score=score,
+            source=payload.source,
+        )
+
+        # 异步或后台触发通知（异常捕获保护，避免未配置网络服务时抛出 500）
+        try:
+            if payload.email:
+                send_intake_email(intake.name, intake.email, intake.matter, intake.language)
+            send_lead_webhook(intake)
+        except Exception:
+            pass
+
+        return 201, {"id": intake.id, "status": intake.status, "message": "咨询提交成功，律师将尽快与您联系"}
+    except Exception as exc:
+        import traceback
+        traceback.print_exc()
+        return 500, {"detail": f"服务器内部错误: {str(exc)}"}
 
 @router.post("/api/intakes/chat", response={201: dict})
 def create_chat_intake(request, payload: IntakeIn):

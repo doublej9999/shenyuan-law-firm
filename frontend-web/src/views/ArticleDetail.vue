@@ -56,9 +56,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
-import axios from 'axios'
-
-axios.defaults.baseURL = import.meta.env.VITE_API_URL || ''
+import { apiClient } from '@/api/client'
 
 const route = useRoute()
 const isEn = computed(() => route.path.startsWith('/en'))
@@ -69,7 +67,7 @@ const loading = ref(true)
 onMounted(async () => {
   try {
     const slug = route.params.slug
-    const res = await axios.get(`/api/articles/${slug}`)
+    const res = await apiClient.get(`/api/articles/${slug}`)
     article.value = res.data
   } catch (err) {
     console.error('Failed to load article detail', err)
