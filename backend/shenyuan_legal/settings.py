@@ -79,12 +79,12 @@ if SUPABASE_DB_URL:
         }
     }
 else:
-    # 如果处于生产环境 (DEBUG=False 或 Render 环境)，严禁使用易失的 SQLite，直接明确抛出异常
-    if not DEBUG or os.environ.get("RENDER"):
+    # 如果处于生产环境 (DEBUG=False 或 Render/Vercel 环境)，严禁使用易失的 SQLite，直接明确抛出异常
+    if not DEBUG or os.environ.get("RENDER") or os.environ.get("VERCEL"):
         raise ValueError(
             "【严重安全错误】生产环境未检测到有效的 SUPABASE_DB_URL。"
-            "Render 属于无状态临时容器，严禁使用本地 SQLite 存储业务数据，否则重启或重新部署会导致所有客户线索全部丢失！"
-            "请在 Render Dashboard -> Environment 中配置 SUPABASE_DB_URL。"
+            "Vercel/Render 属于无状态 Serverless/临时容器，严禁使用本地 SQLite 存储业务数据，否则重启或重新部署会导致所有客户线索全部丢失！"
+            "请在 Vercel / 云端控制台 Environment Variables 中配置 SUPABASE_DB_URL (建议使用 Supabase 连接池 6543 端口)。"
         )
     # 本地脱机开发调试备用
     sqlite_dir = BASE_DIR / "data"
