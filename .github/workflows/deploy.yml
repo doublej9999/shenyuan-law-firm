@@ -30,18 +30,38 @@ jobs:
             echo "Supabase credentials not configured in secrets. Skipping."
           fi
 
-  deploy-render:
-    name: Render Django Backend
+  deploy-backend:
+    name: Vercel Django Backend
     runs-on: ubuntu-latest
     steps:
-      - name: Trigger Render Deploy Hook
-        env:
-          RENDER_DEPLOY_HOOK_URL: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+          cache-dependency-path: "backend/requirements.txt"
+
+      - name: Install Dependencies & Verify Build
+        working-directory: backend
         run: |
-          if [ -n "$RENDER_DEPLOY_HOOK_URL" ]; then
-            curl -X POST "$RENDER_DEPLOY_HOOK_URL"
+          pip install -r requirements.txt
+          python manage.py check
+
+      - name: Deploy Backend to Vercel
+        working-directory: backend
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: team_baQbEk5gnm89oRwBuZzA7ppi
+          VERCEL_PROJECT_ID: prj_iamR9IxRt5FC5wZDgfjQmQVz49Zn
+        run: |
+          echo "Checking VERCEL_TOKEN length: ${#VERCEL_TOKEN}"
+          if [ -n "$VERCEL_TOKEN" ]; then
+            npx --yes vercel deploy --prod --yes --token="$VERCEL_TOKEN"
           else
-            echo "Render deploy hook URL not configured. (Render will use native Git Auto-Deploy on commit push)."
+            echo "VERCEL_TOKEN not detected in secrets. Skipping Vercel deploy."
           fi
 
   deploy-frontend-web:
