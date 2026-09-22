@@ -12,6 +12,10 @@ SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY", "django-insecure-shenyuan-legal
 DEBUG = os.environ.get("DEBUG", "True").lower() in ("true", "1", "yes")
 ALLOWED_HOSTS = ["*"]
 
+# Vercel 反向代理 SSL 终结感知与 Host 信任
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+USE_X_FORWARDED_HOST = True
+
 INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",

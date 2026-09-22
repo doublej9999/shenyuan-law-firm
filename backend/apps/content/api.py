@@ -1,6 +1,7 @@
 from typing import List, Optional
 from datetime import datetime
 from ninja import Router, Schema
+from django.http import HttpResponse
 from django.utils import timezone
 from django.shortcuts import get_object_or_404
 from apps.content.models import ContentArticle, ArticleVersion
@@ -36,16 +37,18 @@ class ArticleIn(Schema):
     intent: Optional[str] = "I"
     status: Optional[str] = "draft"
 
-# 公开阅读接口
+# 公开阅读接口（开启 Vercel Edge 边缘缓存，60秒内直接边缘节点秒级响应）
 @router.get("/api/articles", response=List[ArticleOut])
-def get_public_articles(request, business: Optional[str] = None):
+def get_public_articles(request, response: HttpResponse, business: Optional[str] = None):
+    response["Cache-Control"] = "public, s-maxage=60, stale-while-revalidate=300"
     qs = ContentArticle.objects.filter(status="published")
     if business:
         qs = qs.filter(business=business)
     return list(qs)
 
 @router.get("/api/articles/{slug}", response=ArticleOut)
-def get_public_article_by_slug(request, slug: str):
+def get_public_article_by_slug(request, response: HttpResponse, slug: str):
+    response["Cache-Control"] = "public, s-maxage=60, stale-while-revalidate=300"
     return get_object_or_404(ContentArticle, slug=slug, status="published")
 
 # 后台 CMS 接口
