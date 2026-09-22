@@ -1016,7 +1016,7 @@ def test_en_homepage(tmp_db):
         # zh homepage stays the default with zh text
         zh = client.get("/")
         assert '<html lang="zh-CN">' in zh.text
-        assert "跨境的纠纷" in zh.text
+        assert "跨境争议" in zh.text
 
 
 def test_en_service_pages(tmp_db):

@@ -8,8 +8,8 @@
             {{ isEn ? 'Cross-border dispute resolution & family asset protection' : '跨境争议解决与家族资产保护' }}
           </div>
           <h1>
-            <span>{{ isEn ? 'Cross-border disputes, ' : '跨境的纠纷，' }}</span>
-            <span class="highlight">{{ isEn ? 'resolved in your language.' : '用母语解决。' }}</span>
+            <span>{{ isEn ? 'Cross-border disputes, ' : '跨境争议，' }}</span>
+            <span class="highlight">{{ isEn ? 'resolved in your language.' : '全球落地执行。' }}</span>
           </h1>
           <p>
             {{ isEn 
