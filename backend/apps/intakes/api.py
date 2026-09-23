@@ -130,6 +130,15 @@ def update_intake(request, intake_id: int, payload: IntakeUpdateIn):
     intake.save()
     return intake
 
+@router.delete("/admin/api/intakes/{intake_id}", response={200: dict, 404: dict}, auth=GlobalAdminAuth())
+def delete_intake(request, intake_id: int):
+    try:
+        intake = Intake.objects.get(id=intake_id)
+        intake.delete()
+        return 200, {"success": True, "message": "线索及客户档案已删除"}
+    except Intake.DoesNotExist:
+        return 404, {"detail": "Intake not found"}
+
 @router.get("/admin/api/stats", auth=GlobalAdminAuth())
 def get_stats(request):
     total = Intake.objects.count()

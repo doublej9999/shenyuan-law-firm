@@ -107,7 +107,7 @@
               <th class="py-3 px-4 font-semibold w-44">国家 / 事项</th>
               <th class="py-3 px-4 font-semibold">案情事实摘要</th>
               <th class="py-3 px-4 font-semibold w-32">SLA 履约时效</th>
-              <th class="py-3 px-4 font-semibold w-24 text-right">操作</th>
+              <th class="py-3 px-4 font-semibold w-36 text-right">操作</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-border">
@@ -145,9 +145,18 @@
               <td class="py-3 px-4">
                 <SlaBadge :created-at="row.created_at" :status="row.status" />
               </td>
-              <td class="py-3 px-4 text-right" @click.stop>
+              <td class="py-3 px-4 text-right space-x-1" @click.stop>
                 <Button variant="ghost" size="sm" class="text-xs text-primary" @click="openDetail(row)">
                   跟进档案 ↗
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  class="text-xs text-destructive hover:text-destructive hover:bg-destructive/10 px-2"
+                  title="删除此案源客户"
+                  @click="handleDelete(row)"
+                >
+                  <Trash2 class="h-3.5 w-3.5" />
                 </Button>
               </td>
             </tr>
@@ -174,6 +183,27 @@
       :intake="selectedIntake"
       @saved="fetchData"
     />
+
+    <!-- Delete Confirm Dialog -->
+    <Dialog
+      v-model="deleteDialogOpen"
+      title="确认删除客户档案"
+      description="该操作将彻底移除该涉外商事线索及所有关联记录。"
+    >
+      <div v-if="intakeToDelete" class="py-2 text-sm text-foreground space-y-2">
+        <p>确定要删除以下案源吗？此操作无法撤销：</p>
+        <div class="rounded-md border bg-muted/40 p-3 text-xs space-y-1">
+          <div><span class="text-muted-foreground">案源编号：</span>#{{ intakeToDelete.id }}</div>
+          <div><span class="text-muted-foreground">客户姓名：</span><strong class="text-foreground">{{ intakeToDelete.name }}</strong></div>
+          <div><span class="text-muted-foreground">咨询事项：</span>{{ intakeToDelete.matter }}</div>
+          <div v-if="intakeToDelete.phone"><span class="text-muted-foreground">联系方式：</span>{{ intakeToDelete.phone }}</div>
+        </div>
+      </div>
+      <div class="flex justify-end gap-2 mt-4">
+        <Button variant="outline" size="sm" :disabled="deleting" @click="deleteDialogOpen = false">取消</Button>
+        <Button variant="destructive" size="sm" :loading="deleting" @click="confirmDelete">确认删除</Button>
+      </div>
+    </Dialog>
   </div>
 </template>
 
@@ -184,6 +214,7 @@ import Button from '../../components/ui/Button.vue'
 import Input from '../../components/ui/Input.vue'
 import Select from '../../components/ui/Select.vue'
 import Badge from '../../components/ui/Badge.vue'
+import Dialog from '../../components/ui/Dialog.vue'
 import SlaBadge from '../../components/business/SlaBadge.vue'
 import ScoreBadge from '../../components/business/ScoreBadge.vue'
 import IntakeKanban from '../../components/business/IntakeKanban.vue'
@@ -199,6 +230,7 @@ import {
   Table2,
   Columns3,
   Download,
+  Trash2,
 } from 'lucide-vue-next'
 
 const currentView = ref<'table' | 'kanban'>('table')
@@ -208,6 +240,9 @@ const filterStatus = ref('')
 const searchQuery = ref('')
 const detailOpen = ref(false)
 const selectedIntake = ref<any>(null)
+const deleteDialogOpen = ref(false)
+const intakeToDelete = ref<any>(null)
+const deleting = ref(false)
 
 const fetchData = async () => {
   try {
@@ -234,6 +269,26 @@ const resetFilter = () => {
 const openDetail = (item: any) => {
   selectedIntake.value = item
   detailOpen.value = true
+}
+
+const handleDelete = (row: any) => {
+  intakeToDelete.value = row
+  deleteDialogOpen.value = true
+}
+
+const confirmDelete = async () => {
+  if (!intakeToDelete.value) return
+  deleting.value = true
+  try {
+    await api.delete(`/admin/api/intakes/${intakeToDelete.value.id}`)
+    deleteDialogOpen.value = false
+    intakeToDelete.value = null
+    await fetchData()
+  } catch (err) {
+    console.error('删除线索失败:', err)
+  } finally {
+    deleting.value = false
+  }
 }
 
 const exportCsv = () => {

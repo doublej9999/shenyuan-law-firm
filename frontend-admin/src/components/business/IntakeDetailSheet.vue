@@ -89,8 +89,21 @@
     </div>
 
     <template #footer>
-      <Button variant="outline" size="sm" @click="$emit('update:modelValue', false)">取消</Button>
-      <Button size="sm" :loading="saving" @click="handleSave">保存跟进档案</Button>
+      <div class="flex items-center justify-between w-full">
+        <Button
+          variant="destructive"
+          size="sm"
+          :loading="deleting"
+          @click="handleDelete"
+        >
+          <Trash2 class="w-3.5 h-3.5 mr-1" />
+          删除客户档案
+        </Button>
+        <div class="flex items-center gap-2">
+          <Button variant="outline" size="sm" @click="$emit('update:modelValue', false)">取消</Button>
+          <Button size="sm" :loading="saving" @click="handleSave">保存跟进档案</Button>
+        </div>
+      </div>
     </template>
   </Sheet>
 </template>
@@ -104,6 +117,7 @@ import Select from '../ui/Select.vue'
 import SlaBadge from './SlaBadge.vue'
 import ScoreBadge from './ScoreBadge.vue'
 import TimezoneTip from './TimezoneTip.vue'
+import { Trash2 } from 'lucide-vue-next'
 import api from '../../api/client'
 
 const props = defineProps<{
@@ -117,6 +131,7 @@ const emit = defineEmits<{
 }>()
 
 const saving = ref(false)
+const deleting = ref(false)
 const form = ref({
   status: 'new',
   note: '',
@@ -154,6 +169,23 @@ const handleSave = async () => {
     console.error(err)
   } finally {
     saving.value = false
+  }
+}
+
+const handleDelete = async () => {
+  if (!props.intake) return
+  if (!window.confirm(`确定要彻底删除客户【${props.intake.name}】（案源 #${props.intake.id}）吗？此操作无法撤销。`)) {
+    return
+  }
+  deleting.value = true
+  try {
+    await api.delete(`/admin/api/intakes/${props.intake.id}`)
+    emit('saved')
+    emit('update:modelValue', false)
+  } catch (err) {
+    console.error('删除线索失败:', err)
+  } finally {
+    deleting.value = false
   }
 }
 </script>
