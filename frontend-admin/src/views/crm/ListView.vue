@@ -93,15 +93,60 @@
           </Button>
         </div>
       </div>
+
+      <!-- Batch Actions Bar (when items selected) -->
+      <transition name="fade">
+        <div
+          v-if="selectedIds.length > 0"
+          class="mt-3 pt-3 border-t flex items-center justify-between bg-destructive/5 -mx-3 -mb-3 p-3 rounded-b-lg border-destructive/20"
+        >
+          <div class="flex items-center gap-2 text-xs">
+            <span class="inline-flex items-center justify-center bg-destructive text-destructive-foreground font-semibold px-2 py-0.5 rounded-full text-[11px]">
+              {{ selectedIds.length }}
+            </span>
+            <span class="text-foreground font-medium">已选择 {{ selectedIds.length }} 项案源客户</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <Button variant="outline" size="sm" class="text-xs h-7" @click="selectedIds = []">
+              取消全选
+            </Button>
+            <Button
+              variant="destructive"
+              size="sm"
+              class="text-xs h-7"
+              :loading="batchDeleting"
+              @click="batchDeleteDialogOpen = true"
+            >
+              <Trash2 class="mr-1.5 h-3.5 w-3.5" />
+              批量删除
+            </Button>
+          </div>
+        </div>
+      </transition>
     </Card>
 
     <!-- Content: Table View -->
-    <Card v-if="currentView === 'table'" class="overflow-hidden border">
+    <Card v-if="currentView === 'table'" class="overflow-hidden border relative">
+      <div v-if="loading" class="absolute inset-0 bg-background/60 backdrop-blur-[1px] z-10 flex items-center justify-center">
+        <div class="flex items-center gap-2 text-xs text-muted-foreground bg-background border px-3 py-1.5 rounded-md shadow-xs">
+          <span class="inline-block h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+          正在同步案源数据...
+        </div>
+      </div>
       <div class="overflow-x-auto">
         <table class="w-full text-left text-xs">
           <thead class="bg-muted/50 border-b text-muted-foreground">
             <tr>
-              <th class="py-3 px-4 font-semibold w-16">ID</th>
+              <th class="py-3 px-3 w-10 text-center">
+                <input
+                  type="checkbox"
+                  class="rounded border-input text-primary focus:ring-primary h-3.5 w-3.5 cursor-pointer"
+                  :checked="isAllSelected"
+                  :indeterminate="isIndeterminate"
+                  @change="toggleSelectAll"
+                />
+              </th>
+              <th class="py-3 px-3 font-semibold w-16">ID</th>
               <th class="py-3 px-4 font-semibold w-32">客户姓名</th>
               <th class="py-3 px-4 font-semibold w-48">联络方式</th>
               <th class="py-3 px-4 font-semibold w-44">国家 / 事项</th>
@@ -114,10 +159,18 @@
             <tr
               v-for="row in intakes"
               :key="row.id"
-              class="hover:bg-muted/30 transition-colors cursor-pointer"
+              :class="cn('hover:bg-muted/30 transition-colors cursor-pointer', selectedIds.includes(row.id) ? 'bg-primary/5' : '')"
               @click="openDetail(row)"
             >
-              <td class="py-3 px-4 font-mono font-medium text-foreground">#{{ row.id }}</td>
+              <td class="py-3 px-3 text-center" @click.stop>
+                <input
+                  type="checkbox"
+                  class="rounded border-input text-primary focus:ring-primary h-3.5 w-3.5 cursor-pointer"
+                  :checked="selectedIds.includes(row.id)"
+                  @change="toggleSelectRow(row.id)"
+                />
+              </td>
+              <td class="py-3 px-3 font-mono font-medium text-foreground">#{{ row.id }}</td>
               <td class="py-3 px-4">
                 <div class="font-bold text-foreground">{{ row.name }}</div>
                 <ScoreBadge :score="row.score || 0" class="mt-1" />
@@ -161,7 +214,7 @@
               </td>
             </tr>
             <tr v-if="intakes.length === 0">
-              <td colspan="7" class="py-12 text-center text-muted-foreground">
+              <td colspan="8" class="py-12 text-center text-muted-foreground">
                 未找到符合条件的线索记录
               </td>
             </tr>
@@ -184,7 +237,7 @@
       @saved="fetchData"
     />
 
-    <!-- Delete Confirm Dialog -->
+    <!-- Single Delete Confirm Dialog -->
     <Dialog
       v-model="deleteDialogOpen"
       title="确认删除客户档案"
@@ -204,11 +257,29 @@
         <Button variant="destructive" size="sm" :loading="deleting" @click="confirmDelete">确认删除</Button>
       </div>
     </Dialog>
+
+    <!-- Batch Delete Confirm Dialog -->
+    <Dialog
+      v-model="batchDeleteDialogOpen"
+      title="确认批量删除客户档案"
+      description="该操作将同时清理所有选中的涉外案源线索，不可恢复。"
+    >
+      <div class="py-2 text-sm text-foreground space-y-2">
+        <p>确定要彻底删除已选中的 <strong class="text-destructive font-bold">{{ selectedIds.length }}</strong> 条客户案源吗？</p>
+        <div class="rounded-md border bg-destructive/5 p-3 text-xs space-y-1 border-destructive/20 text-muted-foreground">
+          ⚠️ 注意：关联的所有证据材料登记、跟进备注将同步清除，无法撤销。
+        </div>
+      </div>
+      <div class="flex justify-end gap-2 mt-4">
+        <Button variant="outline" size="sm" :disabled="batchDeleting" @click="batchDeleteDialogOpen = false">取消</Button>
+        <Button variant="destructive" size="sm" :loading="batchDeleting" @click="confirmBatchDelete">确认批量删除</Button>
+      </div>
+    </Dialog>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import Card from '../../components/ui/Card.vue'
 import Button from '../../components/ui/Button.vue'
 import Input from '../../components/ui/Input.vue'
@@ -221,6 +292,7 @@ import IntakeKanban from '../../components/business/IntakeKanban.vue'
 import IntakeDetailSheet from '../../components/business/IntakeDetailSheet.vue'
 import api from '../../api/client'
 import { cn } from '../../lib/utils'
+import { toast } from 'vue-sonner'
 import {
   Users,
   Clock,
@@ -238,13 +310,46 @@ const intakes = ref<any[]>([])
 const stats = ref<any>({})
 const filterStatus = ref('')
 const searchQuery = ref('')
+const loading = ref(false)
 const detailOpen = ref(false)
 const selectedIntake = ref<any>(null)
 const deleteDialogOpen = ref(false)
 const intakeToDelete = ref<any>(null)
 const deleting = ref(false)
 
+// 批量选择
+const selectedIds = ref<number[]>([])
+const batchDeleteDialogOpen = ref(false)
+const batchDeleting = ref(false)
+
+const isAllSelected = computed(() => {
+  return intakes.value.length > 0 && selectedIds.value.length === intakes.value.length
+})
+
+const isIndeterminate = computed(() => {
+  return selectedIds.value.length > 0 && selectedIds.value.length < intakes.value.length
+})
+
+const toggleSelectAll = (e: Event) => {
+  const target = e.target as HTMLInputElement
+  if (target.checked) {
+    selectedIds.value = intakes.value.map((i) => i.id)
+  } else {
+    selectedIds.value = []
+  }
+}
+
+const toggleSelectRow = (id: number) => {
+  const idx = selectedIds.value.indexOf(id)
+  if (idx > -1) {
+    selectedIds.value.splice(idx, 1)
+  } else {
+    selectedIds.value.push(id)
+  }
+}
+
 const fetchData = async () => {
+  loading.value = true
   try {
     const params: any = {}
     if (filterStatus.value) params.status = filterStatus.value
@@ -253,10 +358,17 @@ const fetchData = async () => {
     const res: any = await api.get('/admin/api/intakes', { params })
     intakes.value = res || []
 
+    // 过滤掉不再存在于当前列表中的选中项
+    const currentIdSet = new Set(intakes.value.map((i) => i.id))
+    selectedIds.value = selectedIds.value.filter((id) => currentIdSet.has(id))
+
     const statsRes: any = await api.get('/admin/api/stats')
     stats.value = statsRes || {}
-  } catch (err) {
+  } catch (err: any) {
     console.error(err)
+    toast.error('拉取案源列表失败')
+  } finally {
+    loading.value = false
   }
 }
 
@@ -281,13 +393,34 @@ const confirmDelete = async () => {
   deleting.value = true
   try {
     await api.delete(`/admin/api/intakes/${intakeToDelete.value.id}`)
+    toast.success(`客户【${intakeToDelete.value.name}】的档案已删除`)
     deleteDialogOpen.value = false
     intakeToDelete.value = null
     await fetchData()
-  } catch (err) {
+  } catch (err: any) {
     console.error('删除线索失败:', err)
+    toast.error(err?.response?.data?.detail || '删除客户档案失败')
   } finally {
     deleting.value = false
+  }
+}
+
+const confirmBatchDelete = async () => {
+  if (selectedIds.value.length === 0) return
+  batchDeleting.value = true
+  try {
+    const res: any = await api.post('/admin/api/intakes/batch-delete', {
+      ids: selectedIds.value,
+    })
+    toast.success(res?.message || `已成功删除 ${selectedIds.value.length} 条客户档案`)
+    batchDeleteDialogOpen.value = false
+    selectedIds.value = []
+    await fetchData()
+  } catch (err: any) {
+    console.error('批量删除失败:', err)
+    toast.error(err?.response?.data?.detail || '批量删除失败')
+  } finally {
+    batchDeleting.value = false
   }
 }
 

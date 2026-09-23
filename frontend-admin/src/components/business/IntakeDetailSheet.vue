@@ -94,7 +94,7 @@
           variant="destructive"
           size="sm"
           :loading="deleting"
-          @click="handleDelete"
+          @click="openDeleteDialog"
         >
           <Trash2 class="w-3.5 h-3.5 mr-1" />
           删除客户档案
@@ -106,6 +106,27 @@
       </div>
     </template>
   </Sheet>
+
+  <!-- Delete Confirm Dialog -->
+  <Dialog
+    v-model="deleteDialogOpen"
+    title="确认删除客户档案"
+    description="该操作将彻底移除该涉外商事线索及所有关联记录。"
+  >
+    <div v-if="intake" class="py-2 text-sm text-foreground space-y-2">
+      <p>确定要删除以下案源吗？此操作无法撤销：</p>
+      <div class="rounded-md border bg-muted/40 p-3 text-xs space-y-1">
+        <div><span class="text-muted-foreground">案源编号：</span>#{{ intake.id }}</div>
+        <div><span class="text-muted-foreground">客户姓名：</span><strong class="text-foreground">{{ intake.name }}</strong></div>
+        <div><span class="text-muted-foreground">咨询事项：</span>{{ intake.matter }}</div>
+        <div v-if="intake.phone"><span class="text-muted-foreground">联系方式：</span>{{ intake.phone }}</div>
+      </div>
+    </div>
+    <div class="flex justify-end gap-2 mt-4">
+      <Button variant="outline" size="sm" :disabled="deleting" @click="deleteDialogOpen = false">取消</Button>
+      <Button variant="destructive" size="sm" :loading="deleting" @click="confirmDelete">确认删除</Button>
+    </div>
+  </Dialog>
 </template>
 
 <script setup lang="ts">
@@ -114,10 +135,12 @@ import Sheet from '../ui/Sheet.vue'
 import Button from '../ui/Button.vue'
 import Badge from '../ui/Badge.vue'
 import Select from '../ui/Select.vue'
+import Dialog from '../ui/Dialog.vue'
 import SlaBadge from './SlaBadge.vue'
 import ScoreBadge from './ScoreBadge.vue'
 import TimezoneTip from './TimezoneTip.vue'
 import { Trash2 } from 'lucide-vue-next'
+import { toast } from 'vue-sonner'
 import api from '../../api/client'
 
 const props = defineProps<{
@@ -132,6 +155,7 @@ const emit = defineEmits<{
 
 const saving = ref(false)
 const deleting = ref(false)
+const deleteDialogOpen = ref(false)
 const form = ref({
   status: 'new',
   note: '',
@@ -163,27 +187,33 @@ const handleSave = async () => {
       status: form.value.status,
       note: form.value.note,
     })
+    toast.success(`案源 #${props.intake.id} 跟进档案已更新`)
     emit('saved')
     emit('update:modelValue', false)
-  } catch (err) {
+  } catch (err: any) {
     console.error(err)
+    toast.error(err?.response?.data?.detail || '保存跟进档案失败')
   } finally {
     saving.value = false
   }
 }
 
-const handleDelete = async () => {
+const openDeleteDialog = () => {
+  deleteDialogOpen.value = true
+}
+
+const confirmDelete = async () => {
   if (!props.intake) return
-  if (!window.confirm(`确定要彻底删除客户【${props.intake.name}】（案源 #${props.intake.id}）吗？此操作无法撤销。`)) {
-    return
-  }
   deleting.value = true
   try {
     await api.delete(`/admin/api/intakes/${props.intake.id}`)
+    toast.success(`客户【${props.intake.name}】的案源档案已删除`)
+    deleteDialogOpen.value = false
     emit('saved')
     emit('update:modelValue', false)
-  } catch (err) {
+  } catch (err: any) {
     console.error('删除线索失败:', err)
+    toast.error(err?.response?.data?.detail || '删除客户档案失败')
   } finally {
     deleting.value = false
   }

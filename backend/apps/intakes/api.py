@@ -41,6 +41,9 @@ class IntakeUpdateIn(Schema):
     note: Optional[str] = None
     score: Optional[int] = None
 
+class BatchDeleteIn(Schema):
+    ids: List[int]
+
 @router.post("/api/intakes", response={201: dict, 409: dict, 422: dict, 500: dict})
 def create_intake(request, payload: IntakeIn):
     if not payload.consent:
@@ -138,6 +141,13 @@ def delete_intake(request, intake_id: int):
         return 200, {"success": True, "message": "线索及客户档案已删除"}
     except Intake.DoesNotExist:
         return 404, {"detail": "Intake not found"}
+
+@router.post("/admin/api/intakes/batch-delete", response={200: dict}, auth=GlobalAdminAuth())
+def batch_delete_intakes(request, payload: BatchDeleteIn):
+    if not payload.ids:
+        return 200, {"success": True, "deleted_count": 0, "message": "未指定要删除的记录"}
+    count, _ = Intake.objects.filter(id__in=payload.ids).delete()
+    return 200, {"success": True, "deleted_count": count, "message": f"成功删除 {count} 条客户档案"}
 
 @router.get("/admin/api/stats", auth=GlobalAdminAuth())
 def get_stats(request):

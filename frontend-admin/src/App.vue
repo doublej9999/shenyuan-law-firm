@@ -1,7 +1,8 @@
 <template>
   <router-view />
+  <Toaster position="top-right" richColors closeButton />
 </template>
 
 <script setup lang="ts">
-// 全局入口组件，无多余外壳
+import { Toaster } from 'vue-sonner'
 </script>
