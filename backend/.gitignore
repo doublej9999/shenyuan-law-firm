@@ -1,2 +1,5 @@
 .vercel
 .env*
+data/
+*.sqlite3
+

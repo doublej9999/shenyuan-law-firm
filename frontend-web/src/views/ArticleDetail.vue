@@ -19,7 +19,7 @@
         </header>
 
         <div class="article-body">
-          <div class="content-text">{{ isEn ? (article.body_en || article.body_zh) : article.body_zh }}</div>
+          <div class="content-html" v-html="renderedBody"></div>
         </div>
 
         <div class="article-disclaimer">
@@ -54,7 +54,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { apiClient } from '@/api/client'
 
@@ -64,16 +64,201 @@ const isEn = computed(() => route.path.startsWith('/en'))
 const article = ref<any>(null)
 const loading = ref(true)
 
+// 轻量级安全 Markdown 语义解析器（增强 SEO 语义与阅读排版）
+function parseMarkdownToHtml(md: string): string {
+  if (!md) return ''
+  const lines = md.replace(/\r\n/g, '\n').split('\n')
+  const htmlParts: string[] = []
+  let inList = false
+
+  for (let i = 0; i < lines.length; i++) {
+    let line = lines[i].trimEnd()
+
+    // 列表处理
+    if (/^[-*]\s+/.test(line)) {
+      if (!inList) {
+        htmlParts.push('<ul class="article-list">')
+        inList = true
+      }
+      const itemText = formatInline(line.replace(/^[-*]\s+/, ''))
+      htmlParts.push(`<li>${itemText}</li>`)
+      continue
+    } else if (inList) {
+      htmlParts.push('</ul>')
+      inList = false
+    }
+
+    if (!line.trim()) {
+      continue
+    }
+
+    // 标题处理
+    if (line.startsWith('#### ')) {
+      htmlParts.push(`<h4>${formatInline(line.slice(5))}</h4>`)
+    } else if (line.startsWith('### ')) {
+      htmlParts.push(`<h3>${formatInline(line.slice(4))}</h3>`)
+    } else if (line.startsWith('## ')) {
+      htmlParts.push(`<h2>${formatInline(line.slice(3))}</h2>`)
+    } else if (line.startsWith('# ')) {
+      // 避免正文中重复大标题，转为 h2
+      htmlParts.push(`<h2>${formatInline(line.slice(2))}</h2>`)
+    } else if (line.startsWith('> ')) {
+      htmlParts.push(`<blockquote><p>${formatInline(line.slice(2))}</p></blockquote>`)
+    } else {
+      htmlParts.push(`<p>${formatInline(line)}</p>`)
+    }
+  }
+
+  if (inList) {
+    htmlParts.push('</ul>')
+  }
+
+  return htmlParts.join('\n')
+}
+
+function formatInline(str: string): string {
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*(.*?)\*/g, '<em>$1</em>')
+    .replace(/`([^`]+)`/g, '<code>$1</code>')
+}
+
+const renderedBody = computed(() => {
+  if (!article.value) return ''
+  const raw = isEn.value
+    ? (article.value.body_en || article.value.body_zh)
+    : (article.value.body_zh || article.value.body_en)
+  return parseMarkdownToHtml(raw)
+})
+
+// 动态注入 SEO 元数据与 JSON-LD 结构化数据
+function applySeoMetadata(art: any) {
+  const title = isEn.value ? (art.title_en || art.title_zh) : art.title_zh
+  const desc = isEn.value ? (art.description_en || art.description_zh) : art.description_zh
+  const siteName = isEn.value ? 'Shenyuan International Law Firm' : '深远(国际)律师事务所'
+  const fullTitle = `${title} | ${siteName}`
+
+  document.title = fullTitle
+
+  // Meta description
+  let metaDesc = document.querySelector('meta[name="description"]')
+  if (!metaDesc) {
+    metaDesc = document.createElement('meta')
+    metaDesc.setAttribute('name', 'description')
+    document.head.appendChild(metaDesc)
+  }
+  metaDesc.setAttribute('content', desc || '')
+
+  // Canonical & Hreflang
+  const baseUrl = 'https://shenyuanlegal.com'
+  const currentPath = `/articles/${art.slug}`
+  const enPath = `/en/articles/${art.slug}`
+
+  setOrCreateLink('canonical', isEn.value ? `${baseUrl}${enPath}` : `${baseUrl}${currentPath}`)
+  setOrCreateLink('alternate', `${baseUrl}${currentPath}`, 'zh-CN')
+  setOrCreateLink('alternate', `${baseUrl}${enPath}`, 'en')
+
+  // Schema.org Article 结构化数据
+  const articleJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'Article',
+    'headline': title,
+    'description': desc,
+    'datePublished': art.published_at || art.created_at,
+    'dateModified': art.updated_at || art.published_at,
+    'author': {
+      '@type': 'Organization',
+      'name': 'Shenyuan International Legal Team',
+      'url': baseUrl
+    },
+    'publisher': {
+      '@type': 'Organization',
+      'name': 'Shenyuan International Law Firm',
+      'logo': {
+        '@type': 'ImageObject',
+        'url': `${baseUrl}/vite.svg`
+      }
+    },
+    'mainEntityOfPage': {
+      '@type': 'WebPage',
+      '@id': isEn.value ? `${baseUrl}${enPath}` : `${baseUrl}${currentPath}`
+    }
+  }
+
+  // Schema.org BreadcrumbList 面包屑导航
+  const breadcrumbJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    'itemListElement': [
+      {
+        '@type': 'ListItem',
+        'position': 1,
+        'name': isEn.value ? 'Home' : '首页',
+        'item': isEn.value ? `${baseUrl}/en` : baseUrl
+      },
+      {
+        '@type': 'ListItem',
+        'position': 2,
+        'name': isEn.value ? 'Legal Insights' : '涉外法律专栏',
+        'item': isEn.value ? `${baseUrl}/en/articles` : `${baseUrl}/articles`
+      },
+      {
+        '@type': 'ListItem',
+        'position': 3,
+        'name': title,
+        'item': isEn.value ? `${baseUrl}${enPath}` : `${baseUrl}${currentPath}`
+      }
+    ]
+  }
+
+  injectJsonLd('seo-article-jsonld', articleJsonLd)
+  injectJsonLd('seo-breadcrumb-jsonld', breadcrumbJsonLd)
+}
+
+function setOrCreateLink(rel: string, href: string, hreflang?: string) {
+  let selector = `link[rel="${rel}"]`
+  if (hreflang) selector += `[hreflang="${hreflang}"]`
+  let link = document.querySelector(selector)
+  if (!link) {
+    link = document.createElement('link')
+    link.setAttribute('rel', rel)
+    if (hreflang) link.setAttribute('hreflang', hreflang)
+    document.head.appendChild(link)
+  }
+  link.setAttribute('href', href)
+}
+
+function injectJsonLd(id: string, data: any) {
+  let script = document.getElementById(id)
+  if (!script) {
+    script = document.createElement('script')
+    script.id = id
+    script.setAttribute('type', 'application/ld+json')
+    document.head.appendChild(script)
+  }
+  script.textContent = JSON.stringify(data)
+}
+
 onMounted(async () => {
   try {
     const slug = route.params.slug
     const res = await apiClient.get(`/api/articles/${slug}`)
     article.value = res.data
+    applySeoMetadata(res.data)
   } catch (err) {
     console.error('Failed to load article detail', err)
   } finally {
     loading.value = false
   }
+})
+
+onUnmounted(() => {
+  // 清理动态插入的 JSON-LD
+  document.getElementById('seo-article-jsonld')?.remove()
+  document.getElementById('seo-breadcrumb-jsonld')?.remove()
 })
 </script>
 
@@ -160,9 +345,63 @@ onMounted(async () => {
   margin-bottom: 40px;
 }
 
-.content-text {
-  white-space: pre-wrap;
-  word-break: break-word;
+/* 语义化排版增强 */
+.content-html {
+  font-size: 16px;
+  line-height: 1.8;
+  color: #2c3e50;
+}
+
+:deep(.content-html h2) {
+  font-family: var(--serif);
+  font-size: 22px;
+  color: var(--teal-deep);
+  margin: 32px 0 16px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #eee;
+}
+
+:deep(.content-html h3) {
+  font-size: 18px;
+  color: #1f2937;
+  margin: 24px 0 12px;
+}
+
+:deep(.content-html p) {
+  margin: 0 0 18px;
+  text-align: justify;
+}
+
+:deep(.content-html strong) {
+  color: #111827;
+  font-weight: 600;
+}
+
+:deep(.content-html ul.article-list) {
+  margin: 0 0 20px 20px;
+  padding-left: 10px;
+}
+
+:deep(.content-html ul.article-list li) {
+  margin-bottom: 8px;
+}
+
+:deep(.content-html blockquote) {
+  margin: 20px 0;
+  padding: 14px 20px;
+  background: #f8fafc;
+  border-left: 4px solid var(--teal);
+  color: #475569;
+  font-style: italic;
+  border-radius: 0 4px 4px 0;
+}
+
+:deep(.content-html code) {
+  background: #f1f5f9;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 14px;
+  color: #0f172a;
 }
 
 .article-disclaimer {

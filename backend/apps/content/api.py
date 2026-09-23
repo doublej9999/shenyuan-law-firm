@@ -5,6 +5,10 @@ from ninja.responses import Response
 from django.utils import timezone
 from django.shortcuts import get_object_or_404
 from apps.content.models import ContentArticle, ArticleVersion
+from apps.content.seo_service import notify_search_engines
+from apps.content.topic_service import get_suggested_topics
+from apps.content.generator_service import generate_article_pipeline
+from apps.content.quality_gate_service import evaluate_article_quality
 from shenyuan_legal.auth import GlobalAdminAuth
 
 router = Router()
@@ -99,4 +103,43 @@ def publish_article(request, article_id: int):
     article.status = "published"
     article.published_at = timezone.now()
     article.save()
+
+    # 触发搜索引擎收录主动推送（Google Indexing API / 百度主动推送 / IndexNow）
+    try:
+        notify_search_engines(article.slug)
+    except Exception:
+        pass
+
     return article
+
+@router.post("/admin/api/content/{article_id}/notify-indexing", auth=GlobalAdminAuth())
+def manual_notify_indexing(request, article_id: int):
+    article = get_object_or_404(ContentArticle, id=article_id)
+    results = notify_search_engines(article.slug)
+    return {"status": "ok", "article_slug": article.slug, "indexing": results}
+
+class GenerateIn(Schema):
+    topic: str
+    business: Optional[str] = "general"
+    custom_prompt: Optional[str] = ""
+
+@router.get("/admin/api/content/topic-suggestions", auth=GlobalAdminAuth())
+def list_suggested_topics(request):
+    """获取结合 GSC 机会词、站内搜索缺口与业务矩阵的智能推荐选题"""
+    return get_suggested_topics()
+
+@router.post("/admin/api/content/ai-generate", auth=GlobalAdminAuth())
+def ai_generate_article(request, payload: GenerateIn):
+    """一键生成专业涉外法律双语文章草稿，并自动执行 SEO 质量门禁检测"""
+    result = generate_article_pipeline(
+        topic=payload.topic,
+        business=payload.business,
+        custom_prompt=payload.custom_prompt
+    )
+    return result
+
+@router.post("/admin/api/content/quality-check", auth=GlobalAdminAuth())
+def check_article_quality(request, payload: ArticleIn):
+    """对正在编辑或待发布的文章执行合规与 SEO 质量门禁审查"""
+    return evaluate_article_quality(payload.dict())
+
