@@ -1,8 +1,17 @@
 import json
+import os
+from unittest import mock
+
 from django.test import TestCase, Client
 from django.utils import timezone
+from apps.content import site_content
 from apps.content.models import ContentArticle
-from apps.content.seo_service import generate_sitemap_xml, generate_robots_txt, render_article_seo_html
+from apps.content.seo_service import (
+    generate_llms_txt,
+    generate_robots_txt,
+    generate_sitemap_xml,
+    render_article_seo_html,
+)
 from apps.content.quality_gate_service import evaluate_article_quality
 from apps.content.generator_service import generate_article_pipeline
 from apps.content.topic_service import get_suggested_topics
@@ -90,3 +99,130 @@ class ContentAndSeoTests(TestCase):
         r_html_en = self.client.get(f"/en/articles/{self.article.slug}")
         self.assertEqual(r_html_en.status_code, 200)
         self.assertIn("Practical Points", r_html_en.content.decode("utf-8"))
+
+
+class FrozenSiteContentTests(TestCase):
+    """The country/service copy recovered from the legacy monolith."""
+
+    def test_expected_coverage(self):
+        self.assertEqual(len(site_content.get_countries()), 22)
+        self.assertEqual(set(site_content.get_services()), {"trade", "recovery", "legacy"})
+
+    def test_every_country_has_bilingual_copy(self):
+        for slug, country in site_content.get_countries().items():
+            with self.subTest(slug=slug):
+                for field in ("name_zh", "name_en", "zh_title", "en_title", "zh_intro", "en_intro"):
+                    self.assertTrue(country.get(field), f"{slug}.{field} is empty")
+                self.assertEqual(len(country["faq_zh"]), len(country["faq_en"]))
+                self.assertTrue(country["items_zh"] and country["items_en"])
+
+    def test_parse_faq_splits_on_pipe(self):
+        entries = site_content.parse_faq(["问？|答。", "没有分隔符"])
+        self.assertEqual(entries[0], {"question": "问？", "answer": "答。"})
+        self.assertEqual(entries[1], {"question": "没有分隔符", "answer": ""})
+
+
+class SiteContentApiTests(TestCase):
+    def test_country_index(self):
+        r = self.client.get("/api/countries")
+        self.assertEqual(r.status_code, 200)
+        data = r.json()
+        self.assertEqual(len(data), 22)
+        self.assertEqual(data[0]["slug"], "united-states")
+        self.assertIn("s-maxage", r["Cache-Control"])
+
+    def test_country_detail_parses_faq(self):
+        r = self.client.get("/api/countries/singapore")
+        self.assertEqual(r.status_code, 200)
+        data = r.json()
+        self.assertEqual(data["name_zh"], "新加坡")
+        self.assertTrue(data["faq_zh"])
+        self.assertIn("question", data["faq_zh"][0])
+        self.assertIn("answer", data["faq_zh"][0])
+        self.assertNotIn("|", data["faq_zh"][0]["question"])
+
+    def test_unknown_country_is_404(self):
+        self.assertEqual(self.client.get("/api/countries/atlantis").status_code, 404)
+
+    def test_services(self):
+        r = self.client.get("/api/services")
+        self.assertEqual(r.status_code, 200)
+        slugs = [s["slug"] for s in r.json()]
+        self.assertEqual(slugs, ["trade", "recovery", "legacy"])
+
+        detail = self.client.get("/api/services/trade").json()
+        self.assertEqual(detail["zh_title"], "国际贸易争议")
+        self.assertTrue(detail["materials_zh"])
+
+
+class SitemapAndDiscoveryTests(TestCase):
+    def setUp(self):
+        self.article = ContentArticle.objects.create(
+            slug="x-default-probe",
+            title_zh="测试文章",
+            title_en="Probe article",
+            description_zh="描述",
+            description_en="Description",
+            body_zh="# 标题\n\n正文",
+            body_en="# Heading\n\nBody",
+            business="trade",
+            intent="I",
+            status="published",
+            published_at=timezone.now(),
+        )
+
+    def test_every_sitemap_url_has_x_default(self):
+        xml = generate_sitemap_xml()
+        self.assertIn('hreflang="x-default"', xml)
+        # One x-default per <loc> — a pair is emitted as two <url> entries.
+        self.assertEqual(xml.count('hreflang="x-default"'), xml.count("<loc>"))
+
+    def test_sitemap_omits_unshipped_page_families(self):
+        """A sitemap must never advertise a page the frontend does not serve."""
+        xml = generate_sitemap_xml()
+        self.assertNotIn("/countries/", xml)
+        self.assertNotIn("/services/trade", xml)
+        self.assertIn("https://shenyuanlegal.com/articles/x-default-probe", xml)
+
+    def test_sitemap_includes_families_once_enabled(self):
+        with mock.patch.dict(
+            os.environ, {"SITEMAP_ROUTE_FAMILIES": "core,articles,countries,services"}
+        ):
+            xml = generate_sitemap_xml()
+        self.assertIn("https://shenyuanlegal.com/countries", xml)
+        self.assertIn("https://shenyuanlegal.com/countries/united-states", xml)
+        self.assertIn("https://shenyuanlegal.com/en/services/legacy", xml)
+        self.assertEqual(xml.count("<loc>"), xml.count('hreflang="x-default"'))
+
+    def test_robots_welcomes_ai_and_chinese_crawlers(self):
+        robots = generate_robots_txt()
+        for agent in ("GPTBot", "ClaudeBot", "PerplexityBot", "Baiduspider", "Sogou web spider"):
+            self.assertIn(agent, robots)
+        self.assertIn("Disallow: /api/", robots)
+        self.assertIn("LLMtxt: https://shenyuanlegal.com/llms.txt", robots)
+
+    def test_llms_txt_is_served_and_lists_the_whole_site(self):
+        r = self.client.get("/llms.txt")
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(r["Content-Type"], "text/plain; charset=utf-8")
+        body = r.content.decode("utf-8")
+        self.assertTrue(body.startswith("# "))
+        self.assertIn("/services/trade", body)
+        self.assertIn("/countries/united-states", body)
+        self.assertIn("/articles/x-default-probe", body)
+
+    def test_article_html_carries_breadcrumb_and_x_default(self):
+        html = render_article_seo_html(self.article, is_en=False)
+        self.assertIn('"@type": "BreadcrumbList"', html)
+        self.assertIn('hreflang="x-default"', html)
+        self.assertIn('"inLanguage": "zh-CN"', html)
+        # No og:image until a real social card is shipped.
+        self.assertNotIn("og:image", html)
+
+    def test_markdown_renders_links_and_lists(self):
+        self.article.body_zh = "## 标题\n\n- 第一项\n- 第二项\n\n[免费咨询](/#intake)\n\n**加粗**"
+        html = render_article_seo_html(self.article, is_en=False)
+        self.assertIn("<ul>", html)
+        self.assertIn("<li>第一项</li>", html)
+        self.assertIn('<a href="https://shenyuanlegal.com/#intake">免费咨询</a>', html)
+        self.assertIn("<strong>加粗</strong>", html)

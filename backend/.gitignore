@@ -1,5 +1,9 @@
 .vercel
 .env*
-data/
+# Local, disposable dev scratch (the SQLite DB lives here).
+# Anchored with a leading slash on purpose: an unanchored `data/` also matches
+# committed content payloads such as apps/content/data/, which would silently
+# drop them from every deploy.
+/data/
 *.sqlite3
 
