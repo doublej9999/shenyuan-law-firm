@@ -44,9 +44,9 @@
           </div>
 
           <div class="card-action">
-            <router-link :to="isEn ? '/en#intake' : '/#intake'" class="button button-primary">
+            <NuxtLink :to="isEn ? '/en#intake' : '/#intake'" class="button button-primary">
               {{ isEn ? 'Consult Trade Disputes →' : '咨询国际贸易纠纷 →' }}
-            </router-link>
+            </NuxtLink>
           </div>
         </article>
 
@@ -78,9 +78,9 @@
           </div>
 
           <div class="card-action">
-            <router-link :to="isEn ? '/en#intake' : '/#intake'" class="button button-primary">
+            <NuxtLink :to="isEn ? '/en#intake' : '/#intake'" class="button button-primary">
               {{ isEn ? 'Consult Recovery Matters →' : '咨询债务追收与执行 →' }}
-            </router-link>
+            </NuxtLink>
           </div>
         </article>
 
@@ -112,9 +112,9 @@
           </div>
 
           <div class="card-action">
-            <router-link :to="isEn ? '/en#intake' : '/#intake'" class="button button-primary">
+            <NuxtLink :to="isEn ? '/en#intake' : '/#intake'" class="button button-primary">
               {{ isEn ? 'Consult Inheritance Matters →' : '咨询涉外继承业务 →' }}
-            </router-link>
+            </NuxtLink>
           </div>
         </article>
       </div>
@@ -126,23 +126,50 @@
         <h2>{{ isEn ? 'Need tailored advice on your specific matter?' : '不确定案件涉及哪类法律路径？' }}</h2>
         <p>{{ isEn ? 'Contact our cross-border team for an initial factual assessment within 24 hours.' : '提交案情概要或微信沟通，我们的涉外执业团队将为您梳理时效、证据与可行方案。' }}</p>
         <div class="cta-btns">
-          <router-link :to="isEn ? '/en#intake' : '/#intake'" class="button button-primary">
+          <NuxtLink :to="isEn ? '/en#intake' : '/#intake'" class="button button-primary">
             {{ isEn ? 'Free Legal Consultation →' : '开始免费法律咨询 →' }}
-          </router-link>
+          </NuxtLink>
         </div>
       </div>
     </section>
   </div>
 </template>
-
 <script setup lang="ts">
 import { computed } from 'vue'
-import { useRoute } from 'vue-router'
 
 const route = useRoute()
 const isEn = computed(() => route.path.startsWith('/en'))
-</script>
 
+// ---- SEO --------------------------------------------------------------
+const siteUrl = 'https://shenyuanlegal.com'
+const canonical = computed(() => `${siteUrl}${isEn.value ? '/en/services' : '/services'}`)
+
+useSeoMeta({
+  title: () => isEn.value
+    ? 'Practice Areas | Cross-Border Disputes, Debt Recovery & Inheritance | Shenyuan International'
+    : '服务范围 | 跨境争议、债务追收与继承 | 深远(国际)律师事务所',
+  description: () => isEn.value
+    ? 'Three high-frequency cross-border matters we handle: international trade and commercial disputes, cross-border litigation and debt recovery, and multi-jurisdiction inheritance and family assets.'
+    : '围绕中国企业与家庭在出海及跨国经济往来中最常遇到的三类争议：国际贸易争议与跨国合同、诉讼与海外债务追收、继承与家族资产纠纷。',
+  ogTitle: () => isEn.value
+    ? 'Practice Areas | Shenyuan International'
+    : '服务范围 | 深远(国际)律师事务所',
+  ogDescription: () => isEn.value
+    ? 'Cross-border disputes, debt recovery and inheritance — executed through local counsel.'
+    : '跨境争议、债务追收与继承——通过当地合作律所落地执行。',
+  ogType: 'website',
+  ogUrl: () => canonical.value,
+})
+
+useHead({
+  link: [
+    { rel: 'canonical', href: () => canonical.value },
+    { rel: 'alternate', hreflang: 'zh-CN', href: `${siteUrl}/services` },
+    { rel: 'alternate', hreflang: 'en', href: `${siteUrl}/en/services` },
+    { rel: 'alternate', hreflang: 'x-default', href: `${siteUrl}/services` },
+  ],
+})
+</script>
 <style scoped>
 .services-view {
   background: var(--paper);

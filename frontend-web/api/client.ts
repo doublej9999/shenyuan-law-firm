@@ -1,22 +1,38 @@
-import axios from 'axios'
+import axios, { type AxiosInstance } from 'axios'
+import { useRuntimeConfig } from '#imports'
 
-const baseURL = import.meta.env.VITE_API_URL || ''
+// The runtime API base URL is resolved once per server/browser process. It is
+// constant for the lifetime of a deployment (Vercel injects it per environment),
+// so caching the instance cannot leak state between requests.
+let client: AxiosInstance | null = null
 
-export const apiClient = axios.create({
-  baseURL,
-  timeout: 15000,
-  headers: {
-    'Content-Type': 'application/json'
+export function getApiClient(): AxiosInstance {
+  if (client) return client
+
+  let baseURL = ''
+  try {
+    baseURL = useRuntimeConfig().public.apiUrl || ''
+  } catch {
+    // Called outside of a Nuxt context (e.g. a unit test) — fall back to a
+    // relative URL so the caller still gets a usable instance.
+    baseURL = ''
   }
-})
+
+  client = axios.create({
+    baseURL,
+    timeout: 15000,
+    headers: { 'Content-Type': 'application/json' },
+  })
+  return client
+}
 
 export function parseApiError(err: any, isEn = false): string {
   if (err.code === 'ECONNABORTED' || err.message?.includes('timeout')) {
-    return isEn 
-      ? 'Request timed out. The server might be waking up, please retry.' 
+    return isEn
+      ? 'Request timed out. The server might be waking up, please retry.'
       : '请求超时。后端服务可能正在冷启动唤醒，请稍后重试。'
   }
-  
+
   if (!err.response) {
     return isEn
       ? 'Network error. Please check your connection and try again.'
@@ -33,8 +49,8 @@ export function parseApiError(err: any, isEn = false): string {
   }
 
   if (status === 409) {
-    return (typeof data?.detail === 'string' && data.detail) 
-      ? data.detail 
+    return (typeof data?.detail === 'string' && data.detail)
+      ? data.detail
       : (isEn ? 'Duplicate submission detected. Please do not submit repeatedly.' : '检测到重复提交，请勿在短时间内重复提交。')
   }
 

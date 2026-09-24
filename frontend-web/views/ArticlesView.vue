@@ -63,17 +63,17 @@
               <span class="date">{{ item.published_at ? item.published_at.substring(0, 10) : '' }}</span>
             </div>
             <h3>
-              <router-link :to="isEn ? `/en/articles/${item.slug}` : `/articles/${item.slug}`">
+              <NuxtLink :to="isEn ? `/en/articles/${item.slug}` : `/articles/${item.slug}`">
                 {{ isEn ? (item.title_en || item.title_zh) : item.title_zh }}
-              </router-link>
+              </NuxtLink>
             </h3>
             <p class="desc">
               {{ isEn ? (item.description_en || item.description_zh) : item.description_zh }}
             </p>
             <div class="card-footer">
-              <router-link :to="isEn ? `/en/articles/${item.slug}` : `/articles/${item.slug}`" class="read-more">
+              <NuxtLink :to="isEn ? `/en/articles/${item.slug}` : `/articles/${item.slug}`" class="read-more">
                 {{ isEn ? 'Read full article →' : '阅读全文 →' }}
-              </router-link>
+              </NuxtLink>
             </div>
           </article>
         </div>
@@ -83,16 +83,29 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
-import { useRoute } from 'vue-router'
-import { apiClient } from '@/api/client'
+import { computed, ref } from 'vue'
+import { getApiClient } from '@/api/client'
 
 const route = useRoute()
 const isEn = computed(() => route.path.startsWith('/en'))
 
-const articles = ref<any[]>([])
-const loading = ref(true)
 const selectedFilter = ref('ALL')
+
+// Fetched during SSR so the article list is present in the initial HTML.
+const { data: articlesData, pending: loading } = await useAsyncData(
+  `articles-${isEn.value ? 'en' : 'zh'}`,
+  async () => {
+    try {
+      const res = await getApiClient().get('/api/articles')
+      return (res.data || []) as any[]
+    } catch (err) {
+      console.error('Failed to load articles', err)
+      return []
+    }
+  }
+)
+
+const articles = computed<any[]>(() => articlesData.value || [])
 
 const filteredArticles = computed(() => {
   if (selectedFilter.value === 'ALL') return articles.value
@@ -102,15 +115,31 @@ const filteredArticles = computed(() => {
   })
 })
 
-onMounted(async () => {
-  try {
-    const res = await apiClient.get('/api/articles')
-    articles.value = res.data
-  } catch (err) {
-    console.error('Failed to load articles', err)
-  } finally {
-    loading.value = false
-  }
+const siteUrl = 'https://shenyuanlegal.com'
+const canonical = computed(() => `${siteUrl}${isEn.value ? '/en/articles' : '/articles'}`)
+
+useSeoMeta({
+  title: () => isEn.value
+    ? 'Legal Insights | Cross-Border Practice & Case Studies | Shenyuan International'
+    : '涉外法律专栏 | 跨境实务与案例研究 | 深远(国际)律师事务所',
+  description: () => isEn.value
+    ? 'Original analyses on international trade litigation, cross-border debt recovery and multi-jurisdiction probate, written by the Shenyuan International legal team.'
+    : '由深远合伙人及资深涉外律师撰写，深入剖析跨境贸易纠纷、海外欠款追索、域外财产执行及跨国遗产公证的实操要点。',
+  ogTitle: () => isEn.value ? 'Legal Insights | Shenyuan International' : '涉外法律专栏 | 深远(国际)律师事务所',
+  ogDescription: () => isEn.value
+    ? 'Cross-border practice insights and case studies.'
+    : '跨境实务洞察与案例分析。',
+  ogType: 'website',
+  ogUrl: () => canonical.value,
+})
+
+useHead({
+  link: [
+    { rel: 'canonical', href: () => canonical.value },
+    { rel: 'alternate', hreflang: 'zh-CN', href: `${siteUrl}/articles` },
+    { rel: 'alternate', hreflang: 'en', href: `${siteUrl}/en/articles` },
+    { rel: 'alternate', hreflang: 'x-default', href: `${siteUrl}/articles` },
+  ],
 })
 </script>
 
