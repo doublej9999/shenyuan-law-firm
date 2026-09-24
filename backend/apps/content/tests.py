@@ -1,5 +1,6 @@
 import json
 import os
+from pathlib import Path
 from unittest import mock
 
 from django.test import TestCase, Client
@@ -7,6 +8,7 @@ from django.utils import timezone
 from apps.content import site_content
 from apps.content.models import ContentArticle
 from apps.content.seo_service import (
+    frontend_routes,
     generate_llms_txt,
     generate_robots_txt,
     generate_sitemap_xml,
@@ -177,22 +179,54 @@ class SitemapAndDiscoveryTests(TestCase):
         # One x-default per <loc> — a pair is emitted as two <url> entries.
         self.assertEqual(xml.count('hreflang="x-default"'), xml.count("<loc>"))
 
-    def test_sitemap_omits_unshipped_page_families(self):
-        """A sitemap must never advertise a page the frontend does not serve."""
+    def test_sitemap_covers_every_shipped_page_family(self):
+        """Country and service landing pages now ship, so they are advertised."""
         xml = generate_sitemap_xml()
+        self.assertIn("https://shenyuanlegal.com/countries", xml)
+        self.assertIn("https://shenyuanlegal.com/countries/united-states", xml)
+        self.assertIn("https://shenyuanlegal.com/services/trade", xml)
+        self.assertIn("https://shenyuanlegal.com/en/services/legacy", xml)
+        self.assertEqual(xml.count("<loc>"), xml.count('hreflang="x-default"'))
+
+    def test_sitemap_omits_families_pulled_by_the_override(self):
+        """A sitemap must never advertise a page the frontend does not serve."""
+        with mock.patch.dict(os.environ, {"SITEMAP_ROUTE_FAMILIES": "core,articles"}):
+            xml = generate_sitemap_xml()
         self.assertNotIn("/countries/", xml)
         self.assertNotIn("/services/trade", xml)
         self.assertIn("https://shenyuanlegal.com/articles/x-default-probe", xml)
 
-    def test_sitemap_includes_families_once_enabled(self):
-        with mock.patch.dict(
-            os.environ, {"SITEMAP_ROUTE_FAMILIES": "core,articles,countries,services"}
-        ):
-            xml = generate_sitemap_xml()
-        self.assertIn("https://shenyuanlegal.com/countries", xml)
-        self.assertIn("https://shenyuanlegal.com/countries/united-states", xml)
-        self.assertIn("https://shenyuanlegal.com/en/services/legacy", xml)
-        self.assertEqual(xml.count("<loc>"), xml.count('hreflang="x-default"'))
+    def test_every_sitemap_page_family_has_a_frontend_route(self):
+        """Keep ``SITEMAP_ROUTE_FAMILIES`` in lockstep with ``frontend-web/pages``.
+
+        The gate is only honest if the pages it enables actually exist; enabling
+        a family without shipping its pages puts 404s in front of crawlers.
+        """
+        pages = Path(__file__).resolve().parents[3] / "frontend-web" / "pages"
+        if not pages.is_dir():
+            self.skipTest("frontend-web is not part of this checkout")
+
+        def is_served(path: str) -> bool:
+            rel = path.strip("/")
+            if not rel:
+                return (pages / "index.vue").is_file()
+            target = pages / rel
+            return any(
+                candidate.is_file()
+                for candidate in (
+                    target.with_suffix(".vue"),  # /services -> services.vue
+                    target / "index.vue",  # /countries -> countries/index.vue
+                    target.parent / "[slug].vue",  # /services/trade -> services/[slug].vue
+                )
+            )
+
+        for route in frontend_routes():
+            for path in (route["zh"], route["en"]):
+                with self.subTest(path=path):
+                    self.assertTrue(
+                        is_served(path),
+                        f"{path} is advertised in the sitemap but has no page in frontend-web/pages",
+                    )
 
     def test_robots_welcomes_ai_and_chinese_crawlers(self):
         robots = generate_robots_txt()

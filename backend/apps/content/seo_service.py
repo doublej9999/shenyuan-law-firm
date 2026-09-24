@@ -32,7 +32,12 @@ DEFAULT_SITE_URL = "https://shenyuanlegal.com"
 # Page families the frontend serves. Keep this in lockstep with
 # `frontend-web/pages/**`; a family listed here but not shipped puts 404s in
 # front of crawlers.
-DEFAULT_ROUTE_FAMILIES = "core,articles"
+#
+# Every family below now has pages behind it. `SITEMAP_ROUTE_FAMILIES` remains as
+# an override so a family can be pulled from the sitemap without a deploy if a
+# route family is ever taken offline.
+SHIPPED_ROUTE_FAMILIES = "core,articles,countries,services"
+DEFAULT_ROUTE_FAMILIES = SHIPPED_ROUTE_FAMILIES
 
 # Marketing pages that exist in both languages: (zh_path, en_path, changefreq, priority)
 STATIC_PAIRS: List[Tuple[str, str, str, str]] = [
