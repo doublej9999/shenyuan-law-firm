@@ -20,9 +20,9 @@
             <a class="button button-primary" href="#intake" @click.prevent="scrollToIntake">
               {{ isEn ? 'Free legal consultation →' : '免费法律咨询 →' }}
             </a>
-            <router-link class="button button-outline" :to="isEn ? '/en/services' : '/services'">
+            <NuxtLink class="button button-outline" :to="isEn ? '/en/services' : '/services'">
               {{ isEn ? 'Explore services' : '查看服务范围' }}
-            </router-link>
+            </NuxtLink>
           </div>
           <div class="hero-notes">
             <span><i></i><span>{{ isEn ? 'Chinese / English' : '中英双语沟通' }}</span></span>
@@ -167,9 +167,9 @@
               <li>{{ isEn ? 'Customs, logistics, quality issues' : '海关、物流、质量争议' }}</li>
               <li>{{ isEn ? 'Trade fraud identification & response' : '国际贸易诈骗识别与应对' }}</li>
             </ul>
-            <router-link class="service-link" :to="isEn ? '/en/services' : '/services'">
+            <NuxtLink class="service-link" :to="isEn ? '/en/services' : '/services'">
               {{ isEn ? 'Trade dispute services →' : '了解贸易争议服务 →' }}
-            </router-link>
+            </NuxtLink>
           </article>
 
           <article class="service-card">
@@ -182,9 +182,9 @@
               <li>{{ isEn ? 'Cross-border judgment & award enforcement' : '判决、仲裁裁决跨境执行' }}</li>
               <li>{{ isEn ? 'Commercial fraud investigation' : '商业欺诈调查' }}</li>
             </ul>
-            <router-link class="service-link" :to="isEn ? '/en/services' : '/services'">
+            <NuxtLink class="service-link" :to="isEn ? '/en/services' : '/services'">
               {{ isEn ? 'Recovery services →' : '了解追收服务 →' }}
-            </router-link>
+            </NuxtLink>
           </article>
 
           <article class="service-card">
@@ -197,9 +197,9 @@
               <li>{{ isEn ? 'Wills and estate division' : '遗嘱效力与遗产分割' }}</li>
               <li>{{ isEn ? 'Missing or disputed family members' : '家族成员失联或争议' }}</li>
             </ul>
-            <router-link class="service-link" :to="isEn ? '/en/services' : '/services'">
+            <NuxtLink class="service-link" :to="isEn ? '/en/services' : '/services'">
               {{ isEn ? 'Legacy services →' : '了解继承服务 →' }}
-            </router-link>
+            </NuxtLink>
           </article>
         </div>
 
@@ -512,9 +512,9 @@
           <a class="button button-primary" href="#intake" @click.prevent="scrollToIntake">
             {{ isEn ? 'Free legal consultation →' : '免费法律咨询 →' }}
           </a>
-          <router-link class="button button-outline" :to="isEn ? '/en/services' : '/services'">
+          <NuxtLink class="button button-outline" :to="isEn ? '/en/services' : '/services'">
             {{ isEn ? 'Review our services' : '再看一遍服务范围' }}
-          </router-link>
+          </NuxtLink>
         </div>
       </div>
     </section>
@@ -592,14 +592,62 @@
     </div>
   </div>
 </template>
-
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { useRoute } from 'vue-router'
-import { apiClient, parseApiError } from '@/api/client'
+import { getApiClient, parseApiError } from '@/api/client'
 
 const route = useRoute()
 const isEn = computed(() => route.path.startsWith('/en'))
+
+// ---- SEO --------------------------------------------------------------
+const siteUrl = 'https://shenyuanlegal.com'
+const canonical = computed(() => isEn.value ? `${siteUrl}/en` : `${siteUrl}/`)
+
+useSeoMeta({
+  title: () => isEn.value
+    ? 'Shenyuan International | Cross-Border Dispute Resolution & Family Asset Protection'
+    : 'Shenyuan International | 深远(国际)律师事务所',
+  description: () => isEn.value
+    ? 'Shenyuan International Law Firm helps Chinese businesses and families resolve international trade disputes, recover cross-border debts and protect inherited family assets — bilingual, executed through a global network of local counsel.'
+    : 'Shenyuan International 深远(国际)律师事务所：为中国企业与家庭提供跨境商事争议、债务追收、继承与家族资产的国际法律服务，中英双语，覆盖全球 30+ 国家与地区的合作律所网络。',
+  ogTitle: () => isEn.value
+    ? 'Shenyuan International | Cross-Border Dispute Resolution'
+    : 'Shenyuan International | 深远(国际)律师事务所',
+  ogDescription: () => isEn.value
+    ? 'Cross-border disputes, executed globally. Trade disputes, debt recovery, inheritance and family assets.'
+    : '跨境争议，全球落地执行。跨境商事争议、债务追收、继承与家族资产——中英双语，全球协作网络。',
+  ogType: 'website',
+  ogUrl: () => canonical.value,
+})
+
+useHead({
+  link: [
+    { rel: 'canonical', href: () => canonical.value },
+    { rel: 'alternate', hreflang: 'zh-CN', href: `${siteUrl}/` },
+    { rel: 'alternate', hreflang: 'en', href: `${siteUrl}/en` },
+    { rel: 'alternate', hreflang: 'x-default', href: `${siteUrl}/` },
+  ],
+  script: [
+    {
+      type: 'application/ld+json',
+      innerHTML: JSON.stringify({
+        '@context': 'https://schema.org',
+        '@type': 'LegalService',
+        'name': 'Shenyuan International 深远(国际)律师事务所',
+        'url': `${siteUrl}/`,
+        'logo': `${siteUrl}/favicon.svg`,
+        'description': '面向中国企业与家庭的跨境法律服务：国际贸易争议、诉讼与债务追收、继承与家族资产。中英双语，覆盖 30+ 国家与地区的合作律所网络。',
+        'knowsLanguage': ['zh', 'en'],
+        'areaServed': 'Worldwide',
+        'serviceType': [
+          'International Trade & Commercial Disputes',
+          'Cross-border Litigation & Debt Recovery',
+          'Inheritance & Family Asset Protection',
+        ],
+      }),
+    },
+  ],
+})
 
 const form = ref({
   name: '',
@@ -659,7 +707,7 @@ const handleIntakeSubmit = async () => {
 
   submitting.value = true
   try {
-    await apiClient.post('/api/intakes', {
+    await getApiClient().post('/api/intakes', {
       name: form.value.name,
       phone: form.value.phone,
       email: form.value.email || undefined,
@@ -677,7 +725,6 @@ const handleIntakeSubmit = async () => {
   }
 }
 </script>
-
 <style scoped>
 .home-container {
   color: var(--ink);
