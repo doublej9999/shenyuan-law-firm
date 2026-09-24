@@ -117,7 +117,17 @@ def list_intakes(
         qs = qs.filter(Q(name__icontains=q) | Q(phone__icontains=q) | Q(email__icontains=q) | Q(summary__icontains=q))
     return list(qs[offset : offset + limit])
 
-@router.patch("/admin/api/intakes/{intake_id}", response=IntakeOut, auth=GlobalAdminAuth())
+# 注意：静态路径必须注册在 {intake_id} 动态路径之前。
+# 否则 /admin/api/intakes/batch-delete 会被解析为 intake_id="batch-delete"，
+# 命中 PATCH/DELETE 路由后返回 405 Method Not Allowed。
+@router.post("/admin/api/intakes/batch-delete", response={200: dict}, auth=GlobalAdminAuth())
+def batch_delete_intakes(request, payload: BatchDeleteIn):
+    if not payload.ids:
+        return 200, {"success": True, "deleted_count": 0, "message": "未指定要删除的记录"}
+    count, _ = Intake.objects.filter(id__in=payload.ids).delete()
+    return 200, {"success": True, "deleted_count": count, "message": f"成功删除 {count} 条客户档案"}
+
+@router.patch("/admin/api/intakes/{intake_id}", response={200: IntakeOut, 404: dict}, auth=GlobalAdminAuth())
 def update_intake(request, intake_id: int, payload: IntakeUpdateIn):
     try:
         intake = Intake.objects.get(id=intake_id)
@@ -141,13 +151,6 @@ def delete_intake(request, intake_id: int):
         return 200, {"success": True, "message": "线索及客户档案已删除"}
     except Intake.DoesNotExist:
         return 404, {"detail": "Intake not found"}
-
-@router.post("/admin/api/intakes/batch-delete", response={200: dict}, auth=GlobalAdminAuth())
-def batch_delete_intakes(request, payload: BatchDeleteIn):
-    if not payload.ids:
-        return 200, {"success": True, "deleted_count": 0, "message": "未指定要删除的记录"}
-    count, _ = Intake.objects.filter(id__in=payload.ids).delete()
-    return 200, {"success": True, "deleted_count": count, "message": f"成功删除 {count} 条客户档案"}
 
 @router.get("/admin/api/stats", auth=GlobalAdminAuth())
 def get_stats(request):

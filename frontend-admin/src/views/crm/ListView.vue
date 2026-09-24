@@ -235,6 +235,7 @@
       v-model="detailOpen"
       :intake="selectedIntake"
       @saved="fetchData"
+      @deleted="onSheetDeleted"
     />
 
     <!-- Single Delete Confirm Dialog -->
@@ -275,6 +276,32 @@
         <Button variant="destructive" size="sm" :loading="batchDeleting" @click="confirmBatchDelete">确认批量删除</Button>
       </div>
     </Dialog>
+
+    <!-- Delete Success Result Dialog -->
+    <Dialog v-model="successDialogOpen">
+      <div v-if="deleteResult" class="flex flex-col items-center text-center py-2 space-y-3">
+        <div class="flex h-14 w-14 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-600">
+          <CheckCircle2 class="h-7 w-7" />
+        </div>
+        <div class="space-y-1">
+          <h3 class="text-base font-semibold text-foreground">删除成功</h3>
+          <p class="text-xs text-muted-foreground">该客户档案已从线索中枢中彻底移除。</p>
+        </div>
+        <div class="w-full rounded-md border bg-muted/40 p-3 text-xs text-left space-y-1">
+          <div v-if="deleteResult.count === 1">
+            <span class="text-muted-foreground">客户姓名：</span>
+            <strong class="text-foreground">{{ deleteResult.names[0] }}</strong>
+          </div>
+          <div v-else class="text-muted-foreground">
+            共删除 <strong class="text-foreground">{{ deleteResult.count }}</strong> 条案源：
+            <span class="text-foreground">{{ deleteResult.names.join('、') }}</span>
+          </div>
+        </div>
+      </div>
+      <div class="flex justify-center mt-2">
+        <Button size="sm" class="w-full" @click="successDialogOpen = false">知道了</Button>
+      </div>
+    </Dialog>
   </div>
 </template>
 
@@ -292,6 +319,7 @@ import IntakeKanban from '../../components/business/IntakeKanban.vue'
 import IntakeDetailSheet from '../../components/business/IntakeDetailSheet.vue'
 import api from '../../api/client'
 import { cn } from '../../lib/utils'
+import { describeDeleteError } from '../../lib/apiError'
 import { toast } from 'vue-sonner'
 import {
   Users,
@@ -321,6 +349,26 @@ const deleting = ref(false)
 const selectedIds = ref<number[]>([])
 const batchDeleteDialogOpen = ref(false)
 const batchDeleting = ref(false)
+
+// 删除成功结果弹窗
+const successDialogOpen = ref(false)
+const deleteResult = ref<{ count: number; names: string[] } | null>(null)
+
+const showDeleteSuccess = (items: any[] | any) => {
+  const list = Array.isArray(items) ? items : [items]
+  deleteResult.value = {
+    count: list.length,
+    names: list.map((i) => i?.name || `#${i?.id ?? '-'}`),
+  }
+  successDialogOpen.value = true
+}
+
+// 详情抽屉内删除成功后：先刷新列表，再弹出结果提示
+const onSheetDeleted = async (item: any) => {
+  selectedIntake.value = null
+  await fetchData()
+  showDeleteSuccess(item)
+}
 
 const isAllSelected = computed(() => {
   return intakes.value.length > 0 && selectedIds.value.length === intakes.value.length
@@ -390,16 +438,17 @@ const handleDelete = (row: any) => {
 
 const confirmDelete = async () => {
   if (!intakeToDelete.value) return
+  const target = intakeToDelete.value
   deleting.value = true
   try {
-    await api.delete(`/admin/api/intakes/${intakeToDelete.value.id}`)
-    toast.success(`客户【${intakeToDelete.value.name}】的档案已删除`)
+    await api.delete(`/admin/api/intakes/${target.id}`)
     deleteDialogOpen.value = false
     intakeToDelete.value = null
     await fetchData()
+    showDeleteSuccess(target)
   } catch (err: any) {
     console.error('删除线索失败:', err)
-    toast.error(err?.response?.data?.detail || '删除客户档案失败')
+    toast.error(describeDeleteError(err))
   } finally {
     deleting.value = false
   }
@@ -407,18 +456,19 @@ const confirmDelete = async () => {
 
 const confirmBatchDelete = async () => {
   if (selectedIds.value.length === 0) return
+  const targets = intakes.value.filter((i) => selectedIds.value.includes(i.id))
   batchDeleting.value = true
   try {
-    const res: any = await api.post('/admin/api/intakes/batch-delete', {
+    await api.post('/admin/api/intakes/batch-delete', {
       ids: selectedIds.value,
     })
-    toast.success(res?.message || `已成功删除 ${selectedIds.value.length} 条客户档案`)
     batchDeleteDialogOpen.value = false
     selectedIds.value = []
     await fetchData()
+    showDeleteSuccess(targets)
   } catch (err: any) {
     console.error('批量删除失败:', err)
-    toast.error(err?.response?.data?.detail || '批量删除失败')
+    toast.error(describeDeleteError(err))
   } finally {
     batchDeleting.value = false
   }

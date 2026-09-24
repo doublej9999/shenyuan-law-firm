@@ -142,6 +142,7 @@ import TimezoneTip from './TimezoneTip.vue'
 import { Trash2 } from 'lucide-vue-next'
 import { toast } from 'vue-sonner'
 import api from '../../api/client'
+import { describeDeleteError } from '../../lib/apiError'
 
 const props = defineProps<{
   modelValue: boolean
@@ -151,6 +152,7 @@ const props = defineProps<{
 const emit = defineEmits<{
   (e: 'update:modelValue', val: boolean): void
   (e: 'saved'): void
+  (e: 'deleted', intake: any): void
 }>()
 
 const saving = ref(false)
@@ -204,16 +206,17 @@ const openDeleteDialog = () => {
 
 const confirmDelete = async () => {
   if (!props.intake) return
+  const target = props.intake
   deleting.value = true
   try {
-    await api.delete(`/admin/api/intakes/${props.intake.id}`)
-    toast.success(`客户【${props.intake.name}】的案源档案已删除`)
+    await api.delete(`/admin/api/intakes/${target.id}`)
     deleteDialogOpen.value = false
-    emit('saved')
     emit('update:modelValue', false)
+    // 由父组件负责展示“删除成功”结果弹窗与刷新列表
+    emit('deleted', target)
   } catch (err: any) {
     console.error('删除线索失败:', err)
-    toast.error(err?.response?.data?.detail || '删除客户档案失败')
+    toast.error(describeDeleteError(err))
   } finally {
     deleting.value = false
   }
