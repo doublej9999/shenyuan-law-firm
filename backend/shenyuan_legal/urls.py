@@ -24,6 +24,12 @@ def robots_view(request):
     resp["Cache-Control"] = "public, s-maxage=86400"
     return resp
 
+def llms_full_view(request):
+    """llms-full.txt — in-depth full context for LLMs."""
+    resp = HttpResponse(generate_llms_full_txt(), content_type="text/plain; charset=utf-8")
+    resp["Cache-Control"] = "public, s-maxage=3600, stale-while-revalidate=86400"
+    return resp
+
 def llms_view(request):
     """llms.txt — the curated entry point for AI answer engines (GEO)."""
     resp = HttpResponse(generate_llms_txt(), content_type="text/plain; charset=utf-8")
