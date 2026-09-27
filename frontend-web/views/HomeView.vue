@@ -644,6 +644,17 @@ useHead({
           'Cross-border Litigation & Debt Recovery',
           'Inheritance & Family Asset Protection',
         ],
+        'priceRange': '$$$',
+        'sameAs': [
+          'https://lawyers.justia.com',
+          'https://www.martindale.com',
+          'https://www.avvo.com',
+          'https://www.linkedin.com/company/shenyuan-legal'
+        ],
+        'address': {
+          '@type': 'PostalAddress',
+          'addressCountry': 'CN'
+        }
       }),
     },
   ],

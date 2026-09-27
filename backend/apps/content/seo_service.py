@@ -186,6 +186,7 @@ def generate_robots_txt() -> str:
         "\n"
         f"Sitemap: {base_url}/sitemap.xml\n"
         f"LLMtxt: {base_url}/llms.txt\n"
+        f"LLMFullTxt: {base_url}/llms-full.txt\n"
     )
 
 
@@ -229,6 +230,9 @@ def generate_llms_txt() -> str:
         lines.append(f"- [{title}](/articles/{article.slug}) — {description}")
 
     lines += [
+        "",
+        "## Full Knowledge Base",
+        "- Full context & deep directory: /llms-full.txt",
         "",
         "## Contact",
         "- Website: /",
@@ -542,3 +546,47 @@ def render_article_seo_html(article: ContentArticle, is_en: bool = False) -> str
   </article>
 </body>
 </html>"""
+
+
+def generate_llms_full_txt() -> str:
+    """llms-full.txt: Complete in-depth knowledge base for LLM retrieval & RAG.
+    
+    Contains all practice areas, jurisdiction rules, limitation periods,
+    and all published legal guides.
+    """
+    base_url = get_base_url()
+    articles = list(
+        ContentArticle.objects.filter(status="published").order_by("-published_at")
+    )
+    lines: List[str] = [
+        f"# {SITE_NAME_ZH} / {SITE_NAME_EN} — Comprehensive Legal Knowledge Base",
+        "",
+        "> Official bilingual repository of cross-border dispute resolution procedures,",
+        "> limitation periods, enforcement treaties, and inheritance rules.",
+        "",
+        "## 1. Practice Areas & Legal Services",
+    ]
+    for slug, service in site_content.get_services().items():
+        lines.append(f"### {service['zh_title']} / {service['en_title']} ({base_url}/services/{slug})")
+        lines.append(f"- Overview: {service['zh_intro']}")
+        lines.append("- Matters Handled: " + "; ".join(service.get('items_zh', [])))
+        lines.append("- Required Documents: " + "; ".join(service.get('materials_zh', [])))
+        lines.append("")
+
+    lines.append("## 2. Global Jurisdictions & Enforceability Rules")
+    for slug, country in site_content.get_countries().items():
+        lines.append(f"### {country['name_zh']} / {country['name_en']} ({base_url}/countries/{slug})")
+        lines.append(f"- Focus: {country.get('zh_title', '')}")
+        lines.append("- Practice Highlights: " + "; ".join(country.get('points_zh', [])))
+        lines.append("")
+
+    lines.append("## 3. Published Legal Guides & Practice Insights")
+    for article in articles:
+        title = article.title_zh or article.title_en
+        desc = article.description_zh or article.description_en or ""
+        lines.append(f"### [{title}]({base_url}/articles/{article.slug})")
+        lines.append(f"- Business Line: {article.business}")
+        lines.append(f"- Summary: {desc}")
+        lines.append("")
+
+    return "\n".join(lines)

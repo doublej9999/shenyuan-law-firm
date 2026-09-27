@@ -18,6 +18,17 @@
           <h1 class="article-title">{{ isEn ? (article.title_en || article.title_zh) : article.title_zh }}</h1>
         </header>
 
+        <!-- GEO & Key Takeaways / Executive Summary Card -->
+        <div v-if="keyTakeaways.length" class="geo-takeaways-card">
+          <div class="takeaways-header">
+            <span class="takeaways-icon">⚡</span>
+            <h4>{{ isEn ? 'Executive Summary & Key Action Points' : '核心实务要点速读（TL;DR）' }}</h4>
+          </div>
+          <ul class="takeaways-list">
+            <li v-for="(item, idx) in keyTakeaways" :key="idx">{{ item }}</li>
+          </ul>
+        </div>
+
         <div class="article-body">
           <div class="content-html" v-html="renderedBody"></div>
         </div>
@@ -109,6 +120,56 @@ const { data: allArticles } = await useAsyncData(
 )
 
 // FAQ dataset mapped by business category for on-page Q&A and FAQPage JSON-LD
+// Extract structured key takeaways / executive summary for GEO & rapid answer engines
+const keyTakeaways = computed(() => {
+  const art: any = article.value
+  if (!art) return []
+  const desc = isEn.value ? (art.description_en || art.description_zh) : art.description_zh
+  const b = art.business || 'trade'
+
+  if (isEn.value) {
+    if (b === 'trade') {
+      return [
+        'Document Trail: Secure contracts, invoices, bills of lading, customs clearances, and bank slips before formal notice.',
+        'Limitation Audit: Confirm the applicable limitation window (commonly 2–6 years depending on foreign or PRC law).',
+        'Structured Notice: Issue a formal bilingual attorney demand letter to set firm cure deadlines and preserve rights.'
+      ]
+    } else if (b === 'recovery') {
+      return [
+        'Asset Tracing: Verify corporate registry, property, bank, and transaction records prior to alerting the debtor.',
+        'Preservation Orders: Apply for freezing injunctions or interim measures to safeguard enforceable assets.',
+        'Cross-Border Enforcement: Enforce arbitral awards via New York Convention or money judgments via bilateral reciprocity.'
+      ]
+    } else {
+      return [
+        'Jurisdiction Mapping: Real property is strictly governed by the lex situs; cross-border wills require local probate.',
+        'Notarisation & Apostille: Kinship, wills, and death certificates must be apostilled/legalised for local admissibility.',
+        'Estate Inventory: Account for tax filings, foreign exchange regulations, and creditor liabilities before distribution.'
+      ]
+    }
+  } else {
+    if (b === 'trade') {
+      return [
+        '锁定证据底牌：在正式发函前，集中保存合同、订单、发票、提单、报关单及微信邮件对账凭单原件。',
+        '核实诉讼时效：跨境商事时效常见为 2~6 年，若客户曾书面认账，可重新起算或中断，务必尽早确权。',
+        '阶梯维权策略：先发正式涉外律师函设定限期和解窗口；谈判无果时果断衔接仲裁或涉外诉讼。'
+      ]
+    } else if (b === 'recovery') {
+      return [
+        '境内外财产调查：重点核查债务人名下房产、股权、银行存款及关联交易，摸清真实执行能力。',
+        '同步申请财产保全：在债务人转移或隐匿资产前取得法院冻结令，确保护城河与执行标的安全。',
+        '判决/裁决跨国兑现：仲裁裁决依托《纽约公约》在160多国直接申请执行，涉外判决依互惠/条约推进。'
+      ]
+    } else {
+      return [
+        '区分不动产与动产属地：跨境不动产继承适用遗产所在地法，国内遗嘱通常需经当地遗嘱认证（Probate）。',
+        '一揽子公证与海牙认证：亲属关系证明、死亡证明及授权委托书需一次性做足公证与海牙附加证明书（Apostille）。',
+        '统筹税费与外汇合规：兼顾境外遗产税申报与合法继承资金合规结汇汇回，避免程序返工与合规风险。'
+      ]
+    }
+  }
+})
+
 const articleFaqs = computed(() => {
   const art: any = article.value
   if (!art) return []
@@ -473,6 +534,60 @@ useHead({
   color: var(--ink);
   line-height: 1.25;
   margin: 0;
+}
+
+.geo-takeaways-card {
+  background: #fbf9f4;
+  border: 1px solid #e2d8c7;
+  border-left: 4px solid var(--teal);
+  border-radius: 8px;
+  padding: 20px 24px;
+  margin-bottom: 32px;
+}
+
+.takeaways-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.takeaways-icon {
+  font-size: 16px;
+  color: var(--orange);
+}
+
+.takeaways-header h4 {
+  font-family: var(--serif);
+  font-size: 16.5px;
+  color: var(--teal-deep);
+  margin: 0;
+}
+
+.takeaways-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 8px;
+}
+
+.takeaways-list li {
+  position: relative;
+  padding-left: 20px;
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: #3b4b59;
+}
+
+.takeaways-list li::before {
+  content: "•";
+  position: absolute;
+  left: 6px;
+  top: 0;
+  color: var(--gold);
+  font-size: 18px;
+  line-height: 1.4;
 }
 
 .article-body {
