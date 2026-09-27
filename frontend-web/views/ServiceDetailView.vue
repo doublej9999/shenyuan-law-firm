@@ -28,6 +28,38 @@
             <ul class="check-list">
               <li v-for="(m, i) in materials" :key="i">{{ m }}</li>
             </ul>
+          
+            <!-- High-Frequency Jurisdictions for this Service -->
+            <h2 class="block-title">{{ isEn ? 'Key Jurisdictions Covered' : '核心协做法域' }}</h2>
+            <div class="service-jurisdictions-grid">
+              <NuxtLink
+                v-for="c in relevantCountries"
+                :key="c.slug"
+                :to="isEn ? `/en/countries/${c.slug}` : `/countries/${c.slug}`"
+                class="service-j-card"
+              >
+                <span class="j-dot"></span>
+                <span class="j-name">{{ isEn ? c.name_en : c.name_zh }}</span>
+                <span class="j-arrow">&rarr;</span>
+              </NuxtLink>
+            </div>
+
+            <!-- Related Practice Guides & Articles -->
+            <template v-if="serviceArticles.length">
+              <h2 class="block-title">{{ isEn ? 'Featured Practice Guides' : '精选实务案例与指南' }}</h2>
+              <div class="service-articles-grid">
+                <NuxtLink
+                  v-for="art in serviceArticles"
+                  :key="art.id"
+                  :to="isEn ? `/en/articles/${art.slug}` : `/articles/${art.slug}`"
+                  class="service-art-card"
+                >
+                  <span class="s-art-badge">{{ art.business }}</span>
+                  <h4 class="s-art-title">{{ isEn ? (art.title_en || art.title_zh) : art.title_zh }}</h4>
+                  <p class="s-art-desc">{{ isEn ? (art.description_en || art.description_zh) : art.description_zh }}</p>
+                </NuxtLink>
+              </div>
+            </template>
           </div>
 
           <aside class="detail-side">
@@ -101,6 +133,38 @@ const items = computed<string[]>(() => {
   if (!s) return []
   return (isEn.value ? s.items_en : s.items_zh) || []
 })
+
+// Load all articles to display service-specific featured articles
+const { data: allArticles } = await useAsyncData(
+  'service-articles-all',
+  async () => {
+    try {
+      const res = await getApiClient().get('/api/articles')
+      return Array.isArray(res.data) ? res.data : []
+    } catch (e) {
+      return []
+    }
+  }
+)
+
+const serviceArticles = computed(() => {
+  const s: any = service.value
+  if (!s || !allArticles.value) return []
+  const currentSlug = String(route.params.slug)
+  // Match articles by service business category
+  return allArticles.value
+    .filter((a: any) => a.business === currentSlug)
+    .slice(0, 4)
+})
+
+const relevantCountries = computed(() => [
+  { slug: 'united-states', name_zh: '美国', name_en: 'United States' },
+  { slug: 'singapore', name_zh: '新加坡', name_en: 'Singapore' },
+  { slug: 'hong-kong', name_zh: '香港', name_en: 'Hong Kong' },
+  { slug: 'united-kingdom', name_zh: '英国', name_en: 'United Kingdom' },
+  { slug: 'australia', name_zh: '澳大利亚', name_en: 'Australia' },
+  { slug: 'germany', name_zh: '德国', name_en: 'Germany' },
+])
 
 const materials = computed<string[]>(() => {
   const s: any = service.value
@@ -328,6 +392,112 @@ useHead({
   border-left: 2px solid var(--gold);
   border-bottom: 2px solid var(--gold);
   transform: rotate(-45deg);
+}
+
+.service-jurisdictions-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 40px;
+}
+
+.service-j-card {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 14px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--ink);
+  transition: all 0.2s ease;
+}
+
+.service-j-card:hover {
+  border-color: var(--teal);
+  color: var(--teal-deep);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+}
+
+.j-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--gold);
+}
+
+.j-arrow {
+  margin-left: auto;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.service-articles-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+  margin-bottom: 36px;
+}
+
+.service-art-card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.service-art-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.04);
+}
+
+.s-art-badge {
+  align-self: flex-start;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--teal-deep);
+  background: var(--teal-soft);
+  padding: 2px 8px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+.s-art-title {
+  font-size: 14.5px;
+  color: var(--teal-deep);
+  line-height: 1.4;
+  margin: 0 0 8px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.s-art-desc {
+  font-size: 12.5px;
+  color: var(--muted);
+  line-height: 1.5;
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+@media (max-width: 600px) {
+  .service-jurisdictions-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .service-articles-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 .side-card {
