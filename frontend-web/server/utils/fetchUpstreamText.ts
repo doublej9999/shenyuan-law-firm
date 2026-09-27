@@ -15,7 +15,7 @@ import type { H3Event } from 'h3'
  */
 export async function fetchUpstreamText(event: H3Event, path: string, label: string): Promise<string> {
   const config = useRuntimeConfig(event)
-  const base = String(config.public.apiUrl || '').replace(/\/+$/, '')
+  const base = String(config.public.apiUrl || 'https://shenyuan-backend.vercel.app').replace(/\/+$/, '')
 
   try {
     const res = await axios.get<string>(`${base}${path}`, {
