@@ -363,21 +363,120 @@ Cross-border dispute resolution requires coordinated advocacy across civil and c
     }
 
 
+HIGH_VALUE_TOPICS_POOL = [
+    # 一、国际贸易与跨境商事争端 (trade - 18)
+    ("中国跨境电商应对美国特拉华州商事诉讼管辖权异议实务", "trade"),
+    ("新加坡国际商事法庭(SICC)中英双语审判与跨国判决执行", "trade"),
+    ("国际海运货损索赔诉讼时效与提单免责条款破解", "trade"),
+    ("中资企业赴美被诉知识产权侵权与ITC 337调查应对", "trade"),
+    ("国际贸易UCP600信用证欺诈与法院止付令申请实操", "trade"),
+    ("跨国货运提单无单放货中承运人连带赔偿追索实务", "trade"),
+    ("中企出海欧盟面对CBAM碳边境调节机制与ESG合规审查", "trade"),
+    ("涉外大宗商品贸易买方拒收货物后的转售减损与违约救济", "trade"),
+    ("中德跨国机械设备采购质量异议与CISG公约索赔程序", "trade"),
+    ("国际仲裁裁决依据《纽约公约》在香港高等法院申请执行", "trade"),
+    ("跨国原产地规则与海关关税穿透核查抗辩实操", "trade"),
+    ("涉外独家代理分销协议解除后的商誉补偿与竞业限制争议", "trade"),
+    ("中国企业应对美国商务部反倾销反补贴双反调查程序", "trade"),
+    ("涉外保税仓货物权属争议与仓储质押监管人连带责任", "trade"),
+    ("跨国技术许可协议中提成费审计纠纷与出口管制红线", "trade"),
+    ("国际航运滞期费(Demurrage)争议与不可抗力条款援引", "trade"),
+    ("中阿跨国基础设施承包工程保函欺诈与止付救济实务", "trade"),
+    ("跨境跨境电商平台海外商标抢注与马德里协定异议维权", "trade"),
+
+    # 二、海外资产穿透查控与债权追收 (recovery - 18)
+    ("海外债务人通过离岸架构隐匿资产的穿透查控路径", "recovery"),
+    ("跨国供应链货款逾期：离岸账户冻结与跨境清算协同", "recovery"),
+    ("跨境商业欺诈追索：境外资产调查网络与全球冻结令申请", "recovery"),
+    ("债务人转移资产至开曼/BVI离岸公司的欺诈撤销权诉讼", "recovery"),
+    ("英国高等法院Mareva全球财产冻结令申请与跨境执行门槛", "recovery"),
+    ("美国破产法第15章(Chapter 15)跨境破产承认与资产查扣", "recovery"),
+    ("跨国判决在澳大利亚联邦法院申请普通法诉讼执行路径", "recovery"),
+    ("迪拜国际金融中心(DIFC)法院判决在阿联酋全境跨法域执行", "recovery"),
+    ("中企追讨拉美买方欠款：本国司法协助与当地追偿策略", "recovery"),
+    ("债务人隐匿加密资产时的链上追踪与境外民事查扣指引", "recovery"),
+    ("中国法院生效商事判决依据互惠原则在境外申请承认", "recovery"),
+    ("日本东京地方法院商事债权保全与不动产临时假扣押", "recovery"),
+    ("跨国买卖合同欺诈中法定代表人个人无限连带责任刺破", "recovery"),
+    ("涉外应收账款保理违约追索与跨境双保理商连带责任", "recovery"),
+    ("新加坡《破产、重组与解散法》(IRDA)下跨国债务人债务重组", "recovery"),
+    ("跨境货款逾期超诉讼时效后的自然之债转化与重新催告", "recovery"),
+    ("韩国大法院对外国仲裁裁决承认与强制执行实务要点", "recovery"),
+    ("涉外担保物权在债务人境外破产程序中的优先受偿权主张", "recovery"),
+
+    # 三、离岸信托、跨境继承与家族财富 (legacy - 18)
+    ("离岸信托设立后的穿透风险与跨境诉讼实务", "legacy"),
+    ("涉外继承中公证遗嘱与普通法系Probate认证的衔接冲突", "legacy"),
+    ("跨国婚姻离岸资产分配与家族信托财产保全", "legacy"),
+    ("美籍华人继承国内房产及银行存款的涉外继承权公证指南", "legacy"),
+    ("跨国代际传承中离岸家族办公室(FO)双重税籍申报与CRS合规", "legacy"),
+    ("涉及香港不动产与离岸保单的跨境遗产承办与遗嘱检验", "legacy"),
+    ("新加坡VCC可变动资本公司在家族财富离岸隔离中的法律边界", "legacy"),
+    ("跨国非婚生子女境外家族信托受益人资格确认与争议化解", "legacy"),
+    ("泽西岛与根西岛海峡群岛信托防范债权人追索的法定防火墙", "legacy"),
+    ("移民前海外资产重组与家族信托税务筹划风险防范", "legacy"),
+    ("中美跨国婚姻离婚诉讼管辖权竞合与不方便法院原则抗辩", "legacy"),
+    ("离岸私人信托公司(PTC)治理结构失效与受托人背信救济", "legacy"),
+    ("加拿大华人跨国财产继承与海外资产申报(T1135)合规实务", "legacy"),
+    ("跨国婚姻共同财产境外购置房产的物权认定与分割清算", "legacy"),
+    ("涉外意定监护与跨国失能失智财产委托管理法律实操", "legacy"),
+    ("家族信托保护人(Protector)滥用否决权的司法撤换与诉讼", "legacy"),
+    ("澳大利亚华人跨国跨境遗嘱信托设立与外国居民继承税筹", "legacy"),
+    ("跨境双重国籍身份冲突下的涉外继承准据法适用与排除", "legacy"),
+]
+
+
+def synthesize_dynamic_topic(existing_titles: set) -> tuple:
+    """当静态选题池耗尽时，调用 DeepSeek 结合已有标题库衍生出全新的前沿涉外实操选题。"""
+    api_key = get_llm_api_key()
+    if not api_key:
+        return (f"跨国商事争议维权与涉外法务实务-{int(datetime.now().timestamp())}", "trade")
+
+    sample_existing = list(existing_titles)[:20]
+    prompt = (
+        "你是一名深远国际律师事务所的资深跨境业务合伙人。我们已经发布了以下涉外法律实务指南：\n"
+        + "\n".join(f"- {t}" for t in sample_existing)
+        + "\n\n请避开上述已有主题，针对当前中企出海、跨国追偿、离岸信托或涉外继承最新的痛点（如美国长臂管辖、新加坡合规、开曼BVI穿透、海牙公证或中东/欧洲纠纷），"
+        "构思一个具有高搜索量、专业深度且具体明确的全新法律实操指南选题。\n"
+        "请直接输出合法 JSON，格式为：{\"topic\": \"中文选题名称(30字以内)\", \"business\": \"trade|recovery|legacy\"}"
+    )
+
+    try:
+        payload = {
+            "model": LLM_MODEL,
+            "messages": [{"role": "user", "content": prompt}],
+            "temperature": 0.7,
+            "max_tokens": 500,
+        }
+        req = urllib.request.Request(
+            f"{LLM_API_BASE}/chat/completions",
+            headers={
+                "Authorization": f"Bearer {api_key}",
+                "Content-Type": "application/json",
+            },
+            data=json.dumps(payload).encode(),
+        )
+        with urllib.request.urlopen(req, timeout=30) as resp:
+            data = json.loads(resp.read().decode())
+            content = data["choices"][0]["message"]["content"].strip()
+            if content.startswith("```"):
+                content = re.sub(r"^```[a-zA-Z]*\n?", "", content)
+                content = re.sub(r"\n?```$", "", content).strip()
+            parsed = json.loads(content)
+            topic = parsed.get("topic", "").strip()
+            biz = parsed.get("business", "trade").strip()
+            if topic and biz in ["trade", "recovery", "legacy"]:
+                print(f"       [AI 衍生选题成功] 自动衍生出全新选题: {topic} ({biz})")
+                return (topic, biz)
+    except Exception as e:
+        print(f"       [AI 衍生选题降级] {e}")
+
+    return (f"跨国商事争议维权与涉外法务实战-{int(datetime.now().timestamp())}", "trade")
+
+
 def produce_and_publish_new_article(topic: str = "", business: str = "general"):
     """由 AI 创作、自愈优化并自动发布一篇新文章。"""
     if not topic:
-        topics_pool = [
-            ("中国跨境电商应对美国特拉华州商事诉讼管辖权异议实务", "recovery"),
-            ("新加坡国际商事法庭(SICC)中英双语审判与跨国判决执行", "trade"),
-            ("离岸信托设立后的穿透风险与跨境诉讼实务", "legacy"),
-            ("国际海运货损索赔诉讼时效与提单免责条款破解", "trade"),
-            ("海外债务人通过离岸架构隐匿资产的穿透查控路径", "recovery"),
-            ("涉外继承中公证遗嘱与普通法系Probate认证的衔接冲突", "legacy"),
-            ("跨国供应链货款逾期：离岸账户冻结与跨境清算协同", "recovery"),
-            ("跨国婚姻离岸资产分配与家族信托财产保全", "legacy"),
-            ("中资企业赴美被诉知识产权侵权与ITC 337调查应对", "trade"),
-            ("跨境商业欺诈追索：境外资产调查网络与全球冻结令申请", "recovery"),
-        ]
         try:
             existing = api_request("/api/articles")
             existing_slugs = {a.get("slug") for a in existing}
@@ -386,12 +485,13 @@ def produce_and_publish_new_article(topic: str = "", business: str = "general"):
             existing_slugs, existing_titles = set(), set()
 
         chosen = None
-        for t, b in topics_pool:
+        for t, b in HIGH_VALUE_TOPICS_POOL:
             if t not in existing_titles and not any(t in title for title in existing_titles):
                 chosen = (t, b)
                 break
         if not chosen:
-            chosen = (f"跨国商事争议维权与涉外法务实战-{int(datetime.now().timestamp())}", "general")
+            print("       [选题池提醒] 预设 54 篇涉外高价值选题已全部覆盖，正在调用 AI 动态衍生全新前沿选题...")
+            chosen = synthesize_dynamic_topic(existing_titles)
         topic, business = chosen
 
     print("\n" + f"[1/4 选题选定] 主题: {topic} (领域: {business})")

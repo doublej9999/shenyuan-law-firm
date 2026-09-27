@@ -187,6 +187,7 @@ def generate_robots_txt() -> str:
         f"Sitemap: {base_url}/sitemap.xml\n"
         f"LLMtxt: {base_url}/llms.txt\n"
         f"LLMFullTxt: {base_url}/llms-full.txt\n"
+        f"IndexNow: {base_url}/4b8f2d93e1074a3f890259bfae6741c0.txt\n"
     )
 
 
@@ -590,3 +591,47 @@ def generate_llms_full_txt() -> str:
         lines.append("")
 
     return "\n".join(lines)
+
+
+def generate_feed_xml() -> str:
+    """Generate RFC-822 RSS 2.0 XML feed of the latest 30 published articles."""
+    from apps.content.models import ContentArticle
+    import xml.sax.saxutils as saxutils
+    from email.utils import format_datetime
+
+    base_url = get_base_url()
+    articles = ContentArticle.objects.filter(status="published").order_by("-published_at", "-created_at")[:30]
+
+    items_xml = []
+    for art in articles:
+        title = saxutils.escape(art.title_zh or art.title_en or "涉外法律实务")
+        link = f"{base_url}/articles/{art.slug}"
+        desc = saxutils.escape((art.description_zh or art.description_en or "")[:300])
+        dt = art.published_at or art.created_at
+        pub_date = format_datetime(dt) if dt else ""
+        category = saxutils.escape(art.business or "general")
+        items_xml.append(
+            f"    <item>\n"
+            f"      <title>{title}</title>\n"
+            f"      <link>{link}</link>\n"
+            f"      <guid isPermaLink=\"true\">{link}</guid>\n"
+            f"      <pubDate>{pub_date}</pubDate>\n"
+            f"      <description>{desc}</description>\n"
+            f"      <category>{category}</category>\n"
+            f"    </item>"
+        )
+
+    items_str = "\n".join(items_xml)
+    return (
+        '<?xml version="1.0" encoding="UTF-8"?>\n'
+        '<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">\n'
+        '  <channel>\n'
+        '    <title>深远(国际)律师事务所 · 涉外法律实务专栏</title>\n'
+        f'    <link>{base_url}/articles</link>\n'
+        '    <description>深远(国际)律师事务所跨境商事争议解决、海外债权追收、跨国继承与家族财富保护最新实操指南与案例研析。</description>\n'
+        '    <language>zh-CN</language>\n'
+        f'    <atom:link href="{base_url}/feed.xml" rel="self" type="application/rss+xml" />\n'
+        f'{items_str}\n'
+        '  </channel>\n'
+        '</rss>'
+    )
