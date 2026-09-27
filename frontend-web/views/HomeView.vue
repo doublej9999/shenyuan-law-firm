@@ -67,7 +67,18 @@
             </div>
             <div class="field">
               <label for="phone">{{ isEn ? 'Phone' : '联系电话' }}</label>
-              <input id="phone" v-model="form.phone" type="tel" required :placeholder="isEn ? 'Phone / WhatsApp' : '手机或固定电话，用于回电联系'">
+              <div class="home-phone-row">
+                <span class="country-dial-badge" :title="countryInfo.nameZh">
+                  {{ countryInfo.flag }} {{ countryInfo.dialCode }}
+                </span>
+                <input
+                  id="phone"
+                  v-model="form.phone"
+                  type="tel"
+                  required
+                  :placeholder="isEn ? 'Local number / WhatsApp' : '手机或固定电话，用于回电联系'"
+                >
+              </div>
             </div>
             <div class="field full">
               <label for="summary">{{ isEn ? 'Briefly describe the issue' : '一句话描述问题' }}</label>
@@ -595,9 +606,11 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { getApiClient, parseApiError } from '@/api/client'
+import { useUserGeo } from '@/composables/useUserGeo'
 
 const route = useRoute()
 const isEn = computed(() => route.path.startsWith('/en'))
+const { countryInfo } = useUserGeo()
 
 // ---- SEO --------------------------------------------------------------
 const siteUrl = 'https://shenyuanlegal.com'
@@ -738,12 +751,21 @@ const handleIntakeSubmit = async () => {
 
   submitting.value = true
   try {
+    let normalizedPhone = form.value.phone.trim()
+    if (!normalizedPhone.startsWith('+') && countryInfo.value?.dialCode) {
+      normalizedPhone = `${countryInfo.value.dialCode} ${normalizedPhone}`
+    }
+
+    const geoMeta = countryInfo.value && countryInfo.value.code !== 'CN'
+      ? ` [访客法域: ${countryInfo.value.nameZh} (${countryInfo.value.code})]`
+      : ''
+
     await getApiClient().post('/api/intakes', {
       name: form.value.name,
-      phone: form.value.phone,
+      phone: normalizedPhone,
       email: form.value.email || undefined,
       matter: form.value.matter,
-      summary: form.value.summary,
+      summary: `${form.value.summary}${geoMeta}`,
       consent: form.value.consent,
       language: isEn.value ? 'en' : 'zh'
     })
@@ -903,6 +925,31 @@ h3 { font-size: 20px; line-height: 1.3; }
 .field { display: grid; gap: 5px; }
 .field.full { grid-column: 1 / -1; }
 .field label { color: var(--muted); font-size: 12px; font-weight: 700; }
+
+.home-phone-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+}
+
+.country-dial-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 10px 10px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--teal-deep);
+  white-space: nowrap;
+  user-select: none;
+  flex-shrink: 0;
+}
+
 .field input, .field select, .field textarea {
   width: 100%;
   padding: 10px 12px;
