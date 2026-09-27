@@ -6,6 +6,7 @@ from shenyuan_legal.api import api
 from apps.content.models import ContentArticle
 from apps.content.seo_service import (
     generate_llms_txt,
+    generate_llms_full_txt,
     generate_robots_txt,
     generate_sitemap_xml,
     render_article_seo_html,
@@ -48,6 +49,7 @@ urlpatterns = [
     path("sitemap.xml", sitemap_view, name="sitemap"),
     path("robots.txt", robots_view, name="robots"),
     path("llms.txt", llms_view, name="llms"),
+    path("llms-full.txt", llms_full_view, name="llms_full"),
     path("articles/<slug:slug>", article_seo_view, name="article_seo"),
     path("en/articles/<slug:slug>", article_seo_en_view, name="article_seo_en"),
     path("django-admin/", admin.site.urls),
