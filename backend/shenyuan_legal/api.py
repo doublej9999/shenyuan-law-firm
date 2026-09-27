@@ -1,6 +1,7 @@
 from ninja import NinjaAPI
 from apps.intakes.api import router as intakes_router
 from apps.content.api import router as content_router
+from apps.content.site_content_api import router as site_content_router
 from apps.research.api import router as research_router
 from apps.marketing.api import router as marketing_router
 
@@ -37,5 +38,6 @@ def health_check(request):
 
 api.add_router("", intakes_router)
 api.add_router("", content_router)
+api.add_router("", site_content_router)
 api.add_router("", research_router)
 api.add_router("", marketing_router)

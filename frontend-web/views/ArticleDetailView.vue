@@ -6,9 +6,9 @@
       </div>
 
       <article v-else-if="article" class="detail-paper">
-        <router-link :to="isEn ? '/en/articles' : '/articles'" class="back-nav">
+        <NuxtLink :to="isEn ? '/en/articles' : '/articles'" class="back-nav">
           &larr; {{ isEn ? 'Back to legal insights' : '返回法律专栏' }}
-        </router-link>
+        </NuxtLink>
 
         <header class="article-header">
           <div class="meta-row">
@@ -37,32 +37,43 @@
               ? 'Our bilingual dispute resolution team can provide an initial case review within 24 hours.' 
               : '提交您的案情简述或扫码微信沟通，我们将在 24 小时内为您出具初步分析建议。' }}</p>
           </div>
-          <router-link :to="isEn ? '/en#intake' : '/#intake'" class="button button-primary">
+          <NuxtLink :to="isEn ? '/en#intake' : '/#intake'" class="button button-primary">
             {{ isEn ? 'Free Legal Consultation →' : '免费法律咨询评估 →' }}
-          </router-link>
+          </NuxtLink>
         </div>
       </article>
 
       <div v-else class="not-found">
         <p>{{ isEn ? 'Article not found.' : '未找到相关文章。' }}</p>
-        <router-link :to="isEn ? '/en/articles' : '/articles'" class="button button-outline">
+        <NuxtLink :to="isEn ? '/en/articles' : '/articles'" class="button button-outline">
           {{ isEn ? 'Return to Articles' : '返回专栏列表' }}
-        </router-link>
+        </NuxtLink>
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue'
-import { useRoute } from 'vue-router'
-import { apiClient } from '@/api/client'
+import { computed } from 'vue'
+import { getApiClient } from '@/api/client'
 
 const route = useRoute()
 const isEn = computed(() => route.path.startsWith('/en'))
 
-const article = ref<any>(null)
-const loading = ref(true)
+// Article bodies are fetched during SSR so crawlers receive the full text,
+// title, canonical, hreflang and JSON-LD in the initial HTML response.
+const { data: article, pending: loading } = await useAsyncData(
+  `article-${isEn.value ? 'en' : 'zh'}-${route.params.slug}`,
+  async () => {
+    try {
+      const res = await getApiClient().get(`/api/articles/${route.params.slug}`)
+      return res.data
+    } catch (err) {
+      console.error('Failed to load article detail', err)
+      return null
+    }
+  }
+)
 
 // 轻量级安全 Markdown 语义解析器（增强 SEO 语义与阅读排版）
 function parseMarkdownToHtml(md: string): string {
@@ -134,62 +145,71 @@ const renderedBody = computed(() => {
   return parseMarkdownToHtml(raw)
 })
 
-// 动态注入 SEO 元数据与 JSON-LD 结构化数据
-function applySeoMetadata(art: any) {
-  const title = isEn.value ? (art.title_en || art.title_zh) : art.title_zh
-  const desc = isEn.value ? (art.description_en || art.description_zh) : art.description_zh
-  const siteName = isEn.value ? 'Shenyuan International Law Firm' : '深远(国际)律师事务所'
-  const fullTitle = `${title} | ${siteName}`
+// ---- SEO --------------------------------------------------------------
+const siteUrl = 'https://shenyuanlegal.com'
 
-  document.title = fullTitle
+const title = computed(() => {
+  const art: any = article.value
+  if (!art) return ''
+  return isEn.value ? (art.title_en || art.title_zh) : art.title_zh
+})
 
-  // Meta description
-  let metaDesc = document.querySelector('meta[name="description"]')
-  if (!metaDesc) {
-    metaDesc = document.createElement('meta')
-    metaDesc.setAttribute('name', 'description')
-    document.head.appendChild(metaDesc)
-  }
-  metaDesc.setAttribute('content', desc || '')
+const description = computed(() => {
+  const art: any = article.value
+  if (!art) return ''
+  return isEn.value ? (art.description_en || art.description_zh) : art.description_zh
+})
 
-  // Canonical & Hreflang
-  const baseUrl = 'https://shenyuanlegal.com'
-  const currentPath = `/articles/${art.slug}`
-  const enPath = `/en/articles/${art.slug}`
+const zhPath = computed(() => `/articles/${route.params.slug}`)
+const enPath = computed(() => `/en/articles/${route.params.slug}`)
+const canonical = computed(() => `${siteUrl}${isEn.value ? enPath.value : zhPath.value}`)
+const siteName = computed(() => isEn.value ? 'Shenyuan International Law Firm' : '深远(国际)律师事务所')
 
-  setOrCreateLink('canonical', isEn.value ? `${baseUrl}${enPath}` : `${baseUrl}${currentPath}`)
-  setOrCreateLink('alternate', `${baseUrl}${currentPath}`, 'zh-CN')
-  setOrCreateLink('alternate', `${baseUrl}${enPath}`, 'en')
+useSeoMeta({
+  title: () => title.value ? `${title.value} | ${siteName.value}` : siteName.value,
+  description: () => description.value,
+  ogTitle: () => title.value || siteName.value,
+  ogDescription: () => description.value,
+  ogType: 'article',
+  ogUrl: () => canonical.value,
+  twitterTitle: () => title.value || siteName.value,
+  twitterDescription: () => description.value,
+})
 
-  // Schema.org Article 结构化数据
-  const articleJsonLd = {
+const articleJsonLd = computed(() => {
+  const art: any = article.value
+  if (!art) return null
+  return {
     '@context': 'https://schema.org',
     '@type': 'Article',
-    'headline': title,
-    'description': desc,
+    'headline': title.value,
+    'description': description.value,
     'datePublished': art.published_at || art.created_at,
     'dateModified': art.updated_at || art.published_at,
+    'inLanguage': isEn.value ? 'en' : 'zh-CN',
     'author': {
       '@type': 'Organization',
       'name': 'Shenyuan International Legal Team',
-      'url': baseUrl
+      'url': siteUrl,
     },
     'publisher': {
       '@type': 'Organization',
       'name': 'Shenyuan International Law Firm',
       'logo': {
         '@type': 'ImageObject',
-        'url': `${baseUrl}/vite.svg`
-      }
+        'url': `${siteUrl}/favicon.svg`,
+      },
     },
     'mainEntityOfPage': {
       '@type': 'WebPage',
-      '@id': isEn.value ? `${baseUrl}${enPath}` : `${baseUrl}${currentPath}`
-    }
+      '@id': canonical.value,
+    },
   }
+})
 
-  // Schema.org BreadcrumbList 面包屑导航
-  const breadcrumbJsonLd = {
+const breadcrumbJsonLd = computed(() => {
+  if (!article.value) return null
+  return {
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
     'itemListElement': [
@@ -197,68 +217,41 @@ function applySeoMetadata(art: any) {
         '@type': 'ListItem',
         'position': 1,
         'name': isEn.value ? 'Home' : '首页',
-        'item': isEn.value ? `${baseUrl}/en` : baseUrl
+        'item': isEn.value ? `${siteUrl}/en` : siteUrl,
       },
       {
         '@type': 'ListItem',
         'position': 2,
         'name': isEn.value ? 'Legal Insights' : '涉外法律专栏',
-        'item': isEn.value ? `${baseUrl}/en/articles` : `${baseUrl}/articles`
+        'item': isEn.value ? `${siteUrl}/en/articles` : `${siteUrl}/articles`,
       },
       {
         '@type': 'ListItem',
         'position': 3,
-        'name': title,
-        'item': isEn.value ? `${baseUrl}${enPath}` : `${baseUrl}${currentPath}`
-      }
-    ]
-  }
-
-  injectJsonLd('seo-article-jsonld', articleJsonLd)
-  injectJsonLd('seo-breadcrumb-jsonld', breadcrumbJsonLd)
-}
-
-function setOrCreateLink(rel: string, href: string, hreflang?: string) {
-  let selector = `link[rel="${rel}"]`
-  if (hreflang) selector += `[hreflang="${hreflang}"]`
-  let link = document.querySelector(selector)
-  if (!link) {
-    link = document.createElement('link')
-    link.setAttribute('rel', rel)
-    if (hreflang) link.setAttribute('hreflang', hreflang)
-    document.head.appendChild(link)
-  }
-  link.setAttribute('href', href)
-}
-
-function injectJsonLd(id: string, data: any) {
-  let script = document.getElementById(id)
-  if (!script) {
-    script = document.createElement('script')
-    script.id = id
-    script.setAttribute('type', 'application/ld+json')
-    document.head.appendChild(script)
-  }
-  script.textContent = JSON.stringify(data)
-}
-
-onMounted(async () => {
-  try {
-    const slug = route.params.slug
-    const res = await apiClient.get(`/api/articles/${slug}`)
-    article.value = res.data
-    applySeoMetadata(res.data)
-  } catch (err) {
-    console.error('Failed to load article detail', err)
-  } finally {
-    loading.value = false
+        'name': title.value,
+        'item': canonical.value,
+      },
+    ],
   }
 })
 
-onUnmounted(() => {
-  // 清理动态插入的 JSON-LD
-  document.getElementById('seo-article-jsonld')?.remove()
-  document.getElementById('seo-breadcrumb-jsonld')?.remove()
+useHead({
+  link: [
+    { rel: 'canonical', href: () => canonical.value },
+    { rel: 'alternate', hreflang: 'zh-CN', href: () => `${siteUrl}${zhPath.value}` },
+    { rel: 'alternate', hreflang: 'en', href: () => `${siteUrl}${enPath.value}` },
+    { rel: 'alternate', hreflang: 'x-default', href: () => `${siteUrl}${zhPath.value}` },
+  ],
+  script: computed(() => {
+    const scripts: any[] = []
+    if (articleJsonLd.value) {
+      scripts.push({ type: 'application/ld+json', innerHTML: JSON.stringify(articleJsonLd.value) })
+    }
+    if (breadcrumbJsonLd.value) {
+      scripts.push({ type: 'application/ld+json', innerHTML: JSON.stringify(breadcrumbJsonLd.value) })
+    }
+    return scripts
+  }),
 })
 </script>
 

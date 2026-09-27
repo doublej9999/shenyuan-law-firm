@@ -2,13 +2,13 @@
   <div class="site-shell">
     <header class="site-header" :class="{ 'is-scrolled': isScrolled || !isHomePage }">
       <div class="wrap nav">
-        <router-link :to="isEn ? '/en' : '/'" class="brand" aria-label="Shenyuan International 首页">
+        <NuxtLink :to="isEn ? '/en' : '/'" class="brand" aria-label="Shenyuan International 首页">
           <span class="brand-mark">深</span>
           <span class="brand-text">
             <span>Shenyuan International</span>
             <small>{{ isEn ? 'Shenyuan International Law' : '深远(国际)律师事务所' }}</small>
           </span>
-        </router-link>
+        </NuxtLink>
 
         <nav class="nav-links" :class="{ 'mobile-open': mobileMenuOpen }">
           <a @click.prevent="navigateSection('services')" href="#services">
@@ -26,9 +26,9 @@
           <a @click.prevent="navigateSection('faq')" href="#faq">
             {{ isEn ? 'FAQ' : '常见问题' }}
           </a>
-          <router-link :to="isEn ? '/en/articles' : '/articles'">
+          <NuxtLink :to="isEn ? '/en/articles' : '/articles'">
             {{ isEn ? 'Insights' : '法律专栏' }}
-          </router-link>
+          </NuxtLink>
         </nav>
 
         <div class="nav-actions">
@@ -46,7 +46,7 @@
     </header>
 
     <main class="main-body">
-      <router-view />
+      <NuxtPage />
     </main>
 
     <!-- 浮动咨询快捷按钮 -->
@@ -134,7 +134,7 @@
           <div class="footer-col">
             <h4>{{ isEn ? 'Quick Links' : '快速入口' }}</h4>
             <a @click.prevent="navigateSection('intake')" href="#intake">{{ isEn ? 'Free Consultation' : '免费法律咨询' }}</a>
-            <router-link :to="isEn ? '/en/articles' : '/articles'">{{ isEn ? 'Legal Insights' : '法律专栏' }}</router-link>
+            <NuxtLink :to="isEn ? '/en/articles' : '/articles'">{{ isEn ? 'Legal Insights' : '法律专栏' }}</NuxtLink>
             <a @click.prevent="navigateSection('global')" href="#global">{{ isEn ? 'Global Network' : '全球网络' }}</a>
             <a @click.prevent="navigateSection('team')" href="#team">{{ isEn ? 'Legal Team' : '律师团队' }}</a>
             <a @click.prevent="navigateSection('faq')" href="#faq">{{ isEn ? 'FAQ' : '常见问题' }}</a>
@@ -150,11 +150,9 @@
     </footer>
   </div>
 </template>
-
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
-import { apiClient, parseApiError } from '@/api/client'
+import { getApiClient, parseApiError } from '@/api/client'
 
 const route = useRoute()
 const router = useRouter()
@@ -247,7 +245,7 @@ const submitDrawerForm = async () => {
 
   drawerSubmitting.value = true
   try {
-    await apiClient.post('/api/intakes', {
+    await getApiClient().post('/api/intakes', {
       name: drawerForm.value.name,
       phone: drawerForm.value.phone,
       email: drawerForm.value.email || undefined,
@@ -276,7 +274,6 @@ const submitDrawerForm = async () => {
   }
 }
 </script>
-
 <style>
 :root {
   --ink: #172433;

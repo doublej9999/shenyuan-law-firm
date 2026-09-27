@@ -1,6 +1,10 @@
 node_modules
+.nuxt
+.output
+.data
 dist
 dist-ssr
 *.local
 .vercel
 tsconfig.tsbuildinfo
+.DS_Store
