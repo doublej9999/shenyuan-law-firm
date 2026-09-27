@@ -29,6 +29,23 @@
               <li v-for="(p, i) in points" :key="i">{{ p }}</li>
             </ul>
 
+            <!-- Related Country Articles -->
+            <template v-if="countryArticles.length">
+              <h2 class="block-title">{{ isEn ? 'Relevant Legal Guides & Articles' : '该法域相关实务文章' }}</h2>
+              <div class="country-articles-grid">
+                <NuxtLink
+                  v-for="art in countryArticles"
+                  :key="art.id"
+                  :to="isEn ? `/en/articles/${art.slug}` : `/articles/${art.slug}`"
+                  class="country-art-card"
+                >
+                  <span class="c-art-badge">{{ art.business }}</span>
+                  <h4 class="c-art-title">{{ isEn ? (art.title_en || art.title_zh) : art.title_zh }}</h4>
+                  <p class="c-art-desc">{{ isEn ? (art.description_en || art.description_zh) : art.description_zh }}</p>
+                </NuxtLink>
+              </div>
+            </template>
+
             <template v-if="faqs.length">
               <h2 class="block-title">{{ isEn ? 'Frequently asked questions' : '常见问题' }}</h2>
               <div class="faq-list">
@@ -105,6 +122,49 @@ const { data: country, pending: loading } = await useAsyncData(
     }
   }
 )
+
+// Load all articles to find matching articles for this jurisdiction
+const { data: allArticles } = await useAsyncData(
+  'country-articles-all',
+  async () => {
+    try {
+      const res = await getApiClient().get('/api/articles')
+      return Array.isArray(res.data) ? res.data : []
+    } catch (e) {
+      return []
+    }
+  }
+)
+
+const countryArticles = computed(() => {
+  const c: any = country.value
+  if (!c || !allArticles.value) return []
+  const nameZh = c.name_zh || ''
+  const nameEn = (c.name_en || '').toLowerCase()
+  const slug = (c.slug || '').toLowerCase()
+
+  // Match by country name, slug, or relevant terms
+  const matched = allArticles.value.filter((a: any) => {
+    const textZh = (a.title_zh || '') + ' ' + (a.description_zh || '') + ' ' + (a.slug || '')
+    const textEn = ((a.title_en || '') + ' ' + (a.description_en || '') + ' ' + (a.slug || '')).toLowerCase()
+    
+    // Check specific keywords
+    if (nameZh && textZh.includes(nameZh)) return true
+    if (nameEn && textEn.includes(nameEn)) return true
+    if (slug === 'united-states' && (textEn.includes('us ') || textEn.includes('u.s.') || textZh.includes('美国') || textZh.includes('美加'))) return true
+    if (slug === 'singapore' && (textZh.includes('新加坡') || textEn.includes('singapore'))) return true
+    if (slug === 'hong-kong' && (textZh.includes('香港') || textEn.includes('hk') || textEn.includes('hong kong'))) return true
+    if (slug === 'russia' && (textZh.includes('俄罗斯') || textEn.includes('russia'))) return true
+    return false
+  })
+
+  // Return up to 4 matched articles; if fewer, backfill with top trade/recovery articles
+  if (matched.length >= 2) {
+    return matched.slice(0, 4)
+  }
+  const fallback = allArticles.value.filter((a: any) => !matched.includes(a)).slice(0, 3 - matched.length)
+  return [...matched, ...fallback]
+})
 
 const items = computed<string[]>(() => {
   const c: any = country.value
@@ -345,6 +405,68 @@ useHead({
   height: 6px;
   border-radius: 50%;
   background: var(--gold);
+}
+
+.country-articles-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+  margin-bottom: 36px;
+}
+
+.country-art-card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.country-art-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.04);
+}
+
+.c-art-badge {
+  align-self: flex-start;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--teal-deep);
+  background: var(--teal-soft);
+  padding: 2px 8px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+.c-art-title {
+  font-size: 14.5px;
+  color: var(--teal-deep);
+  line-height: 1.4;
+  margin: 0 0 8px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.c-art-desc {
+  font-size: 12.5px;
+  color: var(--muted);
+  line-height: 1.5;
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+@media (max-width: 600px) {
+  .country-articles-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 .faq-list { display: grid; gap: 10px; }
