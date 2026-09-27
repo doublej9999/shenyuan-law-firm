@@ -1,16 +1,16 @@
 #!/usr/bin/env python3
-"""全自动 CMS 内容生产、自愈优化与自动发布流水线脚本。
+"""全自动 CMS 内容生产、AI 创作、自愈优化与自动发布流水线脚本。
 
 架构：
-  直接对接生产环境后端 API (https://shenyuan-backend.vercel.app)，
-  无需修改代码，无需本地 Git commit，无需重新构建部署。
-  文章发布后，前台（Nuxt 3 SSR）与动态 Sitemap 实时同步呈现，
-  并自动调用 Google Indexing API 提交抓取。
+  1. AI 创作引擎：集成 cpa.927900.xyz (deepseek-v4.1-flash)，生成高深度双语专业涉外法务长文；
+  2. 自愈优化引擎：自动筛查合规、补齐字数与结构化清单、注入转化 CTA 及标准涉外免责声明；
+  3. 生产发布：直接对接生产端 CMS (https://shenyuan-backend.vercel.app)，零代码改动、无需重构；
+  4. 实时推送：调用 Google Indexing API 主动提交中英双语 URL，加速搜索索引。
 
 用法：
-  python3 scripts/auto_content_pipeline.py --publish            # 自动生成 1 篇并通过优化后直接发布
+  python3 scripts/auto_content_pipeline.py --publish            # 自动调用 AI 生成 1 篇并通过优化后直接发布
   python3 scripts/auto_content_pipeline.py --repair-drafts 2    # 自动优化并发布 2 篇存量草稿
-  python3 scripts/auto_content_pipeline.py --daily-run          # 每日综合任务：新生成发布 2 篇 + 优化发布 1 篇草稿
+  python3 scripts/auto_content_pipeline.py --daily-run          # 每日综合任务：AI 生成发布 2 篇 + 优化发布 1 篇草稿
 """
 
 import argparse
@@ -23,12 +23,38 @@ import urllib.request
 from datetime import datetime, timezone
 from pathlib import Path
 
+# 防止控制台编码报错
+try:
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8")
+except Exception:
+    pass
+
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "scripts"))
 from article_repairer import repair_article
 
 BACKEND_BASE = os.environ.get("BACKEND_API_URL", "https://shenyuan-backend.vercel.app").rstrip("/")
 ADMIN_TOKEN = os.environ.get("ADMIN_TOKEN", "shenyuan-admin-prod-token-2026").strip()
+
+# AI 大模型配置（优先读取环境变量，其次从 .env 中提取）
+LLM_API_BASE = os.environ.get("LLM_API_BASE", "https://cpa.927900.xyz/v1").rstrip("/")
+LLM_MODEL = os.environ.get("LLM_MODEL", "deepseek-v4.1-flash").strip()
+
+
+def get_llm_api_key() -> str:
+    key = os.environ.get("LLM_API_KEY", "").strip() or os.environ.get("HERMES_CUSTOM_CPA_927900_XYZ_API_KEY", "").strip()
+    if key:
+        return key
+    for p in ["/root/.hermes/.env", "/root/.env", str(ROOT / ".env")]:
+        if os.path.exists(p):
+            try:
+                for line in open(p, encoding="utf-8"):
+                    if "HERMES_CUSTOM_CPA_927900_XYZ_API_KEY=" in line:
+                        return line.split("=", 1)[1].strip().strip('"').strip("'")
+            except Exception:
+                pass
+    return ""
 
 
 def api_request(path: str, data: dict = None, method: str = "GET") -> dict:
@@ -67,15 +93,110 @@ def notify_indexing(slug: str):
             *urls,
         ]
         res = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
-        print("       -> Google Indexing 提交输出: " + res.stdout.strip())
+        output_clean = res.stdout.strip()
+        print("       -> Google Indexing 提交输出: " + output_clean)
         if res.stderr:
-            print(f"       -> 错误提示: {res.stderr.strip()}")
+            print("       -> 错误提示: " + res.stderr.strip())
     except Exception as e:
         print(f"       -> 提交 Google Indexing 异常: {e}")
 
 
+SYSTEM_PROMPT = """你是一名资深的涉外法律合规顾问与双语法律内容专家，服务于深远(国际)律师事务所 (Shenyuan International Law Firm)。
+请基于用户提供的主题、业务领域与要求，输出一篇严谨、权威、具有实际操作价值且高度符合现代搜索引擎（Google/百度）SEO 规则的涉外法律实务双语文章。
+
+【输出要求】
+必须严格输出纯 JSON 格式（不得包含 Markdown 代码块标记如 ```json 或 ```），包含以下键名：
+{
+  "slug": "语义化英文URL路径(如 cross-border-debt-collection-guide)",
+  "title_zh": "中文专业标题(30字以内，包含核心长尾词与实务痛点)",
+  "title_en": "英文专业标题(70字符以内)",
+  "description_zh": "中文SEO摘要(80-150字，精准概括核心痛点与法律应对路径)",
+  "description_en": "英文SEO摘要(100-160字符)",
+  "business": "所属领域(trade / recovery / legacy / general)",
+  "intent": "搜索意图(I 代表信息类, T 代表交易与委托类)",
+  "body_zh": "中文深度实务正文Markdown(1200-2500字，包含案件背景、法律适用与红线、实操维权四步法、证据清单表格、常见问答FAQ、转化呼吁[免费咨询 →](/#intake)与标准免责声明)",
+  "body_en": "地道英文Markdown正文(包含对应章节、Evidentiary Checklist、[Free consultation →](/#intake)与英文Legal Disclaimer)"
+}
+
+【合规红线】
+禁止使用“100%胜诉”、“必胜”、“保证追回全部损失”等承诺胜诉绝对化表述，正文末尾必须保留标准免责声明。
+"""
+
+
+def generate_article_with_ai(topic: str, business: str = "general") -> dict:
+    """调用 cpa.927900.xyz 的 deepseek-v4.1-flash 生成高质量涉外法律长文。"""
+    api_key = get_llm_api_key()
+    if not api_key:
+        print("       [提示] 未检测到 LLM API Key，降级至专家规则模板生成。")
+        return generate_article_template(topic, business)
+
+    prompt = f"""你是一名资深涉外律师与合规主管。请撰写一篇关于《{topic}》的深度实务双语指南（业务线：{business}）。
+请直接输出包含以下字段的合法纯 JSON 对象，不要输出任何前言、后记或说明：
+{{
+  "slug": "语义化英文URL路径(如 cross-border-debt-collection-guide)",
+  "title_zh": "中文专业标题(30字以内，包含核心长尾词与实务痛点)",
+  "title_en": "英文专业标题(70字符以内)",
+  "description_zh": "中文SEO摘要(80-150字，精准概括核心痛点与法律应对路径)",
+  "description_en": "英文SEO摘要(100-160字符)",
+  "business": "{business}",
+  "intent": "I",
+  "body_zh": "中文深度实务正文Markdown(1200-2000字，包含案件背景、法律适用与管辖红线、实操维权四步法、证据清单对照表、业务常见问答FAQ、转化呼吁[免费咨询 →](/#intake)与免责声明)",
+  "body_en": "地道英文Markdown正文(包含对应章节、Evidentiary Checklist、[Free consultation →](/#intake)与英文Legal Disclaimer)"
+}}
+
+【合规红线】
+禁止使用“100%胜诉”、“必胜”、“保证追回全部损失”等承诺胜诉绝对化表述，正文末尾必须保留标准免责声明。"""
+
+    models_to_try = [LLM_MODEL, "deepseek-v4-flash"]
+    seen = set()
+    models = [m for m in models_to_try if m and not (m in seen or seen.add(m))]
+
+    for model_name in models:
+        payload = {
+            "model": model_name,
+            "messages": [
+                {"role": "user", "content": prompt}
+            ],
+            "temperature": 0.2,
+            "max_tokens": 16384,
+        }
+        req = urllib.request.Request(
+            f"{LLM_API_BASE}/chat/completions",
+            headers={
+                "Authorization": f"Bearer {api_key}",
+                "Content-Type": "application/json",
+                "User-Agent": "Mozilla/5.0 (compatible; ShenyuanAutoPublisher/2.0)",
+            },
+            data=json.dumps(payload).encode("utf-8"),
+        )
+        try:
+            print(f"       -> 正在调用 cpa.927900.xyz 大模型 ({model_name})...")
+            with urllib.request.urlopen(req, timeout=120) as resp:
+                data = json.loads(resp.read().decode("utf-8"))
+                content_str = data["choices"][0]["message"].get("content", "").strip()
+                s = content_str
+                if s.startswith("```"):
+                    s = re.sub(r"^```[a-zA-Z0-9]*\n?", "", s)
+                    s = re.sub(r"\n?```$", "", s).strip()
+                start = s.find('{')
+                end = s.rfind('}')
+                if start != -1 and end != -1 and end > start:
+                    res_json = json.loads(s[start:end+1], strict=False)
+                    zh_len = len(res_json.get("body_zh", ""))
+                    en_len = len(res_json.get("body_en", ""))
+                    print(f"       -> AI 大模型 ({model_name}) 创作成功！(中文: {zh_len} 字符, 英文: {en_len} 字符) ✓")
+                    return res_json
+                else:
+                    print(f"       [WARN] 大模型 {model_name} 输出未能解析出闭合 JSON，尝试备选模型...")
+        except Exception as e:
+            print(f"       [WARN] 调用 {model_name} 异常: {e}，尝试备选模型...")
+
+    print("       [降级] 全部大模型调用未果，安全降级至专家规则模板。")
+    return generate_article_template(topic, business)
+
+
 def generate_article_template(topic: str, business: str = "general") -> dict:
-    """生成具有高信息密度、合规严谨的涉外双语文章初稿。"""
+    """备用高可用降级模板引擎。"""
     slug = re.sub(r"[^a-zA-Z0-9]+", "-", topic.lower()).strip("-")
     if not slug or len(slug) < 4:
         slug = f"cross-border-{business}-practice"
@@ -184,19 +305,19 @@ Cross-border dispute resolution requires coordinated advocacy across civil and c
 
 
 def produce_and_publish_new_article(topic: str = "", business: str = "general"):
-    """创作、自愈并自动发布一篇新文章。"""
+    """由 AI 创作、自愈优化并自动发布一篇新文章。"""
     if not topic:
         topics_pool = [
-            ("跨国商事仲裁裁决在海外法院的承认与执行", "recovery"),
-            ("离岸信托设立后的穿透风险与境外诉讼防范", "legacy"),
-            ("跨境电商海外知识产权侵权与临时禁令化解", "trade"),
-            ("涉外继承中公证遗嘱与境外信托的法律效力冲突", "legacy"),
+            ("中国跨境电商应对美国特拉华州商事诉讼管辖权异议实务", "recovery"),
+            ("新加坡国际商事法庭(SICC)中英双语审判与跨国判决执行", "trade"),
+            ("离岸信托设立后的穿透风险与跨境诉讼实务", "legacy"),
             ("国际海运货损索赔诉讼时效与提单免责条款破解", "trade"),
-            ("海外债务人通过离岸架构转移资产的穿透追偿", "recovery"),
-            ("美国特拉华州公司商业纠纷与衡平法院诉讼指南", "recovery"),
-            ("新加坡国际商事法庭(SICC)争议解决与管辖权实务", "trade"),
-            ("中英跨国婚姻财产分割与离岸信托资产保全", "legacy"),
-            ("跨境供应链货款拖欠：离岸账户保全与破产清算联动", "recovery"),
+            ("海外债务人通过离岸架构隐匿资产的穿透查控路径", "recovery"),
+            ("涉外继承中公证遗嘱与普通法系Probate认证的衔接冲突", "legacy"),
+            ("跨国供应链货款逾期：离岸账户冻结与跨境清算协同", "recovery"),
+            ("跨国婚姻离岸资产分配与家族信托财产保全", "legacy"),
+            ("中资企业赴美被诉知识产权侵权与ITC 337调查应对", "trade"),
+            ("跨境商业欺诈追索：境外资产调查网络与全球冻结令申请", "recovery"),
         ]
         try:
             existing = api_request("/api/articles")
@@ -207,26 +328,38 @@ def produce_and_publish_new_article(topic: str = "", business: str = "general"):
 
         chosen = None
         for t, b in topics_pool:
-            t_full = f"【涉外实务】{t}：法律风险、维权路径与避坑清单"
-            if t not in existing_titles and t_full not in existing_titles:
+            if t not in existing_titles and not any(t in title for title in existing_titles):
                 chosen = (t, b)
                 break
         if not chosen:
-            chosen = (f"涉外商事争议与跨境维权要点-{int(datetime.now().timestamp())}", "general")
+            chosen = (f"跨国商事争议维权与涉外法务实战-{int(datetime.now().timestamp())}", "general")
         topic, business = chosen
 
     print("\n" + f"[1/4 选题选定] 主题: {topic} (领域: {business})")
 
-    print("[2/4 初步生成] 生成专业涉外双语内容框架...")
-    art_data = generate_article_template(topic, business)
+    # 2. AI 创作
+    print("[2/4 AI 创作] 调用 DeepSeek-v4.1-Flash 进行涉外法务专业双语创作...")
+    art_data = generate_article_with_ai(topic, business)
 
+    # 3. 自愈优化与质量门禁修复
     print("[3/4 自愈优化] 执行合规词筛查、字数扩充、双语 CTA 及免责声明注入...")
     repaired, logs = repair_article(art_data)
     for log in logs:
         print(f"       [优化项] {log}")
 
+    # 4. 调用后端 API 创建并发布
     print("[4/4 自动发布] 向生产端 CMS 提交入库并直接发布...")
     repaired["status"] = "draft"
+    
+    # 防重 slug 校验
+    slug_candidate = repaired["slug"]
+    counter = 1
+    orig_slug = slug_candidate
+    while slug_candidate in existing_slugs:
+        slug_candidate = f"{orig_slug}-{counter}"
+        counter += 1
+    repaired["slug"] = slug_candidate
+    
     create_res = api_request("/admin/api/content", data=repaired, method="POST")
     art_id = create_res["id"]
     slug = create_res["slug"]
@@ -236,6 +369,7 @@ def produce_and_publish_new_article(topic: str = "", business: str = "general"):
     print(f"       -> 中文地址: https://shenyuanlegal.com/articles/{slug}")
     print(f"       -> 英文地址: https://shenyuanlegal.com/en/articles/{slug}")
 
+    # 5. 推送 Google Indexing API
     print("[收录推送] 正在向 Google Indexing API 提交抓取通知...")
     notify_indexing(slug)
     return art_id
@@ -291,21 +425,21 @@ def main():
     parser.add_argument("--biz", type=str, default="general", help="业务线: trade / recovery / legacy / general")
     parser.add_argument("--publish", action="store_true", help="生产 1 篇新文章并直接发布")
     parser.add_argument("--repair-drafts", type=int, default=0, help="优化并发布指定数量的存量草稿")
-    parser.add_argument("--daily-run", action="store_true", help="每日综合任务（生产 2 篇新文章 + 优化发布 1 篇草稿）")
+    parser.add_argument("--daily-run", action="store_true", help="每日综合任务（AI 创作 2 篇新文章 + 优化发布 1 篇草稿）")
     args = parser.parse_args()
 
     if args.daily_run:
         print("==================================================")
         print("  深远涉外法务 — 每日 SEO 内容自动生产与发布流水线")
         print("==================================================")
-        print("\n" + ">>> 步骤 1/2: 自动产出 2 篇中英双语深度实务文章...")
+        print("\n>>> 步骤 1/2: AI 自动创作 2 篇中英双语深度实务文章...")
         produce_and_publish_new_article()
         produce_and_publish_new_article()
 
-        print("\n" + ">>> 步骤 2/2: 自动自愈并发布 1 篇存量草稿...")
+        print("\n>>> 步骤 2/2: 自动自愈并发布 1 篇存量草稿...")
         repair_and_publish_existing_drafts(limit=1)
 
-        print("\n" + "==================================================")
+        print("\n==================================================")
         print("  本日 SEO 内容发布与索引提交任务全部完成 ✓")
         print("==================================================")
         return 0
