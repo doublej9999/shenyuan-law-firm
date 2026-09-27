@@ -273,15 +273,72 @@ const { data: article, pending: loading } = await useAsyncData(
   }
 )
 
-// 轻量级安全 Markdown 语义解析器（增强 SEO 语义与阅读排版）
+// 轻量级安全 Markdown 语义解析器（增强 SEO 语义、表格解析与阅读排版）
 function parseMarkdownToHtml(md: string): string {
   if (!md) return ''
   const lines = md.replace(/\r\n/g, '\n').split('\n')
   const htmlParts: string[] = []
   let inList = false
+  let inTable = false
+  let tableHeaders: string[] = []
+  let tableRows: string[][] = []
+
+  const flushTable = () => {
+    if (!inTable) return
+    let tHtml = '<div class="article-table-wrap"><table class="article-table">'
+    if (tableHeaders.length) {
+      tHtml += '<thead><tr>'
+      for (const h of tableHeaders) {
+        tHtml += `<th>${formatInline(h)}</th>`
+      }
+      tHtml += '</tr></thead>'
+    }
+    if (tableRows.length) {
+      tHtml += '<tbody>'
+      for (const row of tableRows) {
+        tHtml += '<tr>'
+        for (const cell of row) {
+          tHtml += `<td>${formatInline(cell)}</td>`
+        }
+        tHtml += '</tr>'
+      }
+      tHtml += '</tbody>'
+    }
+    tHtml += '</table></div>'
+    htmlParts.push(tHtml)
+    inTable = false
+    tableHeaders = []
+    tableRows = []
+  }
 
   for (let i = 0; i < lines.length; i++) {
     let line = lines[i].trimEnd()
+    const trimmed = line.trim()
+
+    // 表格解析：行以 | 开头并以 | 结尾且含有分割管道
+    const isTableRow = trimmed.startsWith('|') && trimmed.endsWith('|') && trimmed.includes('|')
+
+    if (isTableRow) {
+      if (inList) {
+        htmlParts.push('</ul>')
+        inList = false
+      }
+      const rawCells = trimmed.split('|').slice(1, -1).map(c => c.trim())
+      // 检查是否为分隔行，例如 |---|---|---|
+      const isSeparator = rawCells.length > 0 && rawCells.every(c => /^:?-+:?$/.test(c))
+      if (isSeparator) {
+        continue
+      }
+      if (!inTable) {
+        inTable = true
+        tableHeaders = rawCells
+      } else {
+        tableRows.push(rawCells)
+      }
+      continue
+    } else if (inTable) {
+      flushTable()
+    }
 
     // 列表处理
     if (/^[-*]\s+/.test(line)) {
@@ -321,6 +378,9 @@ function parseMarkdownToHtml(md: string): string {
   if (inList) {
     htmlParts.push('</ul>')
   }
+  if (inTable) {
+    flushTable()
+  }
 
   return htmlParts.join('\n')
 }
@@ -330,6 +390,7 @@ function formatInline(str: string): string {
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
+    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, (_, text, url) => `<a href="${url}" class="article-link">${text}</a>`)
     .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
     .replace(/\*(.*?)\*/g, '<em>$1</em>')
     .replace(/`([^`]+)`/g, '<code>$1</code>')
@@ -637,7 +698,86 @@ useHead({
 
 :deep(.content-html p) {
   margin: 0 0 18px;
-  text-align: justify;
+  text-align: left;
+  letter-spacing: normal;
+  word-spacing: normal;
+  word-break: break-word;
+}
+
+:deep(.content-html a.article-link) {
+  color: var(--teal);
+  font-weight: 500;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  transition: color 0.15s ease;
+}
+:deep(.content-html a.article-link:hover) {
+  color: var(--gold);
+}
+
+/* 规范化法务表格（严格向左对齐，字间距自然） */
+:deep(.article-table-wrap) {
+  width: 100%;
+  overflow-x: auto;
+  margin: 24px 0 28px;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  background: #ffffff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+}
+
+:deep(.article-table) {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+  line-height: 1.6;
+  text-align: left;
+  letter-spacing: normal;
+  word-spacing: normal;
+}
+
+:deep(.article-table th) {
+  background: #f8fafc;
+  color: var(--teal-deep);
+  font-weight: 700;
+  padding: 12px 16px;
+  text-align: left;
+  border-bottom: 2px solid #e2e8f0;
+  border-right: 1px solid #f1f5f9;
+  white-space: nowrap;
+  letter-spacing: normal;
+  word-spacing: normal;
+}
+
+:deep(.article-table th:last-child) {
+  border-right: none;
+}
+
+:deep(.article-table td) {
+  padding: 12px 16px;
+  text-align: left;
+  border-bottom: 1px solid #f1f5f9;
+  border-right: 1px solid #f8fafc;
+  color: #334155;
+  vertical-align: top;
+  letter-spacing: normal;
+  word-spacing: normal;
+}
+
+:deep(.article-table td:last-child) {
+  border-right: none;
+}
+
+:deep(.article-table tbody tr:nth-child(even)) {
+  background: rgba(248, 250, 252, 0.6);
+}
+
+:deep(.article-table tbody tr:hover) {
+  background: rgba(241, 245, 249, 0.8);
+}
+
+:deep(.article-table tbody tr:last-child td) {
+  border-bottom: none;
 }
 
 :deep(.content-html strong) {
