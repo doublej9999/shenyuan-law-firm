@@ -7,19 +7,27 @@ import { useRuntimeConfig } from '#imports'
 let client: AxiosInstance | null = null
 
 export function getApiClient(): AxiosInstance {
-  if (client) return client
-
+  const fallback = 'https://shenyuan-backend.vercel.app'
   let baseURL = ''
   try {
-    baseURL = useRuntimeConfig().public.apiUrl || ''
+    const config = useRuntimeConfig()
+    baseURL = config?.public?.apiUrl || ''
   } catch {
-    // Called outside of a Nuxt context (e.g. a unit test) — fall back to a
-    // relative URL so the caller still gets a usable instance.
     baseURL = ''
   }
 
+  // 服务端 SSR 及环境缺失时必须有合法绝对协议和主机名，避免 Node.js 报 Invalid URL
+  if (!baseURL) {
+    baseURL = fallback
+  }
+
+  // 如果已有实例且其 baseURL 非空，直接复用
+  if (client && client.defaults.baseURL) {
+    return client
+  }
+
   client = axios.create({
-    baseURL,
+    baseURL: baseURL.replace(/\/+$/, ''),
     timeout: 15000,
     headers: { 'Content-Type': 'application/json' },
   })

@@ -112,7 +112,13 @@ const { data: allArticles } = await useAsyncData(
   async () => {
     try {
       const res = await getApiClient().get('/api/articles')
-      return Array.isArray(res.data) ? res.data : []
+      if (Array.isArray(res.data) && res.data.length > 0) return res.data
+    } catch (e) {
+      // fallback to direct $fetch
+    }
+    try {
+      const data: any = await $fetch('https://shenyuan-backend.vercel.app/api/articles')
+      return Array.isArray(data) ? data : []
     } catch (e) {
       return []
     }
@@ -250,13 +256,20 @@ const relatedArticles = computed(() => {
 const { data: article, pending: loading } = await useAsyncData(
   `article-${isEn.value ? 'en' : 'zh'}-${route.params.slug}`,
   async () => {
+    const slug = route.params.slug
     try {
-      const res = await getApiClient().get(`/api/articles/${route.params.slug}`)
-      return res.data
+      const res = await getApiClient().get(`/api/articles/${slug}`)
+      if (res?.data?.slug) return res.data
+    } catch (err) {
+      // fallback to direct $fetch
+    }
+    try {
+      const data: any = await $fetch(`https://shenyuan-backend.vercel.app/api/articles/${slug}`)
+      if (data?.slug) return data
     } catch (err) {
       console.error('Failed to load article detail', err)
-      return null
     }
+    return null
   }
 )
 

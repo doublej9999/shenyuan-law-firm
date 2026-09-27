@@ -129,7 +129,13 @@ const { data: allArticles } = await useAsyncData(
   async () => {
     try {
       const res = await getApiClient().get('/api/articles')
-      return Array.isArray(res.data) ? res.data : []
+      if (Array.isArray(res.data) && res.data.length > 0) return res.data
+    } catch (e) {
+      // fallback
+    }
+    try {
+      const data: any = await $fetch('https://shenyuan-backend.vercel.app/api/articles')
+      return Array.isArray(data) ? data : []
     } catch (e) {
       return []
     }
