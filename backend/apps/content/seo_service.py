@@ -590,3 +590,48 @@ def generate_llms_full_txt() -> str:
         lines.append("")
 
     return "\n".join(lines)
+
+
+def generate_feed_xml() -> str:
+    """Generate RSS 2.0 XML syndication feed for search engines and AI news aggregators."""
+    from xml.sax.saxutils import escape
+
+    base_url = get_base_url()
+    articles = list(
+        ContentArticle.objects.filter(status="published").order_by("-published_at")[:30]
+    )
+
+    now_rfc822 = datetime.now(timezone.utc).strftime("%a, %d %b %Y %H:%M:%S +0000")
+    items: List[str] = []
+    for art in articles:
+        title = escape(art.title_zh or art.title_en or "")
+        link = f"{base_url}/articles/{art.slug}"
+        desc = escape(art.description_zh or art.description_en or "")
+        pub_dt = art.published_at or art.created_at
+        if pub_dt:
+            pub_date = pub_dt.strftime("%a, %d %b %Y %H:%M:%S +0000")
+        else:
+            pub_date = now_rfc822
+        category = escape(art.business or "general")
+        items.append(f"""    <item>
+      <title>{title}</title>
+      <link>{link}</link>
+      <guid isPermaLink="true">{link}</guid>
+      <pubDate>{pub_date}</pubDate>
+      <description>{desc}</description>
+      <category>{category}</category>
+    </item>""")
+
+    items_str = "\n".join(items)
+    return f"""<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>{SITE_NAME_ZH} · 涉外法律实务专栏</title>
+    <link>{base_url}/articles</link>
+    <description>深远(国际)律师事务所跨境商事争议解决、海外债权追收、跨国继承与家族财富保护最新实操指南与案例研析。</description>
+    <language>zh-CN</language>
+    <lastBuildDate>{now_rfc822}</lastBuildDate>
+    <atom:link href="{base_url}/feed.xml" rel="self" type="application/rss+xml" />
+{items_str}
+  </channel>
+</rss>"""

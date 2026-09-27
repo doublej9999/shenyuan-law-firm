@@ -5,6 +5,7 @@ from django.shortcuts import get_object_or_404
 from shenyuan_legal.api import api
 from apps.content.models import ContentArticle
 from apps.content.seo_service import (
+    generate_feed_xml,
     generate_llms_txt,
     generate_llms_full_txt,
     generate_robots_txt,
@@ -14,6 +15,12 @@ from apps.content.seo_service import (
 
 def sitemap_view(request):
     xml_content = generate_sitemap_xml()
+    resp = HttpResponse(xml_content, content_type="application/xml; charset=utf-8")
+    resp["Cache-Control"] = "public, s-maxage=3600, stale-while-revalidate=86400"
+    return resp
+
+def feed_view(request):
+    xml_content = generate_feed_xml()
     resp = HttpResponse(xml_content, content_type="application/xml; charset=utf-8")
     resp["Cache-Control"] = "public, s-maxage=3600, stale-while-revalidate=86400"
     return resp
@@ -54,6 +61,8 @@ def article_seo_en_view(request, slug: str):
 urlpatterns = [
     path("sitemap.xml", sitemap_view, name="sitemap"),
     path("robots.txt", robots_view, name="robots"),
+    path("feed.xml", feed_view, name="feed"),
+    path("rss.xml", feed_view, name="rss"),
     path("llms.txt", llms_view, name="llms"),
     path("llms-full.txt", llms_full_view, name="llms_full"),
     path("articles/<slug:slug>", article_seo_view, name="article_seo"),
