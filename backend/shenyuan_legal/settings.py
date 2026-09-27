@@ -128,12 +128,13 @@ CORS_ALLOWED_ORIGINS = [
     origin.strip()
     for origin in os.environ.get(
         "CORS_ALLOWED_ORIGINS",
-        "https://shenyuan-web.vercel.app,https://shenyuan-admin.vercel.app,http://localhost:5173,http://127.0.0.1:5173,http://localhost:3000",
+        "https://shenyuanlegal.com,https://www.shenyuanlegal.com,https://preview.shenyuanlegal.com,https://shenyuan-web.vercel.app,https://shenyuan-admin.vercel.app,http://localhost:5173,http://127.0.0.1:5173,http://localhost:3000",
     ).split(",")
     if origin.strip()
 ]
 CORS_ALLOWED_ORIGIN_REGEXES = [
     r"^https:\/\/.*\.vercel\.app$",
+    r"^https:\/\/([a-zA-Z0-9-]+\.)?shenyuanlegal\.com$",
 ]
 CORS_ALLOW_CREDENTIALS = True
 
