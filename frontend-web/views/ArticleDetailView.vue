@@ -1,13 +1,14 @@
 <template>
-  <div class="article-detail-view">
+  <div class="article-detail-view" :class="{ 'is-rtl': isAr }">
     <div class="wrap detail-container">
       <div v-if="loading" class="loading-box">
-        {{ isEn ? 'Loading article details...' : '正在加载文章内容...' }}
+        {{ isAr ? 'جارٍ تحميل تفاصيل المقال القانوني...' : (isEn ? 'Loading article details...' : '正在加载文章内容...') }}
       </div>
 
-      <article v-else-if="article" class="detail-paper">
-        <NuxtLink :to="isEn ? '/en/articles' : '/articles'" class="back-nav">
-          &larr; {{ isEn ? 'Back to legal insights' : '返回法律专栏' }}
+      <article v-else-if="article" class="detail-paper" :class="{ 'is-rtl': isAr }">
+        <NuxtLink :to="isAr ? '/ar/articles' : (isEn ? '/en/articles' : '/articles')" class="back-nav">
+          <span v-if="isAr">&rarr; العودة إلى الرؤى القانونية</span>
+          <span v-else>&larr; {{ isEn ? 'Back to legal insights' : '返回法律专栏' }}</span>
         </NuxtLink>
 
         <header class="article-header">
@@ -15,7 +16,7 @@
             <span class="category-tag">{{ article.business }}</span>
             <span class="date">{{ article.published_at ? article.published_at.substring(0, 10) : '' }}</span>
           </div>
-          <h1 class="article-title">{{ isEn ? (article.title_en || article.title_zh) : article.title_zh }}</h1>
+          <h1 class="article-title">{{ title }}</h1>
         </header>
 
         <!-- GEO & Key Takeaways / Executive Summary Card -->
@@ -102,7 +103,13 @@ import { computed } from 'vue'
 import { getApiClient } from '@/api/client'
 
 const route = useRoute()
-const isEn = computed(() => route.path.startsWith('/en'))
+const currentLang = computed<'zh' | 'en' | 'ar'>(() => {
+  if (route.path.startsWith('/ar')) return 'ar'
+  if (route.path.startsWith('/en')) return 'en'
+  return 'zh'
+})
+const isAr = computed(() => currentLang.value === 'ar')
+const isEn = computed(() => currentLang.value === 'en')
 
 // Article bodies are fetched during SSR so crawlers receive the full text,
 // title, canonical, hreflang and JSON-LD in the initial HTML response.
@@ -254,7 +261,7 @@ const relatedArticles = computed(() => {
 })
 
 const { data: article, pending: loading } = await useAsyncData(
-  `article-${isEn.value ? 'en' : 'zh'}-${route.params.slug}`,
+  `article-${currentLang.value}-${route.params.slug}`,
   async () => {
     const slug = route.params.slug
     try {
@@ -396,8 +403,21 @@ function formatInline(str: string): string {
     .replace(/`([^`]+)`/g, '<code>$1</code>')
 }
 
+const arTrans = computed(() => {
+  const trans = (article.value as any)?.translations
+  return (trans && typeof trans === 'object') ? trans.ar : null
+})
+
 const renderedBody = computed(() => {
   if (!article.value) return ''
+  if (isAr.value) {
+    if (arTrans.value?.body) {
+      return parseMarkdownToHtml(arTrans.value.body)
+    }
+    const fallbackText = `> ⚠️ **ملاحظة:** الترجمة العربية لهذا الدليل قيد الاعتماد والمراجعة القانونية.\n\n` +
+      (article.value.body_en || article.value.body_zh)
+    return parseMarkdownToHtml(fallbackText)
+  }
   const raw = isEn.value
     ? (article.value.body_en || article.value.body_zh)
     : (article.value.body_zh || article.value.body_en)
@@ -410,19 +430,50 @@ const siteUrl = 'https://shenyuanlegal.com'
 const title = computed(() => {
   const art: any = article.value
   if (!art) return ''
+  if (isAr.value && arTrans.value?.title) return arTrans.value.title
   return isEn.value ? (art.title_en || art.title_zh) : art.title_zh
 })
 
 const description = computed(() => {
   const art: any = article.value
   if (!art) return ''
+  if (isAr.value && arTrans.value?.description) return arTrans.value.description
   return isEn.value ? (art.description_en || art.description_zh) : art.description_zh
 })
 
 const zhPath = computed(() => `/articles/${route.params.slug}`)
 const enPath = computed(() => `/en/articles/${route.params.slug}`)
-const canonical = computed(() => `${siteUrl}${isEn.value ? enPath.value : zhPath.value}`)
-const siteName = computed(() => isEn.value ? 'Shenyuan International Law Firm' : '深远(国际)律师事务所')
+const arPath = computed(() => `/ar/articles/${route.params.slug}`)
+
+const canonical = computed(() => {
+  if (isAr.value) return `${siteUrl}${arPath.value}`
+  if (isEn.value) return `${siteUrl}${enPath.value}`
+  return `${siteUrl}${zhPath.value}`
+})
+
+const siteName = computed(() => {
+  if (isAr.value) return 'مكتب شينيوان الدولي للمحاماة (Shenyuan International)'
+  return isEn.value ? 'Shenyuan International Law Firm' : '深远(国际)律师事务所'
+})
+
+const hasArabic = computed(() => {
+  const trans = (article.value as any)?.translations
+  return Boolean(trans && trans.ar && (trans.ar.title || trans.ar.body))
+})
+
+const alternateLinks = computed(() => {
+  const links = [
+    { rel: 'canonical', href: () => canonical.value },
+    { rel: 'alternate', hreflang: 'zh-CN', href: () => `${siteUrl}${zhPath.value}` },
+    { rel: 'alternate', hreflang: 'en', href: () => `${siteUrl}${enPath.value}` },
+  ]
+  // 严格遵守 SEO 原则：当且仅当存在真实阿语内容或当前为阿语路由时，向搜索引擎声明 hreflang="ar"
+  if (hasArabic.value || isAr.value) {
+    links.push({ rel: 'alternate', hreflang: 'ar', href: () => `${siteUrl}${arPath.value}` })
+  }
+  links.push({ rel: 'alternate', hreflang: 'x-default', href: () => `${siteUrl}${zhPath.value}` })
+  return links
+})
 
 useSeoMeta({
   title: () => title.value ? `${title.value} | ${siteName.value}` : siteName.value,
@@ -515,12 +566,11 @@ const breadcrumbJsonLd = computed(() => {
 })
 
 useHead({
-  link: [
-    { rel: 'canonical', href: () => canonical.value },
-    { rel: 'alternate', hreflang: 'zh-CN', href: () => `${siteUrl}${zhPath.value}` },
-    { rel: 'alternate', hreflang: 'en', href: () => `${siteUrl}${enPath.value}` },
-    { rel: 'alternate', hreflang: 'x-default', href: () => `${siteUrl}${zhPath.value}` },
-  ],
+  htmlAttrs: computed(() => ({
+    lang: isAr.value ? 'ar' : (isEn.value ? 'en' : 'zh-CN'),
+    dir: isAr.value ? 'rtl' : 'ltr',
+  })),
+  link: alternateLinks,
   script: computed(() => {
     const scripts: any[] = []
     if (articleJsonLd.value) {
@@ -1006,5 +1056,37 @@ useHead({
   .bottom-consult-box .button {
     width: 100%;
   }
+}
+
+/* 阿拉伯语（RTL）文字与排版适配 */
+.is-rtl {
+  direction: rtl;
+  text-align: right;
+}
+
+.is-rtl .back-nav {
+  display: inline-block;
+  text-align: right;
+}
+
+.is-rtl :deep(.content-html p),
+.is-rtl :deep(.content-html h2),
+.is-rtl :deep(.content-html h3),
+.is-rtl :deep(.content-html h4),
+.is-rtl :deep(.content-html ul) {
+  direction: rtl;
+  text-align: right;
+}
+
+.is-rtl :deep(.article-table th),
+.is-rtl :deep(.article-table td) {
+  text-align: right;
+  direction: rtl;
+}
+
+.is-rtl :deep(.content-html blockquote) {
+  border-left: none;
+  border-right: 4px solid var(--teal);
+  border-radius: 4px 0 0 4px;
 }
 </style>
