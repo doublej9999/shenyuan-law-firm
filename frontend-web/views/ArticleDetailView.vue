@@ -357,8 +357,11 @@ useSeoMeta({
   ogDescription: () => description.value,
   ogType: 'article',
   ogUrl: () => canonical.value,
+  ogImage: () => `${siteUrl}/og-image.png`,
+  twitterCard: 'summary_large_image',
   twitterTitle: () => title.value || siteName.value,
   twitterDescription: () => description.value,
+  twitterImage: () => `${siteUrl}/og-image.png`,
 })
 
 const articleJsonLd = computed(() => {

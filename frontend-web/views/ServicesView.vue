@@ -159,6 +159,11 @@ useSeoMeta({
     : '跨境争议、债务追收与继承——通过当地合作律所落地执行。',
   ogType: 'website',
   ogUrl: () => canonical.value,
+  ogImage: () => `${siteUrl}/og-image.png`,
+  twitterCard: 'summary_large_image',
+  twitterTitle: () => isEn.value ? 'Practice Areas | Shenyuan International' : '服务范围 | 深远(国际)律师事务所',
+  twitterDescription: () => isEn.value ? 'Cross-border disputes, debt recovery and inheritance.' : '跨境争议、债务追收与继承。',
+  twitterImage: () => `${siteUrl}/og-image.png`,
 })
 
 useHead({

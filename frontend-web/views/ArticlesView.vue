@@ -131,6 +131,11 @@ useSeoMeta({
     : '跨境实务洞察与案例分析。',
   ogType: 'website',
   ogUrl: () => canonical.value,
+  ogImage: () => `${siteUrl}/og-image.png`,
+  twitterCard: 'summary_large_image',
+  twitterTitle: () => isEn.value ? 'Legal Insights | Shenyuan International' : '涉外法律专栏 | 深远(国际)律师事务所',
+  twitterDescription: () => isEn.value ? 'Cross-border practice insights and case studies.' : '跨境实务洞察与案例分析。',
+  twitterImage: () => `${siteUrl}/og-image.png`,
 })
 
 useHead({
@@ -139,6 +144,7 @@ useHead({
     { rel: 'alternate', hreflang: 'zh-CN', href: `${siteUrl}/articles` },
     { rel: 'alternate', hreflang: 'en', href: `${siteUrl}/en/articles` },
     { rel: 'alternate', hreflang: 'x-default', href: `${siteUrl}/articles` },
+    { rel: 'alternate', type: 'application/rss+xml', title: 'Shenyuan Legal RSS Feed', href: `${siteUrl}/feed.xml` },
   ],
 })
 </script>
