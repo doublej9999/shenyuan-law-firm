@@ -312,7 +312,7 @@ def notify_search_engines(slug: str) -> Dict[str, Any]:
             results["baidu"] = {"status": "error", "message": str(e)}
 
     # 3. Bing / IndexNow
-    indexnow_key = os.environ.get("INDEXNOW_KEY", "").strip()
+    indexnow_key = os.environ.get("INDEXNOW_KEY", "4b8f2d93e1074a3f890259bfae6741c0").strip()
     if indexnow_key:
         try:
             host = urllib.parse.urlparse(base_url).netloc

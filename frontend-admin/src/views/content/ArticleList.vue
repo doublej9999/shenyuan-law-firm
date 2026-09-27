@@ -95,6 +95,17 @@
                 >
                   发布
                 </Button>
+                <Button
+                  v-if="item.status === 'published'"
+                  variant="ghost"
+                  size="sm"
+                  class="text-xs text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                  :loading="indexingMap[item.id]"
+                  @click="handleNotifyIndexing(item)"
+                >
+                  <Send class="h-3 w-3 mr-1" />
+                  报送收录
+                </Button>
               </td>
             </tr>
             <tr v-if="articles.length === 0">
@@ -114,6 +125,33 @@
       size="xl"
     >
       <div class="space-y-4">
+        <!-- Dual Action Toolbar for AI & Quality Gate -->
+        <div class="flex items-center justify-between border-b pb-2 pt-1 bg-muted/20 px-3 py-2 rounded-lg">
+          <div class="text-xs text-muted-foreground font-medium">双语法律专业内容创作与优化辅助</div>
+          <div class="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              class="text-xs text-amber-600 hover:text-amber-700 hover:bg-amber-50"
+              :loading="repairing"
+              @click="handleAutoRepair"
+            >
+              <Wrench class="mr-1 h-3.5 w-3.5" />
+              🛠️ 一键质检自愈 (内链/CTA/合规)
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              class="text-xs text-primary hover:bg-primary/10"
+              :loading="translating"
+              @click="handleTranslateEn"
+            >
+              <Languages class="mr-1 h-3.5 w-3.5" />
+              ✨ AI 翻译润色英文版
+            </Button>
+          </div>
+        </div>
+
         <!-- Slug & Business Metadata -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
           <div>
@@ -241,7 +279,8 @@ import Badge from '../../components/ui/Badge.vue'
 import Sheet from '../../components/ui/Sheet.vue'
 import MarkdownRenderer from '../../components/business/MarkdownRenderer.vue'
 import api from '../../api/client'
-import { Plus } from 'lucide-vue-next'
+import { Plus, Send, Wrench, Languages } from 'lucide-vue-next'
+import { toast } from 'vue-sonner'
 
 const articles = ref<any[]>([])
 const filterStatus = ref('')
@@ -249,6 +288,9 @@ const filterBusiness = ref('')
 const editorOpen = ref(false)
 const isEdit = ref(false)
 const saving = ref(false)
+const repairing = ref(false)
+const translating = ref(false)
+const indexingMap = ref<Record<number, boolean>>({})
 const currentArticle = ref<any>({})
 
 const fetchArticles = async () => {
@@ -305,9 +347,72 @@ const handleSaveArticle = async () => {
 const handlePublish = async (id: number) => {
   try {
     await api.post(`/admin/api/content/${id}/publish`)
+    toast.success('文章已发布上线，并已触发自动收录通知')
     fetchArticles()
-  } catch (err) {
+  } catch (err: any) {
     console.error(err)
+    toast.error('发布失败: ' + (err?.response?.data?.detail || err.message))
+  }
+}
+
+const handleNotifyIndexing = async (art: any) => {
+  indexingMap.value[art.id] = true
+  try {
+    await api.post(`/admin/api/content/${art.id}/notify-indexing`)
+    toast.success(`《${art.title_zh}》已成功向 Google 与 Bing 提交主动收录`)
+  } catch (err: any) {
+    console.error(err)
+    toast.error('收录报送失败: ' + (err?.response?.data?.detail || err.message))
+  } finally {
+    indexingMap.value[art.id] = false
+  }
+}
+
+const handleAutoRepair = async () => {
+  if (!currentArticle.value.body_zh && !currentArticle.value.title_zh) {
+    toast.error('请先录入中文标题或正文内容')
+    return
+  }
+  repairing.value = true
+  try {
+    const res: any = await api.post('/admin/api/content/auto-repair', currentArticle.value)
+    if (res?.repaired) {
+      currentArticle.value = { ...currentArticle.value, ...res.repaired }
+      const logsCount = res.logs?.length || 0
+      toast.success(`自愈质检完成！已应用 ${logsCount} 项合规优化与内链织网`)
+    }
+  } catch (err: any) {
+    console.error(err)
+    toast.error('自愈修复异常: ' + (err?.response?.data?.detail || err.message))
+  } finally {
+    repairing.value = false
+  }
+}
+
+const handleTranslateEn = async () => {
+  if (!currentArticle.value.title_zh) {
+    toast.error('请先录入中文标题')
+    return
+  }
+  translating.value = true
+  try {
+    const res: any = await api.post('/admin/api/content/translate-en', {
+      title_zh: currentArticle.value.title_zh,
+      description_zh: currentArticle.value.description_zh || '',
+      body_zh: currentArticle.value.body_zh || '',
+      business: currentArticle.value.business || 'general',
+    })
+    if (res) {
+      if (res.title_en) currentArticle.value.title_en = res.title_en
+      if (res.description_en) currentArticle.value.description_en = res.description_en
+      if (res.body_en) currentArticle.value.body_en = res.body_en
+      toast.success('AI 已完成英美法系专业双语翻译与润色！')
+    }
+  } catch (err: any) {
+    console.error(err)
+    toast.error('AI 翻译异常: ' + (err?.response?.data?.detail || err.message))
+  } finally {
+    translating.value = false
   }
 }
 

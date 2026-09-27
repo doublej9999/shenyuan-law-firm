@@ -56,10 +56,16 @@
             <span class="text-emerald-600 font-bold text-sm">🟢 微信公号 / 朋友圈深度文案</span>
             <Badge variant="outline" class="text-[10px]">中企出海法务</Badge>
           </div>
-          <Button variant="ghost" size="sm" class="text-xs text-primary" @click="copyText(bundle.wechat_post)">
-            <Copy class="mr-1 h-3 w-3" />
-            复制
-          </Button>
+          <div class="flex items-center gap-1">
+            <Button variant="ghost" size="sm" class="text-xs text-primary" @click="copyText(bundle.wechat_post)">
+              <Copy class="mr-1 h-3 w-3" />
+              复制
+            </Button>
+            <Button variant="outline" size="sm" class="text-xs text-emerald-600 hover:bg-emerald-50" :loading="savingDraft" @click="saveAsCmsDraft">
+              <FileText class="mr-1 h-3 w-3" />
+              转存为官网文章草稿
+            </Button>
+          </div>
         </div>
         <p class="text-xs text-foreground/90 whitespace-pre-wrap leading-relaxed bg-muted/20 p-3 rounded-lg border font-sans">
           {{ bundle.wechat_post }}
@@ -138,10 +144,14 @@ import Button from '../../components/ui/Button.vue'
 import Input from '../../components/ui/Input.vue'
 import Badge from '../../components/ui/Badge.vue'
 import api from '../../api/client'
-import { Sparkles, Copy, Download } from 'lucide-vue-next'
+import { Sparkles, Copy, Download, FileText } from 'lucide-vue-next'
+import { toast } from 'vue-sonner'
+import { useRouter } from 'vue-router'
 
-const topic = ref('')
+const router = useRouter()
+const topic = ref('中企跨境贸易买方拖欠账款诉讼追讨')
 const generating = ref(false)
+const savingDraft = ref(false)
 const bundle = ref<any>(null)
 
 const quickTopics = [
@@ -171,7 +181,38 @@ const generate = async () => {
 
 const copyText = (text: string) => {
   navigator.clipboard.writeText(text)
-  alert('已成功复制到剪贴板！')
+  toast.success('已成功复制到剪贴板！')
+}
+
+const saveAsCmsDraft = async () => {
+  if (!bundle.value) return
+  savingDraft.value = true
+  try {
+    const slug = 'marketing-' + Date.now().toString(36)
+    const titleZh = bundle.value.topic || '涉外法律实务专题'
+    const payload = {
+      slug,
+      business: 'trade',
+      status: 'draft',
+      title_zh: titleZh,
+      title_en: 'Cross-Border Practice Guide: ' + titleZh,
+      description_zh: (bundle.value.wechat_post || '').slice(0, 160),
+      description_en: (bundle.value.linkedin_post || '').slice(0, 160),
+      body_zh: `# ${titleZh}\n\n${bundle.value.wechat_post}\n\n---\n\n## 目标受众与实务要点\n${bundle.value.target_audience}\n`,
+      body_en: `# Cross-Border Practice Guide: ${titleZh}\n\n${bundle.value.linkedin_post}\n`,
+      published_at: null,
+    }
+    await api.post('/admin/api/content/articles', payload)
+    toast.success('已成功沉淀为官网文章草稿！正在前往内容中心...')
+    setTimeout(() => {
+      router.push('/content')
+    }, 1000)
+  } catch (err: any) {
+    console.error(err)
+    toast.error('转存草稿失败: ' + (err?.response?.data?.detail || err.message))
+  } finally {
+    savingDraft.value = false
+  }
 }
 
 const exportMarkdownBundle = () => {
