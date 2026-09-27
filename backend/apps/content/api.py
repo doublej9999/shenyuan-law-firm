@@ -22,6 +22,7 @@ class ArticleOut(Schema):
     description_en: str
     body_zh: str
     body_en: str
+    translations: Optional[dict] = {}
     business: str
     intent: str
     status: str
@@ -37,6 +38,7 @@ class ArticleIn(Schema):
     description_en: Optional[str] = ""
     body_zh: Optional[str] = ""
     body_en: Optional[str] = ""
+    translations: Optional[dict] = {}
     business: Optional[str] = "general"
     intent: Optional[str] = "I"
     status: Optional[str] = "draft"
@@ -128,6 +130,7 @@ class TranslateIn(Schema):
     description_zh: Optional[str] = ""
     body_zh: Optional[str] = ""
     business: Optional[str] = "general"
+    target_lang: Optional[str] = "en"  # "en", "ar", "es", "ru"
 
 @router.post("/admin/api/content/auto-repair", auth=GlobalAdminAuth())
 def auto_repair_article_endpoint(request, payload: ArticleIn):
@@ -161,6 +164,44 @@ def translate_article_endpoint(request, payload: TranslateIn):
         "title_en": f"Cross-Border Legal Practice: {payload.title_zh}",
         "description_en": payload.description_zh or "Comprehensive cross-border legal guide.",
         "body_en": f"# {payload.title_zh}\n\n{payload.body_zh}\n\n---\n\n[Free consultation →](/#intake)\n"
+    }
+
+@router.post("/admin/api/content/translate-multilingual", auth=GlobalAdminAuth())
+def translate_multilingual_endpoint(request, payload: TranslateIn):
+    """一键调用 DeepSeek 生成阿拉伯语(ar)、西班牙语(es)等多语言版本，遵循地道司法实务术语"""
+    from apps.content.generator_service import generate_article_with_llm
+    target = (payload.target_lang or "ar").lower()
+
+    lang_names = {
+        "ar": "现代标准阿拉伯语（Modern Standard Arabic，适用于阿联酋迪拜国际金融中心 DIFC、ADGM 及沙特商事法庭）",
+        "es": "地道西班牙语（适用于墨西哥近岸投资合规及拉美商事争议解决）",
+        "ru": "地道俄语（适用于中俄边贸纠纷与中亚哈萨克斯坦跨境债务执行）",
+        "en": "地道普通法系专业法律英文",
+    }
+    lang_desc = lang_names.get(target, target)
+
+    prompt = f"请将以下中国涉外法律实务文章精准专业地翻译并本地化为{lang_desc}。要求法言法语严谨、术语准确，文末包含咨询指引：{payload.title_zh}"
+    biz = payload.business or "general"
+    body_snippet = (payload.body_zh or "")[:1500]
+
+    result = generate_article_with_llm(topic=prompt, business=biz, custom_prompt=body_snippet)
+    if result:
+        # 如果模型返回了翻译
+        title_trans = result.get("title_en") or result.get("title_zh") or payload.title_zh
+        desc_trans = result.get("description_en") or result.get("description_zh") or payload.description_zh
+        body_trans = result.get("body_en") or result.get("body_zh") or payload.body_zh
+        return {
+            "target_lang": target,
+            "title": title_trans,
+            "description": desc_trans,
+            "body": body_trans,
+        }
+
+    return {
+        "target_lang": target,
+        "title": f"[{target.upper()}] {payload.title_zh}",
+        "description": payload.description_zh,
+        "body": f"# {payload.title_zh}\n\n{payload.body_zh}\n\n---\n\n[Free Consultation →](/#intake)\n",
     }
 
 @router.get("/admin/api/content/topic-suggestions", auth=GlobalAdminAuth())

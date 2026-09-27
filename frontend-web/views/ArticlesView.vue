@@ -1,14 +1,16 @@
 <template>
-  <div class="articles-view">
+  <div class="articles-view" :class="{ 'is-rtl': isAr }">
     <!-- Top Hero Banner -->
     <section class="articles-hero">
       <div class="wrap">
-        <div class="eyebrow">{{ isEn ? 'Legal Insights' : '法律专栏' }}</div>
-        <h1>{{ isEn ? 'Cross-Border Practice Insights & Case Studies' : '涉外法律实务与经贸合规前沿' }}</h1>
+        <div class="eyebrow">{{ isAr ? 'الرؤى القانونية' : (isEn ? 'Legal Insights' : '法律专栏') }}</div>
+        <h1>{{ isAr ? 'رؤى الممارسة القانونية الدولية وحلول النزاعات' : (isEn ? 'Cross-Border Practice Insights & Case Studies' : '涉外法律实务与经贸合规前沿') }}</h1>
         <p>
-          {{ isEn 
-            ? 'Original analyses and procedural guidance on international trade litigation, cross-border debt recovery, and multi-jurisdiction probate.' 
-            : '由深远合伙人及资深涉外律师撰写，深入剖析跨境贸易纠纷、海外欠款追索、域外财产执行及跨国遗产公证的实操要点。' }}
+          {{ isAr
+            ? 'دراسات عملية وتوجيهات إجرائية حول التقاضي التجاري الدولي، وتحصيل الديون العابرة للحدود، وإنفاذ الأحكام في منطقة الشرق الأوسط والصين.'
+            : (isEn 
+              ? 'Original analyses and procedural guidance on international trade litigation, cross-border debt recovery, and multi-jurisdiction probate.' 
+              : '由深远合伙人及资深涉外律师撰写，深入剖析跨境贸易纠纷、海外欠款追索、域外财产执行及跨国遗产公证的实操要点。') }}
         </p>
       </div>
     </section>
@@ -63,16 +65,16 @@
               <span class="date">{{ item.published_at ? item.published_at.substring(0, 10) : '' }}</span>
             </div>
             <h3>
-              <NuxtLink :to="isEn ? `/en/articles/${item.slug}` : `/articles/${item.slug}`">
-                {{ isEn ? (item.title_en || item.title_zh) : item.title_zh }}
+              <NuxtLink :to="isAr ? `/ar/articles/${item.slug}` : (isEn ? `/en/articles/${item.slug}` : `/articles/${item.slug}`)">
+                {{ isAr ? (item.translations?.ar?.title || item.title_en || item.title_zh) : (isEn ? (item.title_en || item.title_zh) : item.title_zh) }}
               </NuxtLink>
             </h3>
             <p class="desc">
-              {{ isEn ? (item.description_en || item.description_zh) : item.description_zh }}
+              {{ isAr ? (item.translations?.ar?.description || item.description_en || item.description_zh) : (isEn ? (item.description_en || item.description_zh) : item.description_zh) }}
             </p>
             <div class="card-footer">
-              <NuxtLink :to="isEn ? `/en/articles/${item.slug}` : `/articles/${item.slug}`" class="read-more">
-                {{ isEn ? 'Read full article →' : '阅读全文 →' }}
+              <NuxtLink :to="isAr ? `/ar/articles/${item.slug}` : (isEn ? `/en/articles/${item.slug}` : `/articles/${item.slug}`)" class="read-more">
+                {{ isAr ? 'اقرأ المقال كاملاً ←' : (isEn ? 'Read full article →' : '阅读全文 →') }}
               </NuxtLink>
             </div>
           </article>
@@ -87,13 +89,19 @@ import { computed, ref } from 'vue'
 import { getApiClient } from '@/api/client'
 
 const route = useRoute()
-const isEn = computed(() => route.path.startsWith('/en'))
+const currentLang = computed<'zh' | 'en' | 'ar'>(() => {
+  if (route.path.startsWith('/ar')) return 'ar'
+  if (route.path.startsWith('/en')) return 'en'
+  return 'zh'
+})
+const isAr = computed(() => currentLang.value === 'ar')
+const isEn = computed(() => currentLang.value === 'en')
 
 const selectedFilter = ref('ALL')
 
 // Fetched during SSR so the article list is present in the initial HTML.
 const { data: articlesData, pending: loading } = await useAsyncData(
-  `articles-${isEn.value ? 'en' : 'zh'}`,
+  `articles-${currentLang.value}`,
   async () => {
     try {
       const res = await getApiClient().get('/api/articles')
@@ -122,33 +130,44 @@ const filteredArticles = computed(() => {
 })
 
 const siteUrl = 'https://shenyuanlegal.com'
-const canonical = computed(() => `${siteUrl}${isEn.value ? '/en/articles' : '/articles'}`)
+const canonical = computed(() => {
+  if (isAr.value) return `${siteUrl}/ar/articles`
+  if (isEn.value) return `${siteUrl}/en/articles`
+  return `${siteUrl}/articles`
+})
 
 useSeoMeta({
-  title: () => isEn.value
-    ? 'Legal Insights | Cross-Border Practice & Case Studies | Shenyuan International'
-    : '涉外法律专栏 | 跨境实务与案例研究 | 深远(国际)律师事务所',
-  description: () => isEn.value
-    ? 'Original analyses on international trade litigation, cross-border debt recovery and multi-jurisdiction probate, written by the Shenyuan International legal team.'
-    : '由深远合伙人及资深涉外律师撰写，深入剖析跨境贸易纠纷、海外欠款追索、域外财产执行及跨国遗产公证的实操要点。',
-  ogTitle: () => isEn.value ? 'Legal Insights | Shenyuan International' : '涉外法律专栏 | 深远(国际)律师事务所',
-  ogDescription: () => isEn.value
-    ? 'Cross-border practice insights and case studies.'
-    : '跨境实务洞察与案例分析。',
+  title: () => isAr.value
+    ? 'الرؤى القانونية الدولية | دراسات الممارسة وقضايا التحصيل | مكتب شينيوان للمحاماة'
+    : (isEn.value
+      ? 'Legal Insights | Cross-Border Practice & Case Studies | Shenyuan International'
+      : '涉外法律专栏 | 跨境实务与案例研究 | 深远(国际)律师事务所'),
+  description: () => isAr.value
+    ? 'تحليلات قانونية معمقة حول نزاعات التجارة الدولية وتحصيل الديون العابرة للحدود وقضايا الإرث العائلي.'
+    : (isEn.value
+      ? 'Original analyses on international trade litigation, cross-border debt recovery and multi-jurisdiction probate, written by the Shenyuan International legal team.'
+      : '由深远合伙人及资深涉外律师撰写，深入剖析跨境贸易纠纷、海外欠款追索、域外财产执行及跨国遗产公证的实操要点。'),
+  ogTitle: () => isAr.value ? 'الرؤى القانونية | Shenyuan International' : (isEn.value ? 'Legal Insights | Shenyuan International' : '涉外法律专栏 | 深远(国际)律师事务所'),
+  ogDescription: () => isAr.value ? 'دراسات عملية وتوجيهات إجرائية حول التقاضي الدولي.' : (isEn.value ? 'Cross-border practice insights and case studies.' : '跨境实务洞察与案例分析。'),
   ogType: 'website',
   ogUrl: () => canonical.value,
   ogImage: () => `${siteUrl}/og-image.png`,
   twitterCard: 'summary_large_image',
-  twitterTitle: () => isEn.value ? 'Legal Insights | Shenyuan International' : '涉外法律专栏 | 深远(国际)律师事务所',
-  twitterDescription: () => isEn.value ? 'Cross-border practice insights and case studies.' : '跨境实务洞察与案例分析。',
+  twitterTitle: () => isAr.value ? 'الرؤى القانونية | Shenyuan International' : (isEn.value ? 'Legal Insights | Shenyuan International' : '涉外法律专栏 | 深远(国际)律师事务所'),
+  twitterDescription: () => isAr.value ? 'دراسات عملية وتوجيهات إجرائية حول التقاضي الدولي.' : (isEn.value ? 'Cross-border practice insights and case studies.' : '跨境实务洞察与案例分析。'),
   twitterImage: () => `${siteUrl}/og-image.png`,
 })
 
 useHead({
+  htmlAttrs: computed(() => ({
+    lang: isAr.value ? 'ar' : (isEn.value ? 'en' : 'zh-CN'),
+    dir: isAr.value ? 'rtl' : 'ltr',
+  })),
   link: [
     { rel: 'canonical', href: () => canonical.value },
     { rel: 'alternate', hreflang: 'zh-CN', href: `${siteUrl}/articles` },
     { rel: 'alternate', hreflang: 'en', href: `${siteUrl}/en/articles` },
+    { rel: 'alternate', hreflang: 'ar', href: `${siteUrl}/ar/articles` },
     { rel: 'alternate', hreflang: 'x-default', href: `${siteUrl}/articles` },
     { rel: 'alternate', type: 'application/rss+xml', title: 'Shenyuan Legal RSS Feed', href: `${siteUrl}/feed.xml` },
   ],
@@ -308,5 +327,20 @@ useHead({
 
 .read-more:hover {
   color: var(--teal-deep);
+}
+
+/* 阿拉伯语（RTL）排版支持 */
+.is-rtl {
+  direction: rtl;
+  text-align: right;
+}
+
+.is-rtl .eyebrow,
+.is-rtl .articles-hero p,
+.is-rtl .article-card h3,
+.is-rtl .desc,
+.is-rtl .card-footer {
+  direction: rtl;
+  text-align: right;
 }
 </style>

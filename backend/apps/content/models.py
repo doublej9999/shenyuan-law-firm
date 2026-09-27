@@ -15,6 +15,8 @@ class ContentArticle(models.Model):
     description_en = models.TextField(default="", blank=True)
     body_zh = models.TextField(default="", blank=True)
     body_en = models.TextField(default="", blank=True)
+    # 多语言动态字典：支持 ar, es, ru 等任意扩展（格式：{"ar": {"title": "...", "body": "...", "description": "..."}}）
+    translations = models.JSONField(default=dict, blank=True)
     business = models.CharField(max_length=50, default="general")
     intent = models.CharField(max_length=10, default="I")
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="draft", db_index=True)
