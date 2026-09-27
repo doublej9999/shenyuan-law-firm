@@ -1,5 +1,8 @@
 <template>
   <div class="site-shell">
+    <!-- 智能地理位置与多语言导流横幅（非侵入式，爬虫自动忽略） -->
+    <GeoSmartBanner />
+
     <header class="site-header" :class="{ 'is-scrolled': isScrolled || !isHomePage }">
       <div class="wrap nav">
         <NuxtLink :to="isEn ? '/en' : '/'" class="brand" aria-label="Shenyuan International 首页">
@@ -81,7 +84,17 @@
           </div>
           <div class="field-item">
             <label>{{ isEn ? 'Phone / WhatsApp *' : '联系电话 *' }}</label>
-            <input v-model="drawerForm.phone" type="tel" required :placeholder="isEn ? '+86 / +1 ...' : '手机号码，用于及时回访'" />
+            <div class="phone-input-row">
+              <span class="country-dial-badge" :title="countryInfo.nameZh">
+                {{ countryInfo.flag }} {{ countryInfo.dialCode }}
+              </span>
+              <input
+                v-model="drawerForm.phone"
+                type="tel"
+                required
+                :placeholder="isEn ? 'Local number / WhatsApp' : '手机号码，用于及时回访'"
+              />
+            </div>
           </div>
           <div class="field-item">
             <label>{{ isEn ? 'Email (Optional)' : '电子邮箱（选填）' }}</label>
@@ -153,11 +166,14 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { getApiClient, parseApiError } from '@/api/client'
+import { useUserGeo } from '@/composables/useUserGeo'
 
 const route = useRoute()
 const router = useRouter()
 const isEn = computed(() => route.path.startsWith('/en'))
 const isHomePage = computed(() => route.path === '/' || route.path === '/en')
+
+const { countryInfo } = useUserGeo()
 
 const isScrolled = ref(false)
 const mobileMenuOpen = ref(false)
@@ -245,12 +261,21 @@ const submitDrawerForm = async () => {
 
   drawerSubmitting.value = true
   try {
+    let normalizedPhone = drawerForm.value.phone.trim()
+    if (!normalizedPhone.startsWith('+') && countryInfo.value?.dialCode) {
+      normalizedPhone = `${countryInfo.value.dialCode} ${normalizedPhone}`
+    }
+
+    const geoMeta = countryInfo.value && countryInfo.value.code !== 'CN'
+      ? ` [访客法域: ${countryInfo.value.nameZh} (${countryInfo.value.code})]`
+      : ''
+
     await getApiClient().post('/api/intakes', {
       name: drawerForm.value.name,
-      phone: drawerForm.value.phone,
+      phone: normalizedPhone,
       email: drawerForm.value.email || undefined,
       matter: drawerForm.value.matter,
-      summary: drawerForm.value.summary,
+      summary: `${drawerForm.value.summary}${geoMeta}`,
       consent: drawerForm.value.consent,
       language: isEn.value ? 'en' : 'zh'
     })
@@ -588,6 +613,30 @@ button { cursor: pointer; }
   font-weight: 700;
   color: var(--muted);
   margin-bottom: 5px;
+}
+
+.phone-input-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+}
+
+.country-dial-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 10px 10px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--teal-deep);
+  white-space: nowrap;
+  user-select: none;
+  flex-shrink: 0;
 }
 
 .field-item input,
