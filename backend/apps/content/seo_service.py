@@ -107,6 +107,7 @@ def generate_sitemap_xml() -> str:
     base_url = get_base_url()
     entries: List[str] = []
 
+    now = datetime.now(timezone.utc).strftime("%Y-%m-%d")
     for route in frontend_routes():
         zh_loc = f"{base_url}{route['zh']}"
         en_loc = f"{base_url}{route['en']}"
@@ -114,6 +115,7 @@ def generate_sitemap_xml() -> str:
             entries.append(
                 "  <url>\n"
                 f"    <loc>{loc}</loc>\n"
+                f"    <lastmod>{now}</lastmod>\n"
                 f"    <changefreq>{route['changefreq']}</changefreq>\n"
                 f"    <priority>{route['priority']}</priority>\n"
                 + _hreflang_links(base_url, route["zh"], route["en"])
