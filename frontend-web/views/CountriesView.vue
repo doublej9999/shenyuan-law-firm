@@ -79,6 +79,11 @@ useSeoMeta({
     : '按国家与地区查找跨境法律服务。',
   ogType: 'website',
   ogUrl: () => canonical.value,
+  ogImage: () => `${siteUrl}/og-image.png`,
+  twitterCard: 'summary_large_image',
+  twitterTitle: () => isEn.value ? 'Jurisdictions | Shenyuan International' : '法域覆盖 | 深远(国际)律师事务所',
+  twitterDescription: () => isEn.value ? 'Cross-border legal services by jurisdiction.' : '按国家与地区查找跨境法律服务。',
+  twitterImage: () => `${siteUrl}/og-image.png`,
 })
 
 useHead({
