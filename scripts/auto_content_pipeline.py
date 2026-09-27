@@ -18,6 +18,7 @@ import json
 import os
 import re
 import sys
+import urllib.error
 import urllib.parse
 import urllib.request
 from datetime import datetime, timezone
@@ -77,6 +78,60 @@ def api_request(path: str, data: dict = None, method: str = "GET") -> dict:
         err_msg = exc.read().decode("utf-8", "replace")[:300]
         print(f"[API ERROR] {method} {path} -> HTTP {exc.code}: {err_msg}", file=sys.stderr)
         raise exc
+
+
+INDEXNOW_KEY = "4b8f2d93e1074a3f890259bfae6741c0"
+INDEXNOW_KEY_LOCATION = "https://shenyuanlegal.com/4b8f2d93e1074a3f890259bfae6741c0.txt"
+
+
+def warmup_edge_cache(slug: str):
+    """边缘节点预热：主动请求新发文章中英文页与 Sitemap，确保爬虫首访极速命中。"""
+    urls = [
+        f"https://shenyuanlegal.com/articles/{slug}",
+        f"https://shenyuanlegal.com/en/articles/{slug}",
+        "https://shenyuanlegal.com/sitemap.xml?refresh=1",
+    ]
+    print("       -> [边缘预热] 正在预热 Vercel Edge 缓存节点...")
+    import time
+    for url in urls:
+        t0 = time.time()
+        try:
+            req = urllib.request.Request(
+                url,
+                headers={"User-Agent": "Mozilla/5.0 (compatible; ShenyuanCacheWarmer/1.0)"}
+            )
+            with urllib.request.urlopen(req, timeout=15) as resp:
+                elapsed = int((time.time() - t0) * 1000)
+                print(f"          ✓ {url} ({resp.status} OK, {elapsed}ms)")
+        except Exception as e:
+            print(f"          ! 预热 {url} 提示: {e}")
+
+
+def notify_indexnow(slug: str):
+    """向 IndexNow API 提交实时收录通知（即时覆盖 Bing、ChatGPT Search、Copilot、Yandex）。"""
+    try:
+        urls = [
+            f"https://shenyuanlegal.com/articles/{slug}",
+            f"https://shenyuanlegal.com/en/articles/{slug}",
+        ]
+        payload = {
+            "host": "shenyuanlegal.com",
+            "key": INDEXNOW_KEY,
+            "keyLocation": INDEXNOW_KEY_LOCATION,
+            "urlList": urls,
+        }
+        req = urllib.request.Request(
+            "https://api.indexnow.org/indexnow",
+            headers={"Content-Type": "application/json; charset=utf-8"},
+            data=json.dumps(payload).encode("utf-8"),
+        )
+        with urllib.request.urlopen(req, timeout=15) as resp:
+            print(f"       -> IndexNow 实时推送成功 ({resp.status})！已即时同步 Bing & ChatGPT Search 索引库。")
+    except urllib.error.HTTPError as e:
+        body = e.read().decode("utf-8", errors="ignore")
+        print(f"       -> IndexNow 推送响应 ({e.code}): {body}")
+    except Exception as e:
+        print(f"       -> IndexNow 推送异常: {e}")
 
 
 def notify_indexing(slug: str):
@@ -140,9 +195,13 @@ def generate_article_with_ai(topic: str, business: str = "general") -> dict:
   "description_en": "英文SEO摘要(100-160字符)",
   "business": "{business}",
   "intent": "I",
-  "body_zh": "中文深度实务正文Markdown(1200-2000字，包含案件背景、法律适用与管辖红线、实操维权四步法、证据清单对照表、业务常见问答FAQ、转化呼吁[免费咨询 →](/#intake)与免责声明)",
+  "body_zh": "中文深度实务正文Markdown(1500-2200字，包含案件背景、法律适用与管辖红线、实操维权四步法、证据清单对照表、业务常见问答FAQ、转化呼吁[免费咨询 →](/#intake)与免责声明)",
   "body_en": "地道英文Markdown正文(包含对应章节、Evidentiary Checklist、[Free consultation →](/#intake)与英文Legal Disclaimer)"
 }}
+
+【GEO（生成式 AI 引用）专属结构要求】
+1. 包含一张《跨国实操要素与管辖对比表》（Markdown Table：对比法域/国家、诉讼或仲裁时效、举证要件、执行难点与周期成本）。
+2. 明确援引具体法律法规或国际公约条款（例如《纽约公约》第V条、《海牙送达公约》、《海牙取证公约》、CISG或中国《涉外民事关系法律适用法》），以便 Perplexity/ChatGPT/Copilot 等生成式 AI 引擎直接抓取作为权威答案出处（Answer Source）。
 
 【合规红线】
 禁止使用“100%胜诉”、“必胜”、“保证追回全部损失”等承诺胜诉绝对化表述，正文末尾必须保留标准免责声明。"""
@@ -369,9 +428,13 @@ def produce_and_publish_new_article(topic: str = "", business: str = "general"):
     print(f"       -> 中文地址: https://shenyuanlegal.com/articles/{slug}")
     print(f"       -> 英文地址: https://shenyuanlegal.com/en/articles/{slug}")
 
-    # 5. 推送 Google Indexing API
-    print("[收录推送] 正在向 Google Indexing API 提交抓取通知...")
+    # 5. 边缘预热
+    warmup_edge_cache(slug)
+
+    # 6. 推送搜索引擎收录 (Google & IndexNow for Bing/ChatGPT)
+    print("[收录推送] 正在向 Google Indexing API 与 IndexNow 提交抓取通知...")
     notify_indexing(slug)
+    notify_indexnow(slug)
     return art_id
 
 
@@ -410,8 +473,12 @@ def repair_and_publish_existing_drafts(limit: int = 1):
                     art_id = create_res["id"]
                     pub_res = api_request(f"/admin/api/content/{art_id}/publish", method="POST")
                     print("\n" + f"[发布成功] 《{pub_res.get('title_zh')}》已正式发布上线！")
-                    print(f"       -> 地址: https://shenyuanlegal.com/articles/{pub_res.get('slug')}")
-                    notify_indexing(pub_res.get("slug"))
+                    published_slug = str(pub_res.get("slug") or "")
+                    if published_slug:
+                        print(f"       -> 地址: https://shenyuanlegal.com/articles/{published_slug}")
+                        warmup_edge_cache(published_slug)
+                        notify_indexing(published_slug)
+                        notify_indexnow(published_slug)
                     conn.execute("UPDATE content_articles SET status = 'published' WHERE id = ?", (r["id"],))
                     conn.commit()
                 except Exception as e:

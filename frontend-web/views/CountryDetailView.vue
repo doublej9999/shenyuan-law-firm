@@ -260,6 +260,37 @@ const breadcrumbJsonLd = computed(() => {
   }
 })
 
+const legalServiceJsonLd = computed(() => {
+  const c: any = country.value
+  if (!c) return null
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'LegalService',
+    'name': isEn.value
+      ? `Shenyuan Law Firm - ${c.name_en || c.name_zh} Legal Practice Desk`
+      : `深远涉外律师事务所 - ${c.name_zh}法律事务部`,
+    'url': canonical.value,
+    'logo': `${siteUrl}/favicon.svg`,
+    'description': isEn.value ? (c.en_intro || c.zh_intro) : c.zh_intro,
+    'areaServed': {
+      '@type': 'Country',
+      'name': c.name_en || c.name_zh,
+    },
+    'serviceType': items.value.slice(0, 5),
+    'provider': {
+      '@type': 'Organization',
+      'name': 'Shenyuan International Law Firm',
+      'url': siteUrl,
+      'sameAs': [
+        'https://www.justia.com',
+        'https://www.martindale.com',
+        'https://www.avvo.com',
+        'https://www.linkedin.com/company/shenyuan-legal',
+      ],
+    },
+  }
+})
+
 useHead({
   link: [
     { rel: 'canonical', href: () => canonical.value },
@@ -274,6 +305,9 @@ useHead({
     }
     if (breadcrumbJsonLd.value) {
       scripts.push({ type: 'application/ld+json', innerHTML: JSON.stringify(breadcrumbJsonLd.value) })
+    }
+    if (legalServiceJsonLd.value) {
+      scripts.push({ type: 'application/ld+json', innerHTML: JSON.stringify(legalServiceJsonLd.value) })
     }
     return scripts
   }),
