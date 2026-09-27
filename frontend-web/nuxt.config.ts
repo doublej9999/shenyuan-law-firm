@@ -59,6 +59,8 @@ export default defineNuxtConfig({
   },
 
   routeRules: {
+    // 代理所有 /api/** 请求到真实后端 Django 服务，彻底解决跨域与边缘请求失效问题
+    '/api/**': { proxy: 'https://shenyuan-backend.vercel.app/api/**' },
     // Article detail pages are revalidated at the edge; the copy is CMS-managed.
     '/articles/**': { swr: 300 },
     '/en/articles/**': { swr: 300 },

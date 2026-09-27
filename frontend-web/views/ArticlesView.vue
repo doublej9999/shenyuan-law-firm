@@ -97,7 +97,13 @@ const { data: articlesData, pending: loading } = await useAsyncData(
   async () => {
     try {
       const res = await getApiClient().get('/api/articles')
-      return (res.data || []) as any[]
+      if (Array.isArray(res.data) && res.data.length > 0) return res.data
+    } catch (err) {
+      // fallback to direct $fetch
+    }
+    try {
+      const data: any = await $fetch('https://shenyuan-backend.vercel.app/api/articles')
+      return Array.isArray(data) ? data : []
     } catch (err) {
       console.error('Failed to load articles', err)
       return []
