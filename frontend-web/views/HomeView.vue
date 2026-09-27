@@ -618,6 +618,11 @@ useSeoMeta({
     : '跨境争议，全球落地执行。跨境商事争议、债务追收、继承与家族资产——中英双语，全球协作网络。',
   ogType: 'website',
   ogUrl: () => canonical.value,
+  ogImage: () => `${siteUrl}/og-image.png`,
+  twitterCard: 'summary_large_image',
+  twitterTitle: () => isEn.value ? 'Shenyuan International | Cross-Border Dispute Resolution' : 'Shenyuan International | 深远(国际)律师事务所',
+  twitterDescription: () => isEn.value ? 'Cross-border disputes, executed globally.' : '跨境争议，全球落地执行。',
+  twitterImage: () => `${siteUrl}/og-image.png`,
 })
 
 useHead({
@@ -626,8 +631,23 @@ useHead({
     { rel: 'alternate', hreflang: 'zh-CN', href: `${siteUrl}/` },
     { rel: 'alternate', hreflang: 'en', href: `${siteUrl}/en` },
     { rel: 'alternate', hreflang: 'x-default', href: `${siteUrl}/` },
+    { rel: 'alternate', type: 'application/rss+xml', title: 'Shenyuan Legal RSS Feed', href: `${siteUrl}/feed.xml` },
   ],
   script: [
+    {
+      type: 'application/ld+json',
+      innerHTML: JSON.stringify({
+        '@context': 'https://schema.org',
+        '@type': 'WebSite',
+        'name': 'Shenyuan International Law Firm 深远(国际)律师事务所',
+        'url': siteUrl,
+        'potentialAction': {
+          '@type': 'SearchAction',
+          'target': `${siteUrl}/articles?q={search_term_string}`,
+          'query-input': 'required name=search_term_string',
+        },
+      }),
+    },
     {
       type: 'application/ld+json',
       innerHTML: JSON.stringify({

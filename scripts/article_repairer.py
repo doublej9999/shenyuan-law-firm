@@ -89,10 +89,58 @@ SUPPLEMENT_EN = {
 }
 
 
-def repair_article(article_dict: Dict[str, Any]) -> Tuple[Dict[str, Any], list]:
+ZH_INTERNAL_MESH = [
+    ("新加坡", "/countries/singapore"),
+    ("开曼群岛", "/countries/cayman-islands"),
+    ("BVI", "/countries/bvi"),
+    ("美国", "/countries/united-states"),
+    ("香港", "/countries/hong-kong"),
+    ("英国", "/countries/united-kingdom"),
+    ("澳大利亚", "/countries/australia"),
+    ("德国", "/countries/germany"),
+    ("阿联酋", "/countries/united-arab-emirates"),
+    ("国际贸易争议", "/services/trade"),
+    ("跨境债务追收", "/services/recovery"),
+    ("涉外继承", "/services/legacy"),
+]
+
+EN_INTERNAL_MESH = [
+    ("Singapore", "/en/countries/singapore"),
+    ("Cayman Islands", "/en/countries/cayman-islands"),
+    ("United States", "/en/countries/united-states"),
+    ("Hong Kong", "/en/countries/hong-kong"),
+    ("United Kingdom", "/en/countries/united-kingdom"),
+    ("Australia", "/en/countries/australia"),
+    ("Germany", "/en/countries/germany"),
+    ("international trade disputes", "/en/services/trade"),
+    ("cross-border debt recovery", "/en/services/recovery"),
+    ("cross-border inheritance", "/en/services/legacy"),
+]
+
+
+def link_first_occurrence(text: str, keyword: str, url: str) -> str:
+    """在 Markdown 文本中为指定关键词首次出现建立内链（避免破坏现有链接或标题）。"""
+    if url in text:
+        return text
+    parts = re.split(r"(\[[^\]]+\]\([^)]+\))", text)
+    replaced = False
+    for i, p in enumerate(parts):
+        if not replaced and not p.startswith("["):
+            lines = p.split("\n")
+            new_lines = []
+            for line in lines:
+                if not replaced and not line.strip().startswith("#") and keyword in line:
+                    line = line.replace(keyword, f"[{keyword}]({url})", 1)
+                    replaced = True
+                new_lines.append(line)
+            parts[i] = "\n".join(new_lines)
+    return "".join(parts)
+
+
+def repair_article(art: Dict[str, Any]) -> Tuple[Dict[str, Any], list]:
     """修复与增强文章数据，使其达到质量门禁标准并可直接发布。"""
     repairs = []
-    art = dict(article_dict)
+    art = dict(art)
 
     biz = art.get("business", "general")
     if biz not in VALID_BUSINESS:
@@ -209,6 +257,26 @@ In cross-border business transactions and multi-jurisdictional proceedings, navi
         body_en += DISCLAIMER_EN
         repairs.append("注入英文标准法律免责声明")
 
+    # 9. 智能站内链接织网 (Internal Link Mesh)
+    mesh_injected = False
+    for kw, url in ZH_INTERNAL_MESH:
+        new_body = link_first_occurrence(body_zh, kw, url)
+        if new_body != body_zh:
+            body_zh = new_body
+            mesh_injected = True
+    if mesh_injected:
+        repairs.append("织入法域与业务专页中文内链网格")
+
+    en_mesh_injected = False
+    for kw, url in EN_INTERNAL_MESH:
+        new_body = link_first_occurrence(body_en, kw, url)
+        if new_body != body_en:
+            body_en = new_body
+            en_mesh_injected = True
+    if en_mesh_injected:
+        repairs.append("织入法域与业务专页英文内链网格")
+
+    art["body_zh"] = body_zh
     art["body_en"] = body_en
 
     return art, repairs

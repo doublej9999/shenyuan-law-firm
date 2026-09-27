@@ -216,6 +216,11 @@ useSeoMeta({
   ogDescription: () => description.value,
   ogType: 'website',
   ogUrl: () => canonical.value,
+  ogImage: () => `${siteUrl}/og-image.png`,
+  twitterCard: 'summary_large_image',
+  twitterTitle: () => title.value,
+  twitterDescription: () => description.value,
+  twitterImage: () => `${siteUrl}/og-image.png`,
 })
 
 const faqJsonLd = computed(() => {
