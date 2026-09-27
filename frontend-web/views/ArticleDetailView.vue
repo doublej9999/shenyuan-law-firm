@@ -22,6 +22,17 @@
           <div class="content-html" v-html="renderedBody"></div>
         </div>
 
+        <!-- Article FAQ & Rich Snippet Module -->
+        <div v-if="articleFaqs.length" class="article-faq-section">
+          <h3 class="faq-head-title">{{ isEn ? 'Frequently Asked Questions' : '常见问题解答与实务要点' }}</h3>
+          <div class="faq-accordion">
+            <details v-for="(f, i) in articleFaqs" :key="i" class="art-faq-item">
+              <summary>{{ f.question }}</summary>
+              <p>{{ f.answer }}</p>
+            </details>
+          </div>
+        </div>
+
         <div class="article-disclaimer">
           <strong>{{ isEn ? 'Legal Disclaimer' : '免责声明' }}：</strong>
           <span>{{ isEn 
@@ -96,6 +107,76 @@ const { data: allArticles } = await useAsyncData(
     }
   }
 )
+
+// FAQ dataset mapped by business category for on-page Q&A and FAQPage JSON-LD
+const articleFaqs = computed(() => {
+  const art: any = article.value
+  if (!art) return []
+  const b = art.business || 'trade'
+
+  if (b === 'trade') {
+    return isEn.value ? [
+      {
+        question: 'What is the most critical first step in an international trade payment dispute?',
+        answer: 'Immediately preserve all documentary evidence (contracts, bills of lading, customs declarations, communication trails, and acknowledged statements of account) and verify whether the statute of limitations is at risk.'
+      },
+      {
+        question: 'Can cross-border trade disputes be resolved without going to court?',
+        answer: 'Yes. A structured bilingual attorney demand letter combined with staged commercial negotiation and asset-tracing pressure resolves a substantial portion of cross-border debt defaults.'
+      }
+    ] : [
+      {
+        question: '发生跨境贸易货款拖欠时，第一步最关键的动作是什么？',
+        answer: '第一时间固定全部书面与电子证据链（合同、提单、报关单、对账单与邮件微信记录），并立即核实涉外法律适用的诉讼时效，避免权利因拖延而灭失。'
+      },
+      {
+        question: '涉外贸易纠纷必须到境外打官司吗？是否有更高效的解决途径？',
+        answer: '不一定。大部分跨国商事欠款可通过专业涉外律师函、针对性调查财产线索施加谈判压力、以及分期担保协议在诉讼前达成和解，大幅节约境外诉讼周期与成本。'
+      }
+    ]
+  } else if (b === 'recovery') {
+    return isEn.value ? [
+      {
+        question: 'Can a Chinese court judgment or arbitral award be enforced overseas?',
+        answer: 'Yes. Arbitral awards are widely enforceable under the New York Convention across 160+ jurisdictions. Court judgments can be enforced in jurisdictions recognizing reciprocity or bilateral treaties.'
+      },
+      {
+        question: 'What should creditors do if a debtor attempts to hide or transfer assets abroad?',
+        answer: 'Initiate lawful cross-border asset tracing promptly and apply for freezing orders or interim preservation relief before the competent local court to secure enforceable assets.'
+      }
+    ] : [
+      {
+        question: '中国法院的胜诉判决或仲裁裁决能否在境外申请执行？',
+        answer: '可以。仲裁裁决可通过《纽约公约》在 160 多个缔约国申请承认与执行；法院判决可依据双边司法协助条约或互惠原则在境外目标法院申请承认后执行。'
+      },
+      {
+        question: '如果债务人将资金或房产转移至海外，债权人该如何应对？',
+        answer: '应尽早通过合法途径开展境内外资产线索调查，并在具备管辖权的法域申请临时财产保全、冻结令或撤销恶意转移之诉，防止最终执行落空。'
+      }
+    ]
+  } else {
+    // legacy
+    return isEn.value ? [
+      {
+        question: 'Does a will made in China automatically govern overseas properties and accounts?',
+        answer: 'Not necessarily. Real estate typically follows the lex situs (law of the jurisdiction where the property is located). Cross-border inheritance often requires local probate or estate administration.'
+      },
+      {
+        question: 'What documents are required for heirs in China to claim an overseas inheritance?',
+        answer: 'Heirs usually need notarized and legalized/apostilled proof of kinship, local death certificates, wills (if any), and estate inventories to initiate formal local probate proceedings.'
+      }
+    ] : [
+      {
+        question: '在中国立的遗嘱能否直接处分海外的不动产和银行存款？',
+        answer: '不一定。涉外继承中不动产通常适用不动产所在地法律，中国遗嘱在海外普通法系国家常需通过当地遗嘱认证（Probate）程序并检验形式合规性。'
+      },
+      {
+        question: '国内继承人办理海外亲属遗产继承通常需要准备哪些公证认证文件？',
+        answer: '一般需要办理死亡证明、亲属关系证明、法定遗嘱（如有）及海牙认证（Apostille）或领事认证，并委托当地具有执业资质的律师向遗产所在地法院申请遗产清点与过户。'
+      }
+    ]
+  }
+})
 
 const relatedArticles = computed(() => {
   const current = article.value
@@ -250,6 +331,23 @@ const articleJsonLd = computed(() => {
   }
 })
 
+const faqJsonLd = computed(() => {
+  if (!articleFaqs.value.length) return null
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    'inLanguage': isEn.value ? 'en' : 'zh-CN',
+    'mainEntity': articleFaqs.value.map((f: any) => ({
+      '@type': 'Question',
+      'name': f.question,
+      'acceptedAnswer': {
+        '@type': 'Answer',
+        'text': f.answer,
+      },
+    })),
+  }
+})
+
 const breadcrumbJsonLd = computed(() => {
   if (!article.value) return null
   return {
@@ -292,6 +390,9 @@ useHead({
     }
     if (breadcrumbJsonLd.value) {
       scripts.push({ type: 'application/ld+json', innerHTML: JSON.stringify(breadcrumbJsonLd.value) })
+    }
+    if (faqJsonLd.value) {
+      scripts.push({ type: 'application/ld+json', innerHTML: JSON.stringify(faqJsonLd.value) })
     }
     return scripts
   }),
@@ -438,6 +539,54 @@ useHead({
   border-radius: 4px;
   font-size: 14px;
   color: #0f172a;
+}
+
+.article-faq-section {
+  margin: 36px 0 28px;
+  padding-top: 24px;
+  border-top: 1px solid var(--line);
+}
+
+.faq-head-title {
+  font-family: var(--serif);
+  font-size: 19px;
+  color: var(--teal-deep);
+  margin: 0 0 16px;
+}
+
+.faq-accordion {
+  display: grid;
+  gap: 12px;
+}
+
+.art-faq-item {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 16px 20px;
+}
+
+.art-faq-item summary {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--teal-deep);
+  cursor: pointer;
+  list-style: none;
+}
+.art-faq-item summary::-webkit-details-marker { display: none; }
+.art-faq-item summary::after {
+  content: "+";
+  float: right;
+  color: var(--gold);
+  font-weight: 700;
+}
+.art-faq-item[open] summary::after { content: "−"; }
+
+.art-faq-item p {
+  margin: 12px 0 0;
+  font-size: 14px;
+  line-height: 1.7;
+  color: #3b4b59;
 }
 
 .article-disclaimer {
