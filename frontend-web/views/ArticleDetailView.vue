@@ -29,6 +29,28 @@
             : '本文内容仅供涉外法律实务研讨与一般信息参考，不构成针对任何具体案件的正式法律意见或委托关系。具体法律程序须结合案件全部证据、事实及相关管辖区法规一案一议。' }}</span>
         </div>
 
+        <!-- Related Articles / Topic Cluster -->
+        <div v-if="relatedArticles.length" class="related-articles-section">
+          <div class="related-head">
+            <h3>{{ isEn ? 'Related Legal Insights' : '相关法律实务与推荐阅读' }}</h3>
+            <NuxtLink :to="isEn ? '/en/articles' : '/articles'" class="more-link">
+              {{ isEn ? 'View all' : '查看全部' }} &rarr;
+            </NuxtLink>
+          </div>
+          <div class="related-grid">
+            <NuxtLink
+              v-for="rel in relatedArticles"
+              :key="rel.id"
+              :to="isEn ? `/en/articles/${rel.slug}` : `/articles/${rel.slug}`"
+              class="related-card"
+            >
+              <span class="rel-badge">{{ rel.business }}</span>
+              <h4 class="rel-title">{{ isEn ? (rel.title_en || rel.title_zh) : rel.title_zh }}</h4>
+              <p class="rel-desc">{{ isEn ? (rel.description_en || rel.description_zh) : rel.description_zh }}</p>
+            </NuxtLink>
+          </div>
+        </div>
+
         <!-- Article Bottom Consultation Box -->
         <div class="bottom-consult-box">
           <div class="consult-copy">
@@ -62,6 +84,27 @@ const isEn = computed(() => route.path.startsWith('/en'))
 
 // Article bodies are fetched during SSR so crawlers receive the full text,
 // title, canonical, hreflang and JSON-LD in the initial HTML response.
+// Load all articles to derive related recommendations within the same topic cluster
+const { data: allArticles } = await useAsyncData(
+  'all-articles-cluster',
+  async () => {
+    try {
+      const res = await getApiClient().get('/api/articles')
+      return Array.isArray(res.data) ? res.data : []
+    } catch (e) {
+      return []
+    }
+  }
+)
+
+const relatedArticles = computed(() => {
+  const current = article.value
+  if (!current || !allArticles.value) return []
+  return allArticles.value
+    .filter((a: any) => a.slug !== current.slug && (a.business === current.business || !current.business))
+    .slice(0, 3)
+})
+
 const { data: article, pending: loading } = await useAsyncData(
   `article-${isEn.value ? 'en' : 'zh'}-${route.params.slug}`,
   async () => {
@@ -411,6 +454,96 @@ useHead({
 
 .article-disclaimer strong {
   color: var(--teal-deep);
+}
+
+.related-articles-section {
+  margin: 40px 0 36px;
+  padding-top: 32px;
+  border-top: 1px solid var(--line);
+}
+
+.related-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.related-head h3 {
+  font-family: var(--serif);
+  font-size: 20px;
+  color: var(--teal-deep);
+  margin: 0;
+}
+
+.related-head .more-link {
+  font-size: 13px;
+  color: var(--teal);
+  font-weight: 700;
+}
+.related-head .more-link:hover {
+  color: var(--teal-deep);
+}
+
+.related-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+.related-card {
+  background: var(--paper-card);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 18px 16px;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.related-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.04);
+}
+
+.rel-badge {
+  align-self: flex-start;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--teal-deep);
+  background: var(--teal-soft);
+  padding: 2px 8px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+
+.rel-title {
+  font-size: 14.5px;
+  color: var(--ink);
+  line-height: 1.4;
+  margin: 0 0 8px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.rel-desc {
+  font-size: 12.5px;
+  color: var(--muted);
+  line-height: 1.5;
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+@media (max-width: 768px) {
+  .related-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 .bottom-consult-box {
