@@ -123,6 +123,46 @@ class GenerateIn(Schema):
     business: Optional[str] = "general"
     custom_prompt: Optional[str] = ""
 
+class TranslateIn(Schema):
+    title_zh: str
+    description_zh: Optional[str] = ""
+    body_zh: Optional[str] = ""
+    business: Optional[str] = "general"
+
+@router.post("/admin/api/content/auto-repair", auth=GlobalAdminAuth())
+def auto_repair_article_endpoint(request, payload: ArticleIn):
+    """人工在后台编辑时，一键执行合规优化、字数扩充、双语 CTA 及内链织网"""
+    import sys
+    from pathlib import Path
+    root = Path(__file__).resolve().parent.parent.parent.parent
+    sys.path.insert(0, str(root / "scripts"))
+    try:
+        from article_repairer import repair_article
+        repaired, logs = repair_article(payload.dict())
+        return {"repaired": repaired, "logs": logs}
+    except Exception as e:
+        return {"repaired": payload.dict(), "logs": [f"自愈引擎处理提示: {e}"]}
+
+@router.post("/admin/api/content/translate-en", auth=GlobalAdminAuth())
+def translate_article_endpoint(request, payload: TranslateIn):
+    """一键调用 DeepSeek 将中文法律文章翻译并润色为地道英文版"""
+    from apps.content.generator_service import generate_article_with_llm
+    prompt = f"翻译并润色为地道普通法系英文指南：{payload.title_zh}"
+    biz = payload.business or "general"
+    body_snippet = (payload.body_zh or "")[:1000]
+    result = generate_article_with_llm(topic=prompt, business=biz, custom_prompt=body_snippet)
+    if result:
+        return {
+            "title_en": result.get("title_en", f"Legal Guide: {payload.title_zh}"),
+            "description_en": result.get("description_en", payload.description_zh),
+            "body_en": result.get("body_en", payload.body_zh),
+        }
+    return {
+        "title_en": f"Cross-Border Legal Practice: {payload.title_zh}",
+        "description_en": payload.description_zh or "Comprehensive cross-border legal guide.",
+        "body_en": f"# {payload.title_zh}\n\n{payload.body_zh}\n\n---\n\n[Free consultation →](/#intake)\n"
+    }
+
 @router.get("/admin/api/content/topic-suggestions", auth=GlobalAdminAuth())
 def list_suggested_topics(request):
     """获取结合 GSC 机会词、站内搜索缺口与业务矩阵的智能推荐选题"""
