@@ -1,6 +1,7 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": "nuxtjs",
+  "ignoreCommand": "bash -c 'if [ \"$VERCEL_GIT_COMMIT_REF\" != \"main\" ] && [ \"$VERCEL_GIT_COMMIT_REF\" != \"dev\" ]; then exit 0; fi; git rev-parse HEAD^ >/dev/null 2>&1 || exit 1; git diff HEAD^ HEAD --quiet .'",
   "git": {
     "deploymentEnabled": {
       "refactor/django-vue-supabase": false

@@ -219,6 +219,7 @@ pip-compile requirements.txt -o requirements.lock --strip-extras --no-annotate
 - 若使用多 worker，SQLite 仍是单文件写入瓶颈，WAL + busy_timeout 已缓解锁冲突。
 - 咨询数据包含个人隐私，请定期备份 `data/` 目录，并确保该目录不可被 Web 静态访问。
 - 设置 `APP_ENV=production` 会关闭 `/docs`、`/redoc` 和 `/openapi.json`（避免泄露接口 schema）。
+- **Vercel Monorepo 构建优化**：子项目（`frontend-web` / `frontend-admin` / `backend`）均配置了 `ignoreCommand`，仅在合入 `main`/`dev` 分支且对应子目录文件发生实际变更时才触发构建，避免单次 Commit/PR 浪涌耗尽每日部署额度。
 
 ## Docker / 1Panel 部署
 
