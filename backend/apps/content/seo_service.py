@@ -72,6 +72,32 @@ def _hreflang_links(base_url: str, zh_path: str, en_path: str, indent: str = "  
     )
 
 
+def _article_hreflang_links(base_url: str, slug: str, translations: Optional[dict] = None, indent: str = "    ") -> Tuple[str, List[str]]:
+    """xhtml:link alternates for all available languages of an article, including x-default.
+    Strict SEO rule: Only includes languages that genuinely exist in translations to prevent crawlers hitting 404s.
+    Returns (hreflang_xml_block, list_of_supported_urls).
+    """
+    zh_path = f"/articles/{slug}"
+    en_path = f"/en/articles/{slug}"
+
+    links = [
+        f'{indent}<xhtml:link rel="alternate" hreflang="zh-CN" href="{base_url}{zh_path}"/>\n',
+        f'{indent}<xhtml:link rel="alternate" hreflang="en" href="{base_url}{en_path}"/>\n',
+    ]
+    locs = [f"{base_url}{zh_path}", f"{base_url}{en_path}"]
+
+    if isinstance(translations, dict):
+        for lang_code in ("ar", "es", "ru"):
+            trans_entry = translations.get(lang_code)
+            if isinstance(trans_entry, dict) and (trans_entry.get("title") or trans_entry.get("body")):
+                lang_path = f"/{lang_code}/articles/{slug}"
+                locs.append(f"{base_url}{lang_path}")
+                links.append(f'{indent}<xhtml:link rel="alternate" hreflang="{lang_code}" href="{base_url}{lang_path}"/>\n')
+
+    links.append(f'{indent}<xhtml:link rel="alternate" hreflang="x-default" href="{base_url}{zh_path}"/>\n')
+    return "".join(links), locs
+
+
 def frontend_routes() -> List[Dict[str, str]]:
     """Every non-article frontend URL the sitemap should advertise.
 
@@ -129,16 +155,15 @@ def generate_sitemap_xml() -> str:
             slug = html.escape(article.slug)
             dt = article.published_at or article.updated_at
             lastmod = dt.strftime("%Y-%m-%d") if dt else now
-            zh_path = f"/articles/{slug}"
-            en_path = f"/en/articles/{slug}"
-            for loc in (f"{base_url}{zh_path}", f"{base_url}{en_path}"):
+            hreflangs, locs = _article_hreflang_links(base_url, slug, getattr(article, "translations", None))
+            for loc in locs:
                 entries.append(
                     "  <url>\n"
                     f"    <loc>{loc}</loc>\n"
                     f"    <lastmod>{lastmod}</lastmod>\n"
                     "    <changefreq>weekly</changefreq>\n"
                     "    <priority>0.8</priority>\n"
-                    + _hreflang_links(base_url, zh_path, en_path)
+                    + hreflangs
                     + "  </url>\n"
                 )
 
@@ -271,6 +296,15 @@ def notify_search_engines(slug: str) -> Dict[str, Any]:
         f"{base_url}/articles/{slug}",
         f"{base_url}/en/articles/{slug}",
     ]
+    try:
+        article = ContentArticle.objects.filter(slug=slug).first()
+        if article and isinstance(article.translations, dict):
+            for lang_code in ("ar", "es", "ru"):
+                trans_entry = article.translations.get(lang_code)
+                if isinstance(trans_entry, dict) and (trans_entry.get("title") or trans_entry.get("body")):
+                    urls.append(f"{base_url}/{lang_code}/articles/{slug}")
+    except Exception:
+        pass
     results: Dict[str, Any] = {
         "google": {"status": "skipped", "message": "GSC service account not configured"},
         "baidu": {"status": "skipped", "message": "Baidu push token not configured"},

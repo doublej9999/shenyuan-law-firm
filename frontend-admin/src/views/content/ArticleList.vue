@@ -65,7 +65,16 @@
                 <span class="bg-muted px-1.5 py-0.5 rounded">{{ item.slug }}</span>
               </td>
               <td class="py-3 px-4 space-y-1 max-w-md">
-                <div class="font-bold text-foreground truncate">{{ item.title_zh }}</div>
+                <div class="font-bold text-foreground truncate flex items-center">
+                  <span>{{ item.title_zh }}</span>
+                  <span
+                    v-if="item.translations && item.translations.ar"
+                    class="ml-1.5 text-[10px] bg-amber-500/10 text-amber-600 px-1 py-0.5 rounded font-mono"
+                    title="已包含阿拉伯语版本"
+                  >
+                    🇦🇪 AR
+                  </span>
+                </div>
                 <div v-if="item.title_en" class="text-[11px] text-muted-foreground truncate italic">
                   EN: {{ item.title_en }}
                 </div>
@@ -148,6 +157,16 @@
             >
               <Languages class="mr-1 h-3.5 w-3.5" />
               ✨ AI 翻译润色英文版
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              class="text-xs text-amber-700 hover:bg-amber-50 dark:text-amber-300 dark:hover:bg-amber-950/20"
+              :loading="translatingAr"
+              @click="handleTranslateAr"
+            >
+              <Languages class="mr-1 h-3.5 w-3.5" />
+              🇦🇪 AI 生成阿拉伯语版
             </Button>
           </div>
         </div>
@@ -259,6 +278,42 @@
             </div>
           </div>
         </div>
+
+        <!-- Arabic Translation Section -->
+        <div class="border rounded-lg p-3 bg-amber-50/20 dark:bg-amber-950/10 space-y-3 mt-3">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-bold text-amber-900 dark:text-amber-200">🇦🇪 阿拉伯语扩展译本 (Arabic / DIFC & KSA)</span>
+            <span class="text-[10px] text-muted-foreground font-mono">translations.ar</span>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div>
+              <label class="text-[11px] font-semibold text-muted-foreground mb-1 block">Arabic Title (العنوان)</label>
+              <Input
+                v-model="currentArticle.translations.ar.title"
+                dir="rtl"
+                placeholder="العنوان باللغة العربية..."
+              />
+            </div>
+            <div>
+              <label class="text-[11px] font-semibold text-muted-foreground mb-1 block">Arabic Description (الوصف)</label>
+              <Input
+                v-model="currentArticle.translations.ar.description"
+                dir="rtl"
+                placeholder="الوصف التعريفي لمحركات البحث..."
+              />
+            </div>
+          </div>
+          <div>
+            <label class="text-[11px] font-semibold text-muted-foreground mb-1 block">Arabic Body (Markdown / النص الكامل)</label>
+            <textarea
+              v-model="currentArticle.translations.ar.body"
+              dir="rtl"
+              rows="6"
+              placeholder="# مقدمة القضية&#10;&#10;النص الكامل باللغة العربية..."
+              class="w-full font-mono rounded-md border border-input bg-background p-2.5 text-xs outline-none focus:ring-1 focus:ring-amber-500 leading-relaxed text-right"
+            />
+          </div>
+        </div>
       </div>
 
       <template #footer>
@@ -290,6 +345,7 @@ const isEdit = ref(false)
 const saving = ref(false)
 const repairing = ref(false)
 const translating = ref(false)
+const translatingAr = ref(false)
 const indexingMap = ref<Record<number, boolean>>({})
 const currentArticle = ref<any>({})
 
@@ -314,6 +370,9 @@ const openCreate = () => {
     description_en: '',
     body_zh: '',
     body_en: '',
+    translations: {
+      ar: { title: '', description: '', body: '' },
+    },
     business: 'recovery',
     intent: 'I',
     status: 'draft',
@@ -323,7 +382,10 @@ const openCreate = () => {
 
 const openEdit = (item: any) => {
   isEdit.value = true
-  currentArticle.value = { ...item }
+  const copy = { ...item }
+  if (!copy.translations) copy.translations = {}
+  if (!copy.translations.ar) copy.translations.ar = { title: '', description: '', body: '' }
+  currentArticle.value = copy
   editorOpen.value = true
 }
 
@@ -413,6 +475,37 @@ const handleTranslateEn = async () => {
     toast.error('AI 翻译异常: ' + (err?.response?.data?.detail || err.message))
   } finally {
     translating.value = false
+  }
+}
+
+const handleTranslateAr = async () => {
+  if (!currentArticle.value.title_zh) {
+    toast.error('请先录入中文标题')
+    return
+  }
+  translatingAr.value = true
+  try {
+    const res: any = await api.post('/admin/api/content/translate-multilingual', {
+      title_zh: currentArticle.value.title_zh,
+      description_zh: currentArticle.value.description_zh || '',
+      body_zh: currentArticle.value.body_zh || '',
+      business: currentArticle.value.business || 'general',
+      target_lang: 'ar',
+    })
+    if (res) {
+      if (!currentArticle.value.translations) currentArticle.value.translations = {}
+      currentArticle.value.translations.ar = {
+        title: res.title || '',
+        description: res.description || '',
+        body: res.body || '',
+      }
+      toast.success('AI 已成功生成中东涉外阿拉伯语（DIFC & KSA 司法适用）专业译本！')
+    }
+  } catch (err: any) {
+    console.error(err)
+    toast.error('阿语生成异常: ' + (err?.response?.data?.detail || err.message))
+  } finally {
+    translatingAr.value = false
   }
 }
 
