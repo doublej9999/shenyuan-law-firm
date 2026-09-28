@@ -68,9 +68,10 @@
             <div class="field">
               <label for="phone">{{ isEn ? 'Phone' : '联系电话' }}</label>
               <div class="home-phone-row">
-                <span class="country-dial-badge" :title="countryInfo.nameZh">
-                  {{ countryInfo.flag }} {{ countryInfo.dialCode }}
-                </span>
+                <CountryDialSelect
+                  v-model="homeCountryDial"
+                  :is-en="isEn"
+                />
                 <input
                   id="phone"
                   v-model="form.phone"
@@ -612,6 +613,17 @@ const route = useRoute()
 const isEn = computed(() => route.path.startsWith('/en'))
 const { countryInfo } = useUserGeo()
 
+// 首页表单国家区号，默认跟随 IP 侦测
+const homeCountryDial = ref(countryInfo.value?.dialCode || '+86')
+watch(
+  () => countryInfo.value?.dialCode,
+  (code) => {
+    if (code && !homeCountryDial.value) {
+      homeCountryDial.value = code
+    }
+  }
+)
+
 // ---- SEO --------------------------------------------------------------
 const siteUrl = 'https://shenyuanlegal.com'
 const canonical = computed(() => isEn.value ? `${siteUrl}/en` : `${siteUrl}/`)
@@ -752,8 +764,9 @@ const handleIntakeSubmit = async () => {
   submitting.value = true
   try {
     let normalizedPhone = form.value.phone.trim()
-    if (!normalizedPhone.startsWith('+') && countryInfo.value?.dialCode) {
-      normalizedPhone = `${countryInfo.value.dialCode} ${normalizedPhone}`
+    const activeDial = homeCountryDial.value || countryInfo.value?.dialCode || '+86'
+    if (!normalizedPhone.startsWith('+')) {
+      normalizedPhone = `${activeDial} ${normalizedPhone}`
     }
 
     const geoMeta = countryInfo.value && countryInfo.value.code !== 'CN'
