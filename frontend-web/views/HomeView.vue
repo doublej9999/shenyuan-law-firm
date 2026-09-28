@@ -1,101 +1,91 @@
 <template>
-  <div class="home-container">
+  <div class="home-container" :class="{ 'is-rtl': isAr }">
     <!-- 01 HERO -->
     <section class="hero">
       <div class="wrap hero-grid">
         <div class="hero-copy">
           <div class="eyebrow">
-            {{ isEn ? 'Cross-border dispute resolution & family asset protection' : '跨境争议解决与家族资产保护' }}
+            {{ t.hero.eyebrow }}
           </div>
           <h1>
-            <span>{{ isEn ? 'Cross-border disputes, ' : '跨境争议，' }}</span>
-            <span class="highlight">{{ isEn ? 'executed globally.' : '全球落地执行。' }}</span>
+            <span>{{ t.hero.title1 }}</span>
+            <span class="highlight">{{ t.hero.titleHighlight }}</span>
           </h1>
           <p>
-            {{ isEn 
-              ? 'Shenyuan International helps Chinese businesses and families resolve international trade disputes, recover cross-border debts, and protect inherited family assets — understood in your language, executed through a global network of local counsel.' 
-              : '深远国际律师事务所为中国企业与家庭提供国际贸易争议、跨境债务追收、继承与家族资产法律服务——用中文理解你的处境，用全球合作律所网络在当地落地执行。' }}
+            {{ t.hero.desc }}
           </p>
           <div class="hero-actions">
             <a class="button button-primary" href="#intake" @click.prevent="scrollToIntake">
-              {{ isEn ? 'Free legal consultation →' : '免费法律咨询 →' }}
+              {{ t.hero.ctaPrimary }}
             </a>
             <NuxtLink class="button button-outline" :to="isEn ? '/en/services' : '/services'">
-              {{ isEn ? 'Explore services' : '查看服务范围' }}
+              {{ t.hero.ctaSecondary }}
             </NuxtLink>
           </div>
           <div class="hero-notes">
-            <span><i></i><span>{{ isEn ? 'Chinese / English' : '中英双语沟通' }}</span></span>
-            <span><i></i><span>{{ isEn ? 'Coverage across 30+ jurisdictions' : '覆盖 30+ 国家与地区' }}</span></span>
-            <span><i></i><span>{{ isEn ? 'Assess first, act clearly' : '先评估，再行动' }}</span></span>
+            <span><i></i><span>{{ t.hero.noteLang }}</span></span>
+            <span><i></i><span>{{ t.hero.noteJurisdictions }}</span></span>
+            <span><i></i><span>{{ t.hero.noteAssess }}</span></span>
           </div>
         </div>
 
         <form class="intake-card" id="intake" @submit.prevent="handleIntakeSubmit" novalidate>
-          <h2>{{ isEn ? 'Tell us what happened' : '先说说发生了什么' }}</h2>
+          <h2>{{ t.intake.title }}</h2>
           <p>
-            {{ isEn 
-              ? 'Share the basics. We will assess the matter type, jurisdiction, and next step, and respond within 24 hours. For urgent matters, message us on WeChat and mark it urgent.' 
-              : '留下基本信息，我们会先判断事项类型、地域与下一步，24 小时内回复。紧急情况建议直接微信联系并注明“紧急”。' }}
+            {{ t.intake.desc }}
           </p>
           <div class="contact-options">
             <img class="qr-img" src="/wechat-qrcode.png" alt="WeChat QR code" loading="lazy" decoding="async">
             <div class="wechat-copy">
-              <strong>{{ isEn ? 'Quick WeChat consult' : '微信快速咨询' }}</strong>
-              <p>{{ isEn ? 'Useful for urgent, time-zone sensitive, or quick first-contact questions.' : '适合紧急、跨时区或希望先简单确认方向的咨询。' }}</p>
-              <span class="wechat-id">{{ isEn ? 'WeChat: ShenyuanLegal' : '微信号：ShenyuanLegal' }}</span>
+              <strong>{{ t.intake.wechatTitle }}</strong>
+              <p>{{ t.intake.wechatDesc }}</p>
+              <span class="wechat-id">{{ t.intake.wechatId }}</span>
             </div>
           </div>
 
           <div class="intake-grid">
             <div class="field">
-              <label for="name">{{ isEn ? 'Name' : '称呼' }}</label>
-              <input id="name" v-model="form.name" required :placeholder="isEn ? 'e.g. Ms. Wang' : '例如：王女士'">
+              <label for="name">{{ t.intake.fieldName }}</label>
+              <input id="name" v-model="form.name" required :placeholder="t.intake.placeholderName">
             </div>
             <div class="field">
-              <label for="email">{{ isEn ? 'Email (optional)' : '邮箱（选填）' }}</label>
-              <input id="email" v-model="form.email" type="email" :placeholder="isEn ? 'Optional, for checklist' : '选填，用于接收材料清单'">
+              <label for="email">{{ t.intake.fieldEmail }}</label>
+              <input id="email" v-model="form.email" type="email" :placeholder="t.intake.placeholderEmail">
             </div>
             <div class="field">
-              <label for="matter">{{ isEn ? 'Matter type' : '事项类型' }}</label>
+              <label for="matter">{{ t.intake.fieldMatter }}</label>
               <select id="matter" v-model="form.matter" required>
-                <option value="国际贸易争议">{{ isEn ? 'International trade dispute' : '国际贸易争议' }}</option>
-                <option value="诉讼与债务追收">{{ isEn ? 'Litigation & debt recovery' : '诉讼与债务追收' }}</option>
-                <option value="继承与家族资产纠纷">{{ isEn ? 'Inheritance & family assets' : '继承与家族资产纠纷' }}</option>
-                <option value="不确定，希望先沟通">{{ isEn ? 'Not sure yet' : '不确定，希望先沟通' }}</option>
+                <option v-for="opt in t.intake.matterOptions" :key="opt.value" :value="opt.value">
+                  {{ opt.label }}
+                </option>
               </select>
             </div>
             <div class="field">
-              <label for="phone">{{ isEn ? 'Phone' : '联系电话' }}</label>
+              <label for="phone">{{ t.intake.fieldPhone }}</label>
               <div class="home-phone-row">
                 <CountryDialSelect
                   v-model="homeCountryDial"
-                  :is-en="isEn"
+                  :is-en="!isAr && !isEs && isEn"
                 />
                 <input
                   id="phone"
                   v-model="form.phone"
                   type="tel"
                   required
-                  :placeholder="isEn ? 'Local number / WhatsApp' : '手机或固定电话，用于回电联系'"
+                  :placeholder="t.intake.placeholderPhone"
                 >
               </div>
             </div>
             <div class="field full">
-              <label for="summary">{{ isEn ? 'Briefly describe the issue' : '一句话描述问题' }}</label>
-              <textarea id="summary" v-model="form.summary" required :placeholder="isEn ? 'e.g. Overseas buyer received goods but has not paid for 4 months.' : '例如：海外客户已收货，但 4 个月未支付尾款。'"></textarea>
+              <label for="summary">{{ t.intake.fieldSummary }}</label>
+              <textarea id="summary" v-model="form.summary" required :placeholder="t.intake.placeholderSummary"></textarea>
             </div>
           </div>
 
           <label class="consent" for="consent">
             <input type="checkbox" id="consent" v-model="form.consent" required>
             <span>
-              <template v-if="isEn">
-                I have read and agree to the <a href="#privacy" class="privacy-link" @click.prevent.stop="privacyModalOpen = true">Privacy Notice</a> and consent to this information being used for consultation.
-              </template>
-              <template v-else>
-                我已阅读并同意<a href="#privacy" class="privacy-link" @click.prevent.stop="privacyModalOpen = true">《隐私说明》</a>，同意提交以上信息用于咨询沟通。
-              </template>
+              {{ t.intake.consentPre }}<a href="#privacy" class="privacy-link" @click.prevent.stop="privacyModalOpen = true">{{ t.intake.privacyLink }}</a>{{ t.intake.consentPost }}
             </span>
           </label>
 
@@ -106,19 +96,15 @@
                 <line x1="12" y1="16" x2="12" y2="12"></line>
                 <line x1="12" y1="8" x2="12.01" y2="8"></line>
               </svg>
-              <span>{{ isEn ? 'View privacy notice' : '查看隐私说明' }}</span>
+              <span>{{ t.intake.viewPrivacy }}</span>
             </button>
           </div>
 
           <button class="button button-primary" type="submit" :disabled="submitting">
-            {{ submitting 
-              ? (isEn ? 'Submitting...' : '提交中...') 
-              : (isEn ? 'Submit for next-step guidance →' : '提交，获取下一步建议 →') }}
+            {{ submitting ? t.intake.btnSubmitting : t.intake.btnSubmit }}
           </button>
           <p class="form-note">
-            {{ isEn 
-              ? 'Submitting does not create an attorney-client relationship. Please do not include sensitive identifiers or bank details.' 
-              : '提交不代表建立委托关系。请勿在此处填写身份证号、银行账号等敏感信息。' }}
+            {{ t.intake.formNote }}
           </p>
         </form>
       </div>
@@ -130,29 +116,29 @@
         <div class="trust-item">
           <i></i>
           <div>
-            <strong>{{ isEn ? 'Bilingual team' : '中英双语团队' }}</strong>
-            <span>{{ isEn ? 'Facts in Chinese, precision in English' : '中文讲清事实，英文保留法律精度' }}</span>
+            <strong>{{ t.trust.bilingualTitle }}</strong>
+            <span>{{ t.trust.bilingualDesc }}</span>
           </div>
         </div>
         <div class="trust-item">
           <i></i>
           <div>
-            <strong>{{ isEn ? 'Global network' : '全球协作网络' }}</strong>
-            <span>{{ isEn ? 'Local counsel in 30+ jurisdictions' : '30+ 国家与地区当地执业律所' }}</span>
+            <strong>{{ t.trust.globalTitle }}</strong>
+            <span>{{ t.trust.globalDesc }}</span>
           </div>
         </div>
         <div class="trust-item">
           <i></i>
           <div>
-            <strong>{{ isEn ? '24-hour response' : '24 小时首响承诺' }}</strong>
-            <span>{{ isEn ? 'We get back to you quickly' : '收到咨询后尽快安排沟通' }}</span>
+            <strong>{{ t.trust.responseTitle }}</strong>
+            <span>{{ t.trust.responseDesc }}</span>
           </div>
         </div>
         <div class="trust-item">
           <i></i>
           <div>
-            <strong>{{ isEn ? 'Privacy & confidentiality' : '隐私与保密' }}</strong>
-            <span>{{ isEn ? 'Information used solely for assessment' : '咨询信息仅用于评估与沟通' }}</span>
+            <strong>{{ t.trust.privacyTitle }}</strong>
+            <span>{{ t.trust.privacyDesc }}</span>
           </div>
         </div>
       </div>
@@ -162,63 +148,52 @@
     <section class="section service-section" id="services">
       <div class="wrap">
         <div class="section-head">
-          <div class="eyebrow">{{ isEn ? 'Core practice' : '核心业务' }}</div>
-          <h2>{{ isEn ? 'Three core practice lines, one clear path forward.' : '三类高频跨境事项，一条清晰的解决路径。' }}</h2>
-          <p>{{ isEn 
-            ? 'Built around the issues Chinese businesses and families face abroad — we assess the facts and evidence, then map negotiation, recovery, litigation, or enforcement.' 
-            : '围绕中国企业与家庭在海外最常遇到的问题，从欠款事实与证据入手，判断协商、追收、诉讼或执行路径。' }}</p>
+          <div class="eyebrow">{{ t.services.eyebrow }}</div>
+          <h2>{{ t.services.title }}</h2>
+          <p>{{ t.services.desc }}</p>
         </div>
         <div class="service-grid">
           <article class="service-card">
-            <div class="service-number">01 / TRADE</div>
-            <h3>{{ isEn ? 'International trade disputes' : '国际贸易争议' }}</h3>
-            <p>{{ isEn ? 'For disputes involving performance, payment, agencies, distribution, and cross-border contracts.' : '处理交易履行、货款、代理与跨境合同之间的纠纷。' }}</p>
+            <div class="service-number">{{ t.services.tradeNum }}</div>
+            <h3>{{ t.services.tradeTitle }}</h3>
+            <p>{{ t.services.tradeDesc }}</p>
             <ul class="service-list">
-              <li>{{ isEn ? 'Unpaid invoices / supplier breach' : '拖欠货款 / 供应商违约' }}</li>
-              <li>{{ isEn ? 'Agency, distribution, contract review' : '代理、经销、跨境合同审查' }}</li>
-              <li>{{ isEn ? 'Customs, logistics, quality issues' : '海关、物流、质量争议' }}</li>
-              <li>{{ isEn ? 'Trade fraud identification & response' : '国际贸易诈骗识别与应对' }}</li>
+              <li v-for="(item, idx) in t.services.tradeItems" :key="idx">{{ item }}</li>
             </ul>
             <NuxtLink class="service-link" :to="isEn ? '/en/services' : '/services'">
-              {{ isEn ? 'Trade dispute services →' : '了解贸易争议服务 →' }}
+              {{ t.services.tradeLink }}
             </NuxtLink>
           </article>
 
           <article class="service-card">
-            <div class="service-number">02 / RECOVERY</div>
-            <h3>{{ isEn ? 'Litigation & debt recovery' : '诉讼与债务追收' }}</h3>
-            <p>{{ isEn ? 'Assess recovery, litigation, and enforcement options from the facts and asset trail.' : '从欠款事实与资产线索出发，判断追收、诉讼或执行路径。' }}</p>
+            <div class="service-number">{{ t.services.recoveryNum }}</div>
+            <h3>{{ t.services.recoveryTitle }}</h3>
+            <p>{{ t.services.recoveryDesc }}</p>
             <ul class="service-list">
-              <li>{{ isEn ? 'Overseas customer debt recovery' : '海外客户欠款追收' }}</li>
-              <li>{{ isEn ? 'Asset tracing in China and abroad' : '中国境内与海外资产调查' }}</li>
-              <li>{{ isEn ? 'Cross-border judgment & award enforcement' : '判决、仲裁裁决跨境执行' }}</li>
-              <li>{{ isEn ? 'Commercial fraud investigation' : '商业欺诈调查' }}</li>
+              <li v-for="(item, idx) in t.services.recoveryItems" :key="idx">{{ item }}</li>
             </ul>
             <NuxtLink class="service-link" :to="isEn ? '/en/services' : '/services'">
-              {{ isEn ? 'Recovery services →' : '了解追收服务 →' }}
+              {{ t.services.recoveryLink }}
             </NuxtLink>
           </article>
 
           <article class="service-card">
-            <div class="service-number">03 / LEGACY</div>
-            <h3>{{ isEn ? 'Inheritance & family assets' : '继承与家族资产纠纷' }}</h3>
-            <p>{{ isEn ? 'Navigate multi-jurisdiction inheritance, property, equity, deposits, and family conflicts.' : '协助梳理大陆与海外多地的继承、房产、股权与家族争议。' }}</p>
+            <div class="service-number">{{ t.services.legacyNum }}</div>
+            <h3>{{ t.services.legacyTitle }}</h3>
+            <p>{{ t.services.legacyDesc }}</p>
             <ul class="service-list">
-              <li>{{ isEn ? 'Mainland China and multi-country inheritance' : '中国大陆与海外多地继承' }}</li>
-              <li>{{ isEn ? 'Property, equity, and deposit inheritance' : '房产、股权、存款继承' }}</li>
-              <li>{{ isEn ? 'Wills and estate division' : '遗嘱效力与遗产分割' }}</li>
-              <li>{{ isEn ? 'Missing or disputed family members' : '家族成员失联或争议' }}</li>
+              <li v-for="(item, idx) in t.services.legacyItems" :key="idx">{{ item }}</li>
             </ul>
             <NuxtLink class="service-link" :to="isEn ? '/en/services' : '/services'">
-              {{ isEn ? 'Legacy services →' : '了解继承服务 →' }}
+              {{ t.services.legacyLink }}
             </NuxtLink>
           </article>
         </div>
 
         <div class="service-cta-row">
-          <p>{{ isEn ? 'Not sure which category fits? Share your situation and we will help you find the right entry point.' : '不确定属于哪一类？先提交你的情况，我们帮你判断入口。' }}</p>
+          <p>{{ t.services.ctaText }}</p>
           <a class="button button-primary" href="#intake" @click.prevent="scrollToIntake">
-            {{ isEn ? 'Share your case →' : '提交案件信息 →' }}
+            {{ t.services.ctaBtn }}
           </a>
         </div>
       </div>
@@ -228,25 +203,25 @@
     <section class="section process-section" id="process">
       <div class="wrap">
         <div class="section-head">
-          <div class="eyebrow">{{ isEn ? 'From consultation to action' : '从咨询到行动' }}</div>
-          <h2>{{ isEn ? 'Clarify the matter. Move forward with care.' : '先把问题说清，再把路径走稳。' }}</h2>
-          <p>{{ isEn ? 'Built for complex matters across time zones, languages, and jurisdictions.' : '适合需要跨时区、双语沟通，或同时涉及中国大陆与海外法域的复杂事项。' }}</p>
+          <div class="eyebrow">{{ t.process.eyebrow }}</div>
+          <h2>{{ t.process.title }}</h2>
+          <p>{{ t.process.desc }}</p>
         </div>
         <div class="process-grid">
           <div class="process-step">
-            <span>01</span>
-            <h3>{{ isEn ? 'Free consultation & intake' : '免费咨询建档' }}</h3>
-            <p>{{ isEn ? 'Share the essentials via form or WeChat. We map the parties, amounts, timeline, and goals.' : '提交基本情况或微信联系，我们梳理人物、金额、时间线与目标。' }}</p>
+            <span>{{ t.process.step1Num }}</span>
+            <h3>{{ t.process.step1Title }}</h3>
+            <p>{{ t.process.step1Desc }}</p>
           </div>
           <div class="process-step">
-            <span>02</span>
-            <h3>{{ isEn ? 'Facts, evidence & jurisdiction review' : '事实、证据与法域评估' }}</h3>
-            <p>{{ isEn ? 'Identify timing, evidence, asset location, and potentially relevant jurisdictions.' : '初步识别时效、证据、资产位置与可能涉及的法域，判断可行路径。' }}</p>
+            <span>{{ t.process.step2Num }}</span>
+            <h3>{{ t.process.step2Title }}</h3>
+            <p>{{ t.process.step2Desc }}</p>
           </div>
           <div class="process-step">
-            <span>03</span>
-            <h3>{{ isEn ? 'Strategy, engagement & execution' : '策略、报价与执行' }}</h3>
-            <p>{{ isEn ? 'Define the strategy — negotiation, recovery, or litigation — with clear milestones and risk boundaries.' : '根据事项特点确定谈判、追收或诉讼策略，明确材料、风险与里程碑。' }}</p>
+            <span>{{ t.process.step3Num }}</span>
+            <h3>{{ t.process.step3Title }}</h3>
+            <p>{{ t.process.step3Desc }}</p>
           </div>
         </div>
       </div>
@@ -256,20 +231,20 @@
     <section class="section stats-section" id="results">
       <div class="wrap">
         <div class="stat">
-          <div class="num">30<em>+</em></div>
-          <div class="label">{{ isEn ? 'jurisdictions covered' : '协作国家与地区' }}</div>
+          <div class="num">{{ t.stats.stat1Num }}</div>
+          <div class="label">{{ t.stats.stat1Label }}</div>
         </div>
         <div class="stat">
-          <div class="num">3</div>
-          <div class="label">{{ isEn ? 'core practice lines' : '大跨境业务线' }}</div>
+          <div class="num">{{ t.stats.stat2Num }}</div>
+          <div class="label">{{ t.stats.stat2Label }}</div>
         </div>
         <div class="stat">
-          <div class="num">24<em>h</em></div>
-          <div class="label">{{ isEn ? 'first-response commitment' : '咨询首响承诺' }}</div>
+          <div class="num">{{ t.stats.stat3Num }}</div>
+          <div class="label">{{ t.stats.stat3Label }}</div>
         </div>
         <div class="stat">
-          <div class="num">2</div>
-          <div class="label">{{ isEn ? 'languages: 中文 / English' : '种语言·中 / EN' }}</div>
+          <div class="num">{{ t.stats.stat4Num }}</div>
+          <div class="label">{{ t.stats.stat4Label }}</div>
         </div>
       </div>
     </section>
@@ -278,52 +253,50 @@
     <section class="section cases-section" id="cases">
       <div class="wrap">
         <div class="section-head">
-          <div class="eyebrow">{{ isEn ? 'Cases & outcomes' : '案例与成果' }}</div>
-          <h2>{{ isEn ? 'We handle the hard problems of real business.' : '我们处理的，都是真实生意里的难题。' }}</h2>
-          <p>{{ isEn 
-            ? 'Below are typical scenarios and the pathways we take. Anonymized case walkthroughs will be published as they are finalized. Every engagement starts with a free consultation.' 
-            : '以下是典型情形与处理路径示例；脱敏案例复盘（已隐去身份信息）整理完成后将陆续发布。每一件案子，都从一次免费咨询开始。' }}</p>
+          <div class="eyebrow">{{ t.cases.eyebrow }}</div>
+          <h2>{{ t.cases.title }}</h2>
+          <p>{{ t.cases.desc }}</p>
         </div>
         <div class="cases-grid">
           <article class="case-card">
-            <div class="case-tag">TRADE</div>
-            <h3>{{ isEn ? 'Buyer received goods, refused final payment' : '海外客户收货后拖欠尾款' }}</h3>
-            <p>{{ isEn ? 'Typical scenario: goods delivered, buyer delays payment for months citing quality, FX, or other reasons.' : '典型情形：货已交付，客户以质量问题、汇率波动等理由拖延付款数月。' }}</p>
+            <div class="case-tag">{{ t.cases.card1Tag }}</div>
+            <h3>{{ t.cases.card1Title }}</h3>
+            <p>{{ t.cases.card1Desc }}</p>
             <div class="case-path">
-              <b>{{ isEn ? 'Pathway' : '处理路径' }}</b>
-              <span>{{ isEn ? 'Evidence review → demand & negotiation → litigation / arbitration → enforcement' : '证据梳理 → 律师函与协商 → 诉讼 / 仲裁 → 判决执行' }}</span>
+              <b>{{ t.cases.pathLabel }}</b>
+              <span>{{ t.cases.card1Path }}</span>
             </div>
-            <span class="soon-badge">{{ isEn ? 'Anonymized case study coming soon' : '脱敏案例复盘整理中' }}</span>
+            <span class="soon-badge">{{ t.cases.soonBadge }}</span>
             <a class="button button-outline case-btn" href="#intake" @click.prevent="scrollToIntake">
-              {{ isEn ? 'Free consultation →' : '类似案件，免费咨询 →' }}
+              {{ t.cases.btnConsult }}
             </a>
           </article>
 
           <article class="case-card">
-            <div class="case-tag">RECOVERY</div>
-            <h3>{{ isEn ? 'Won the judgment, still no payment' : '判决赢了，钱却拿不回来' }}</h3>
-            <p>{{ isEn ? 'Typical scenario: a judgment or award exists in China or abroad, but the debtor has moved assets or disappeared.' : '典型情形：中国境内或境外已有生效判决 / 仲裁裁决，但债务人转移资产或下落不明。' }}</p>
+            <div class="case-tag">{{ t.cases.card2Tag }}</div>
+            <h3>{{ t.cases.card2Title }}</h3>
+            <p>{{ t.cases.card2Desc }}</p>
             <div class="case-path">
-              <b>{{ isEn ? 'Pathway' : '处理路径' }}</b>
-              <span>{{ isEn ? 'Asset tracing → preservation orders → recognition & enforcement → settlement' : '资产调查 → 财产保全 → 承认与执行申请 → 执行和解' }}</span>
+              <b>{{ t.cases.pathLabel }}</b>
+              <span>{{ t.cases.card2Path }}</span>
             </div>
-            <span class="soon-badge">{{ isEn ? 'Anonymized case study coming soon' : '脱敏案例复盘整理中' }}</span>
+            <span class="soon-badge">{{ t.cases.soonBadge }}</span>
             <a class="button button-outline case-btn" href="#intake" @click.prevent="scrollToIntake">
-              {{ isEn ? 'Free consultation →' : '类似案件，免费咨询 →' }}
+              {{ t.cases.btnConsult }}
             </a>
           </article>
 
           <article class="case-card">
-            <div class="case-tag">LEGACY</div>
-            <h3>{{ isEn ? 'Relative passed away abroad, estate spans two countries' : '亲属在海外去世，遗产横跨两国' }}</h3>
-            <p>{{ isEn ? 'Typical scenario: heirs in China must handle overseas property, deposits, and equity — with wills, probate, and FX compliance involved.' : '典型情形：继承人身在国内，需处理海外房产、存款与公司股权，涉及遗嘱、认证与外汇。' }}</p>
+            <div class="case-tag">{{ t.cases.card3Tag }}</div>
+            <h3>{{ t.cases.card3Title }}</h3>
+            <p>{{ t.cases.card3Desc }}</p>
             <div class="case-path">
-              <b>{{ isEn ? 'Pathway' : '处理路径' }}</b>
-              <span>{{ isEn ? 'Notarization → probate → asset list & inheritance → compliant fund transfer' : '亲属关系与文件公证 → 遗嘱认证 → 资产清单与继承 → 资金合规汇回' }}</span>
+              <b>{{ t.cases.pathLabel }}</b>
+              <span>{{ t.cases.card3Path }}</span>
             </div>
-            <span class="soon-badge">{{ isEn ? 'Anonymized case study coming soon' : '脱敏案例复盘整理中' }}</span>
+            <span class="soon-badge">{{ t.cases.soonBadge }}</span>
             <a class="button button-outline case-btn" href="#intake" @click.prevent="scrollToIntake">
-              {{ isEn ? 'Free consultation →' : '类似案件，免费咨询 →' }}
+              {{ t.cases.btnConsult }}
             </a>
           </article>
         </div>
@@ -334,40 +307,17 @@
     <section class="section global-section" id="global">
       <div class="wrap">
         <div class="section-head">
-          <div class="eyebrow">{{ isEn ? 'Global reach' : '全球网络' }}</div>
-          <h2>{{ isEn ? 'Where our clients are, our network follows.' : '客户在哪里，协作网络就在哪里。' }}</h2>
-          <p>{{ isEn 
-            ? 'Through partnerships with locally licensed counsel, we cover the markets where Chinese businesses and overseas Chinese communities are concentrated. Every matter is assessed on its own facts.' 
-            : '通过与当地执业律所的合作，覆盖中国企业出海与海外华人集中的主要市场。具体地区以当次评估为准，一案一议。' }}</p>
+          <div class="eyebrow">{{ t.global.eyebrow }}</div>
+          <h2>{{ t.global.title }}</h2>
+          <p>{{ t.global.desc }}</p>
         </div>
         <div class="global-grid">
-          <div class="region">{{ isEn ? 'United States' : '美国' }}</div>
-          <div class="region">{{ isEn ? 'Canada' : '加拿大' }}</div>
-          <div class="region">{{ isEn ? 'Australia' : '澳大利亚' }}</div>
-          <div class="region">{{ isEn ? 'New Zealand' : '新西兰' }}</div>
-          <div class="region">{{ isEn ? 'Singapore' : '新加坡' }}</div>
-          <div class="region">{{ isEn ? 'United Kingdom' : '英国' }}</div>
-          <div class="region">{{ isEn ? 'Germany' : '德国' }}</div>
-          <div class="region">{{ isEn ? 'France' : '法国' }}</div>
-          <div class="region">{{ isEn ? 'Japan' : '日本' }}</div>
-          <div class="region">{{ isEn ? 'South Korea' : '韩国' }}</div>
-          <div class="region">{{ isEn ? 'UAE' : '阿联酋' }}</div>
-          <div class="region">{{ isEn ? 'Saudi Arabia' : '沙特' }}</div>
-          <div class="region">{{ isEn ? 'Thailand' : '泰国' }}</div>
-          <div class="region">{{ isEn ? 'Vietnam' : '越南' }}</div>
-          <div class="region">{{ isEn ? 'Malaysia' : '马来西亚' }}</div>
-          <div class="region">{{ isEn ? 'Indonesia' : '印尼' }}</div>
-          <div class="region">{{ isEn ? 'Hong Kong' : '香港' }}</div>
-          <div class="region">{{ isEn ? 'Macau' : '澳门' }}</div>
-          <div class="region">{{ isEn ? 'Brazil' : '巴西' }}</div>
-          <div class="region">{{ isEn ? 'Mexico' : '墨西哥' }}</div>
+          <div v-for="(reg, i) in t.global.regions" :key="i" class="region">{{ reg }}</div>
         </div>
         <div class="global-note">
           <i></i>
-          <span>{{ isEn 
-            ? 'Our partner network spans 30+ jurisdictions. Not on the list? Submit your matter and we will assess whether a viable local pathway exists.' 
-            : '合作律所网络覆盖 30+ 国家与地区。未列出的地区，也欢迎先提交咨询，我们会判断当地是否有可落地路径。' }}</span>
-          <a href="#intake" @click.prevent="scrollToIntake">{{ isEn ? 'Consult us →' : '提交咨询 →' }}</a>
+          <span>{{ t.global.note }}</span>
+          <a href="#intake" @click.prevent="scrollToIntake">{{ t.global.consultBtn }}</a>
         </div>
       </div>
     </section>
@@ -376,55 +326,49 @@
     <section class="section team-section" id="team">
       <div class="wrap">
         <div class="section-head">
-          <div class="eyebrow">{{ isEn ? 'Our team' : '律师团队' }}</div>
-          <h2>{{ isEn ? 'Trained in Chinese law, fluent in foreign rules.' : '懂中国法律，也懂海外规则。' }}</h2>
-          <p>{{ isEn 
-            ? 'Our core team consists of mainland China licensed lawyers focused on cross-border matters; foreign procedures are handled with locally licensed counsel to ensure procedural compliance at every step.' 
-            : '团队以中国大陆执业律师为核心，专注跨境业务；境外程序通过与当地执业律所协作完成，确保每个环节程序合规。' }}</p>
+          <div class="eyebrow">{{ t.team.eyebrow }}</div>
+          <h2>{{ t.team.title }}</h2>
+          <p>{{ t.team.desc }}</p>
         </div>
         <div class="team-grid">
           <div class="team-card">
-            <div class="team-role">CROSS-BORDER DISPUTES</div>
-            <h3>{{ isEn ? 'Cross-border disputes' : '跨境争议解决' }}</h3>
-            <p>{{ isEn ? 'International trade and contract disputes, cross-border litigation and arbitration, and dispute resolution clause design.' : '国际贸易与合同争议、跨境诉讼与仲裁、争议解决条款设计。' }}</p>
+            <div class="team-role">{{ t.team.card1Role }}</div>
+            <h3>{{ t.team.card1Title }}</h3>
+            <p>{{ t.team.card1Desc }}</p>
             <ul class="team-list">
-              <li>{{ isEn ? 'Licensed in mainland China' : '中国大陆执业律师' }}</li>
-              <li>{{ isEn ? 'Bilingual practice (Chinese / English)' : '中英双语工作' }}</li>
+              <li v-for="(li, i) in t.team.card1List" :key="i">{{ li }}</li>
             </ul>
-            <p class="team-note">{{ isEn ? 'Team member profiles coming soon.' : '团队成员及详细简历更新中。' }}</p>
+            <p class="team-note">{{ t.team.card1Note }}</p>
           </div>
 
           <div class="team-card">
-            <div class="team-role">RECOVERY & ENFORCEMENT</div>
-            <h3>{{ isEn ? 'Recovery & enforcement' : '追收与执行' }}</h3>
-            <p>{{ isEn ? 'Cross-border debt recovery, asset tracing at home and abroad, and enforcement of judgments and awards.' : '跨境债务追收、境内与海外资产调查、判决与仲裁裁决执行。' }}</p>
+            <div class="team-role">{{ t.team.card2Role }}</div>
+            <h3>{{ t.team.card2Title }}</h3>
+            <p>{{ t.team.card2Desc }}</p>
             <ul class="team-list">
-              <li>{{ isEn ? 'Specialized in China asset tracing' : '中国境内资产调查专长' }}</li>
-              <li>{{ isEn ? 'Collaboration with overseas enforcement counsel' : '与海外执行律师协作' }}</li>
+              <li v-for="(li, i) in t.team.card2List" :key="i">{{ li }}</li>
             </ul>
-            <p class="team-note">{{ isEn ? 'Team member profiles coming soon.' : '团队成员及详细简历更新中。' }}</p>
+            <p class="team-note">{{ t.team.card2Note }}</p>
           </div>
 
           <div class="team-card">
-            <div class="team-role">INHERITANCE & FAMILY</div>
-            <h3>{{ isEn ? 'Inheritance & family assets' : '继承与家族资产' }}</h3>
-            <p>{{ isEn ? 'Cross-border inheritance, will planning and validity disputes, and family business succession.' : '跨境继承、遗嘱规划与效力争议、家族企业传承与纠纷。' }}</p>
+            <div class="team-role">{{ t.team.card3Role }}</div>
+            <h3>{{ t.team.card3Title }}</h3>
+            <p>{{ t.team.card3Desc }}</p>
             <ul class="team-list">
-              <li>{{ isEn ? 'Multi-jurisdiction probate coordination' : '多法域继承程序衔接' }}</li>
-              <li>{{ isEn ? 'Sensitive to family dynamics' : '照顾家庭沟通场景' }}</li>
+              <li v-for="(li, i) in t.team.card3List" :key="i">{{ li }}</li>
             </ul>
-            <p class="team-note">{{ isEn ? 'Team member profiles coming soon.' : '团队成员及详细简历更新中。' }}</p>
+            <p class="team-note">{{ t.team.card3Note }}</p>
           </div>
 
           <div class="team-card">
-            <div class="team-role">GLOBAL PARTNERS</div>
-            <h3>{{ isEn ? 'Global partner network' : '全球合作律所网络' }}</h3>
-            <p>{{ isEn ? 'Locally licensed law firms and collection partners in 30+ jurisdictions, matched by matter type and region.' : '覆盖 30+ 国家与地区的当地执业律所与追收机构，按案件类型与地区匹配。' }}</p>
+            <div class="team-role">{{ t.team.card4Role }}</div>
+            <h3>{{ t.team.card4Title }}</h3>
+            <p>{{ t.team.card4Desc }}</p>
             <ul class="team-list">
-              <li>{{ isEn ? 'Carefully vetted and matched per matter' : '按案件严格筛选与匹配' }}</li>
-              <li>{{ isEn ? 'Procedurally compliant, locally executed' : '程序合规与本地化执行' }}</li>
+              <li v-for="(li, i) in t.team.card4List" :key="i">{{ li }}</li>
             </ul>
-            <p class="team-note">{{ isEn ? 'Partner directory coming soon.' : '合作网络名录更新中。' }}</p>
+            <p class="team-note">{{ t.team.card4Note }}</p>
           </div>
         </div>
       </div>
@@ -434,44 +378,34 @@
     <section class="section trust-section" id="trust">
       <div class="wrap">
         <div class="section-head">
-          <div class="eyebrow">{{ isEn ? 'Why clients trust us' : '客户信任体系' }}</div>
-          <h2>{{ isEn ? 'Professional, trustworthy, secure — the baseline of cross-border legal service.' : '专业、可信、安全——跨境法律服务的底线。' }}</h2>
+          <div class="eyebrow">{{ t.whyTrust.eyebrow }}</div>
+          <h2>{{ t.whyTrust.title }}</h2>
         </div>
         <div class="trust-grid">
           <div class="trust-card">
             <i>秘</i>
-            <h3>{{ isEn ? 'Confidentiality' : '保密承诺' }}</h3>
-            <p>{{ isEn 
-              ? 'Consultation information is used solely for assessment and follow-up, protected by professional confidentiality and handled in line with PIPL and GDPR expectations.' 
-              : '咨询信息仅用于初步评估与后续沟通，受律师保密义务约束；数据处理遵循中国《个人信息保护法》与 GDPR 合规要求。' }}</p>
+            <h3>{{ t.whyTrust.card1Title }}</h3>
+            <p>{{ t.whyTrust.card1Desc }}</p>
           </div>
           <div class="trust-card">
             <i>评</i>
-            <h3>{{ isEn ? 'Assess first' : '先评估，再行动' }}</h3>
-            <p>{{ isEn 
-              ? 'Initial consultation assesses matter type, deadlines, evidence, and viable paths — free, non-binding, and never pushing unnecessary proceedings.' 
-              : '初步咨询用于判断事项类型、时效、证据与可行路径，不收费、不构成委托关系，也不会劝你做不必要的程序。' }}</p>
+            <h3>{{ t.whyTrust.card2Title }}</h3>
+            <p>{{ t.whyTrust.card2Desc }}</p>
           </div>
           <div class="trust-card">
             <i>诚</i>
-            <h3>{{ isEn ? 'Honest assessment' : '诚实评估，不承诺结果' }}</h3>
-            <p>{{ isEn 
-              ? 'We are candid about prospects and risks. Outcomes depend on facts, evidence, and local rules — anyone promising a specific result is not to be trusted.' 
-              : '我们如实说明可行性与风险边界。法律程序的结果取决于事实、证据与当地规则，任何承诺办案结果的说法都不可信。' }}</p>
+            <h3>{{ t.whyTrust.card3Title }}</h3>
+            <p>{{ t.whyTrust.card3Desc }}</p>
           </div>
           <div class="trust-card">
             <i>规</i>
-            <h3>{{ isEn ? 'Cross-border compliance' : '跨境协作规范' }}</h3>
-            <p>{{ isEn 
-              ? 'Foreign proceedings are handled with locally licensed counsel under local rules — we never step outside our license to give local-law opinions.' 
-              : '境外法律程序通过与当地执业律所合作提供，确保在当地执业规则下合规推进，绝不越界出具当地法律意见。' }}</p>
+            <h3>{{ t.whyTrust.card4Title }}</h3>
+            <p>{{ t.whyTrust.card4Desc }}</p>
           </div>
         </div>
         <div class="practice-note">
-          <b>{{ isEn ? 'Practice statement: ' : '执业声明：' }}</b>
-          <span>{{ isEn 
-            ? 'Shenyuan International practices in mainland China; foreign legal proceedings are conducted through locally licensed counsel. An initial consultation does not create an attorney-client relationship or formal legal advice.' 
-            : '深远(国际)律师事务所在中国大陆执业；境外法律程序通过与当地执业律所合作完成。初步咨询不构成委托关系或正式法律意见。' }}</span>
+          <b>{{ t.whyTrust.statementLabel }}</b>
+          <span>{{ t.whyTrust.statementText }}</span>
         </div>
       </div>
     </section>
@@ -480,33 +414,13 @@
     <section class="section" id="faq">
       <div class="wrap">
         <div class="section-head">
-          <div class="eyebrow">{{ isEn ? 'Before you begin' : '开始之前' }}</div>
-          <h2>{{ isEn ? 'Frequently asked questions' : '常见问题' }}</h2>
+          <div class="eyebrow">{{ t.faq.eyebrow }}</div>
+          <h2>{{ t.faq.title }}</h2>
         </div>
         <div class="faq-grid">
-          <details open>
-            <summary>{{ isEn ? 'How soon will I hear back?' : '提交咨询后，多久会有回复？' }}</summary>
-            <p>{{ isEn 
-              ? 'We commit to a first response within 24 hours, then arrange the next conversation based on urgency, region, and document readiness.' 
-              : '我们承诺 24 小时内首响。收到信息后，会结合事项紧急程度、所在地区和材料完整度安排后续沟通。' }}</p>
-          </details>
-          <details>
-            <summary>{{ isEn ? 'Can I submit before I have all documents?' : '我还没有整理好全部材料，可以提交吗？' }}</summary>
-            <p>{{ isEn 
-              ? 'Yes. A timeline, key people, and desired outcome are enough for an initial direction.' 
-              : '可以。先提供时间线、人物和你想实现的结果，足够用于初步判断入口。' }}</p>
-          </details>
-          <details>
-            <summary>{{ isEn ? 'Is this formal legal advice?' : '这是正式法律意见吗？' }}</summary>
-            <p>{{ isEn 
-              ? 'No. Initial consultation is for understanding the matter and identifying next steps; it does not create a retainer or formal legal advice.' 
-              : '不是。初步咨询用于了解事项和判断下一步，不构成律师委托或正式法律意见。' }}</p>
-          </details>
-          <details>
-            <summary>{{ isEn ? 'Can I contact you on WeChat?' : '可以直接通过微信联系吗？' }}</summary>
-            <p>{{ isEn 
-              ? 'Yes. You can first share the matter type and urgency on WeChat. If there are many documents, submitting the form also helps us understand the situation more completely.' 
-              : '可以。你可以通过微信先说明事项类型和紧急程度；如果材料较多，也建议同时提交表单，便于我们完整了解情况。' }}</p>
+          <details v-for="(f, i) in t.faq.items" :key="i" :open="i === 0">
+            <summary>{{ f.q }}</summary>
+            <p>{{ f.a }}</p>
           </details>
         </div>
       </div>
@@ -515,17 +429,15 @@
     <!-- 11 咨询入口 CTA -->
     <section class="cta-band" id="contact">
       <div class="wrap">
-        <div class="eyebrow">{{ isEn ? 'Free consultation' : '免费法律咨询' }}</div>
-        <h2>{{ isEn ? 'Your cross-border dispute deserves a starting point in your own language.' : '你的跨境纠纷，值得一个用母语讲清的起点。' }}</h2>
-        <p>{{ isEn 
-          ? 'Submit the basics or scan our WeChat. We will assess deadlines, evidence, and viable paths — free, honest, and directional.' 
-          : '提交基本情况，或扫码添加微信。我们会先判断时效、证据与可行路径——不收费，不承诺结果，只给方向。' }}</p>
+        <div class="eyebrow">{{ isEn ? 'Free consultation' : (isAr ? 'استشارة مجانية' : (isEs ? 'Consulta Gratuita' : '免费法律咨询')) }}</div>
+        <h2>{{ t.faq.ctaTitle }}</h2>
+        <p>{{ t.faq.ctaDesc }}</p>
         <div class="hero-actions">
           <a class="button button-primary" href="#intake" @click.prevent="scrollToIntake">
-            {{ isEn ? 'Free legal consultation →' : '免费法律咨询 →' }}
+            {{ t.faq.ctaBtn }}
           </a>
           <NuxtLink class="button button-outline" :to="isEn ? '/en/services' : '/services'">
-            {{ isEn ? 'Review our services' : '再看一遍服务范围' }}
+            {{ isEn ? 'Review our services' : (isAr ? 'مراجعة خدماتنا' : (isEs ? 'Revisar servicios' : '再看一遍服务范围')) }}
           </NuxtLink>
         </div>
       </div>
@@ -533,14 +445,18 @@
 
     <!-- 成功提示弹窗 Modal -->
     <div class="modal-backdrop" :class="{ 'is-visible': successModalOpen }" role="dialog" aria-modal="true" @click.self="successModalOpen = false">
-      <div class="success-panel">
+      <div class="success-panel" :class="{ 'is-rtl': isAr }">
         <button class="modal-close" type="button" @click="successModalOpen = false" aria-label="关闭">×</button>
-        <h3>{{ isEn ? 'We have received your information' : '已收到您的信息' }}</h3>
+        <h3>{{ isEn ? 'We have received your information' : (isAr ? 'تم استلام بيانات استفساركم بنجاح' : (isEs ? 'Hemos recibido su información' : '已收到您的信息')) }}</h3>
         <p>{{ isEn 
           ? 'We will first review the matter type, relevant region, and your intended outcome to identify the next discussion points.' 
-          : '我们会先查看事项类型、涉及地区和你希望达成的目标，并据此判断后续沟通重点。' }}</p>
+          : (isAr
+            ? 'سنقوم أولاً بمراجعة نوع النزاع والدولة المعنية ومطالبكم لتحديد خطوات المتابعة القانونية.'
+            : (isEs
+              ? 'Revisaremos el tipo de conflicto, la jurisdicción y sus objetivos para establecer la estrategia de contacto.'
+              : '我们会先查看事项类型、涉及地区和你希望达成的目标，并据此判断后续沟通重点。')) }}</p>
         
-        <strong class="material-title">{{ isEn ? 'Suggested documents to prepare' : '建议先准备这些材料' }}</strong>
+        <strong class="material-title">{{ isEn ? 'Suggested documents to prepare' : (isAr ? 'المستندات المقترح تجهيزها' : (isEs ? 'Documentación sugerida a preparar' : '建议先准备这些材料')) }}</strong>
         <ul class="material-list">
           <li v-for="(item, idx) in currentMaterialList" :key="idx">{{ item }}</li>
         </ul>
@@ -569,35 +485,47 @@
 
     <!-- 隐私政策与保密说明弹窗 Modal -->
     <div class="modal-backdrop" :class="{ 'is-visible': privacyModalOpen }" role="dialog" aria-modal="true" @click.self="privacyModalOpen = false">
-      <div class="success-panel privacy-modal-panel">
+      <div class="success-panel privacy-modal-panel" :class="{ 'is-rtl': isAr }">
         <button class="modal-close" type="button" @click="privacyModalOpen = false" aria-label="关闭">×</button>
-        <h3>{{ isEn ? 'Privacy Notice & Confidentiality' : '隐私保护与保密说明' }}</h3>
+        <h3>{{ isEn ? 'Privacy Notice & Confidentiality' : (isAr ? 'سياسة الخصوصية والسرية المهنية' : (isEs ? 'Aviso de Privacidad y Confidencialidad' : '隐私保护与保密说明')) }}</h3>
         
         <div class="privacy-modal-body">
           <div class="privacy-point">
-            <div class="privacy-point-title">{{ isEn ? 'Information Collection & Usage' : '信息使用范围' }}</div>
+            <div class="privacy-point-title">{{ isEn ? 'Information Collection & Usage' : (isAr ? 'نطاق استخدام البيانات' : (isEs ? 'Uso de la Información' : '信息使用范围')) }}</div>
             <p>{{ isEn 
               ? 'The information you submit via this consultation form is strictly used for initial matter assessment, conflict-of-interest checks, and follow-up communication by our legal team.' 
-              : '您在咨询表单中提交的称呼、联系方式和案件描述，仅供本所涉外律师团队进行初步案情评估、利益冲突检索及后续沟通联系，绝不向任何未经授权的第三方披露。' }}</p>
+              : (isAr
+                ? 'تُستخدم البيانات المرسلة عبر نموذج الاستشارة حصراً لإجراء التقييم القانوني الأولي والتحقق من عدم تضارب المصالح والمتابعة، ولا يتم الإفصاح عنها لأي طرف ثالث.'
+                : (isEs
+                  ? 'La información enviada se utiliza exclusivamente para la evaluación inicial del caso, verificación de conflictos de interés y seguimiento legal sin divulgarse a terceros.'
+                  : '您在咨询表单中提交的称呼、联系方式和案件描述，仅供本所涉外律师团队进行初步案情评估、利益冲突检索及后续沟通联系，绝不向任何未经授权的第三方披露。')) }}</p>
           </div>
 
           <div class="privacy-point">
-            <div class="privacy-point-title">{{ isEn ? 'Security & Compliance' : '数据安全与合规' }}</div>
+            <div class="privacy-point-title">{{ isEn ? 'Security & Compliance' : (isAr ? 'أمان البيانات والامتثال القانوني' : (isEs ? 'Seguridad y Cumplimiento' : '数据安全与合规')) }}</div>
             <p>{{ isEn 
               ? 'All data transmission is encrypted (SSL/TLS) in strict accordance with the Personal Information Protection Law (PIPL) and applicable international data protection standards.' 
-              : '咨询数据全程通过 SSL/TLS 加密传输并加密存储，遵循《中华人民共和国个人信息保护法》(PIPL) 与相关跨境数据合规要求，确保您的商业与私人信息安全。' }}</p>
+              : (isAr
+                ? 'يتم تشفير كافة البيانات عبر بروتوكول SSL/TLS وفقاً لقوانين حماية البيانات الشخصية والمعايير الدولية لحماية سرية الموكلين.'
+                : (isEs
+                  ? 'Toda la transmisión está cifrada vía SSL/TLS en cumplimiento estricto con las normativas internacionales de protección de datos personales.'
+                  : '咨询数据全程通过 SSL/TLS 加密传输并加密存储，遵循《中华人民共和国个人信息保护法》(PIPL) 与相关跨境数据合规要求，确保您的商业与私人信息安全。')) }}</p>
           </div>
 
           <div class="urgent-note" style="margin-top: 14px;">
             {{ isEn 
               ? 'Notice: An initial consultation does not create an attorney-client relationship. Please do not submit sensitive identifiers such as ID numbers, bank card numbers, or passwords.' 
-              : '特别提醒：初步咨询沟通不构成正式委托代理关系。请勿在此阶段提供身份证件原件号码、银行卡密码或最高机密等敏感信息。' }}
+              : (isAr
+                ? 'تنبيه هام: الاستشارة الأولية لا تُنشئ علاقة توكيل محامي رسمية. يُرجى عدم إرسال أرقام الهوية السرية أو أرقام الحسابات البنكية في هذه المرحلة.'
+                : (isEs
+                  ? 'Aviso: La consulta inicial no constituye una relación formal abogado-cliente. Rogamos no ingresar datos bancarios o documentos confidenciales de identidad.'
+                  : '特别提醒：初步咨询沟通不构成正式委托代理关系。请勿在此阶段提供身份证件原件号码、银行卡密码或最高机密等敏感信息。')) }}
           </div>
         </div>
 
         <div class="success-actions" style="margin-top: 20px;">
           <button class="button button-primary" type="button" @click="privacyModalOpen = false">
-            {{ isEn ? 'I Understand' : '我已了解' }}
+            {{ isEn ? 'I Understand' : (isAr ? 'فهمت ذلك' : (isEs ? 'Entendido' : '我已了解')) }}
           </button>
         </div>
       </div>
@@ -608,17 +536,9 @@
 import { ref, computed } from 'vue'
 import { getApiClient, parseApiError } from '@/api/client'
 import { useUserGeo } from '@/composables/useUserGeo'
+import { useHomeTranslation } from '@/composables/useHomeTranslation'
 
-const route = useRoute()
-const currentLang = computed<'zh' | 'en' | 'ar' | 'es'>(() => {
-  if (route.path.startsWith('/ar')) return 'ar'
-  if (route.path.startsWith('/es')) return 'es'
-  if (route.path.startsWith('/en')) return 'en'
-  return 'zh'
-})
-const isAr = computed(() => currentLang.value === 'ar')
-const isEs = computed(() => currentLang.value === 'es')
-const isEn = computed(() => currentLang.value === 'en')
+const { currentLang, isAr, isEs, isEn, t } = useHomeTranslation()
 const { countryInfo } = useUserGeo()
 
 // 首页表单国家区号，默认跟随 IP 侦测
@@ -830,6 +750,76 @@ const handleIntakeSubmit = async () => {
 .home-container {
   color: var(--ink);
   background: var(--paper);
+}
+
+/* RTL 镜像适配 */
+.home-container.is-rtl {
+  direction: rtl;
+  text-align: right;
+}
+
+.home-container.is-rtl .eyebrow {
+  flex-direction: row-reverse;
+}
+
+.home-container.is-rtl .eyebrow::before {
+  margin-left: 8px;
+  margin-right: 0;
+}
+
+.home-container.is-rtl .hero-notes {
+  flex-direction: row-reverse;
+}
+
+.home-container.is-rtl .hero-notes span {
+  flex-direction: row-reverse;
+}
+
+.home-container.is-rtl .service-list li {
+  padding-left: 0;
+  padding-right: 20px;
+}
+
+.home-container.is-rtl .service-list li::before {
+  left: auto;
+  right: 0;
+}
+
+.home-container.is-rtl .case-path {
+  border-left: none;
+  border-right: 3px solid var(--gold);
+  padding-left: 0;
+  padding-right: 12px;
+}
+
+.home-container.is-rtl .global-note {
+  flex-direction: row-reverse;
+  text-align: right;
+}
+
+.home-container.is-rtl .practice-note {
+  border-left: none;
+  border-right: 3px solid var(--gold);
+  padding-left: 0;
+  padding-right: 16px;
+}
+
+.home-container.is-rtl .contact-options {
+  flex-direction: row-reverse;
+}
+
+.home-container.is-rtl .wechat-copy {
+  text-align: right;
+}
+
+.home-container.is-rtl .success-panel {
+  text-align: right;
+  direction: rtl;
+}
+
+.home-container.is-rtl .modal-close {
+  left: 20px;
+  right: auto;
 }
 
 .eyebrow {

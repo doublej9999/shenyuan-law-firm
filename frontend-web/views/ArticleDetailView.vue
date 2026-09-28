@@ -2,12 +2,13 @@
   <div class="article-detail-view" :class="{ 'is-rtl': isAr }">
     <div class="wrap detail-container">
       <div v-if="loading" class="loading-box">
-        {{ isAr ? 'جارٍ تحميل تفاصيل المقال القانوني...' : (isEn ? 'Loading article details...' : '正在加载文章内容...') }}
+        {{ isAr ? 'جارٍ تحميل تفاصيل المقال القانوني...' : (isEs ? 'Cargando artículo legal...' : (isEn ? 'Loading article details...' : '正在加载文章内容...')) }}
       </div>
 
       <article v-else-if="article" class="detail-paper" :class="{ 'is-rtl': isAr }">
-        <NuxtLink :to="isAr ? '/ar/articles' : (isEn ? '/en/articles' : '/articles')" class="back-nav">
+        <NuxtLink :to="isAr ? '/ar/articles' : (isEs ? '/es/articles' : (isEn ? '/en/articles' : '/articles'))" class="back-nav">
           <span v-if="isAr">&rarr; العودة إلى الرؤى القانونية</span>
+          <span v-else-if="isEs">&larr; Volver a Artículos Jurídicos</span>
           <span v-else>&larr; {{ isEn ? 'Back to legal insights' : '返回法律专栏' }}</span>
         </NuxtLink>
 
@@ -23,7 +24,7 @@
         <div v-if="keyTakeaways.length" class="geo-takeaways-card">
           <div class="takeaways-header">
             <span class="takeaways-icon">⚡</span>
-            <h4>{{ isEn ? 'Executive Summary & Key Action Points' : '核心实务要点速读（TL;DR）' }}</h4>
+            <h4>{{ isEn ? 'Executive Summary & Key Action Points' : (isAr ? 'ملخص تنفيذي وأهم نقاط العمل' : (isEs ? 'Resumen Ejecutivo y Puntos Clave de Acción' : '核心实务要点速读（TL;DR）')) }}</h4>
           </div>
           <ul class="takeaways-list">
             <li v-for="(item, idx) in keyTakeaways" :key="idx">{{ item }}</li>
@@ -36,7 +37,7 @@
 
         <!-- Article FAQ & Rich Snippet Module -->
         <div v-if="articleFaqs.length" class="article-faq-section">
-          <h3 class="faq-head-title">{{ isEn ? 'Frequently Asked Questions' : '常见问题解答与实务要点' }}</h3>
+          <h3 class="faq-head-title">{{ isEn ? 'Frequently Asked Questions' : (isAr ? 'الأسئلة الشائعة والنقاط القانونية' : (isEs ? 'Preguntas Frecuentes y Aspectos Prácticos' : '常见问题解答与实务要点')) }}</h3>
           <div class="faq-accordion">
             <details v-for="(f, i) in articleFaqs" :key="i" class="art-faq-item">
               <summary>{{ f.question }}</summary>
@@ -46,25 +47,29 @@
         </div>
 
         <div class="article-disclaimer">
-          <strong>{{ isEn ? 'Legal Disclaimer' : '免责声明' }}：</strong>
+          <strong>{{ isEn ? 'Legal Disclaimer' : (isAr ? 'إخلاء المسؤولية القانونية' : (isEs ? 'Aviso Legal' : '免责声明')) }}：</strong>
           <span>{{ isEn 
             ? 'The content of this article represents academic analysis and practice observations of Shenyuan International and does not constitute formal legal opinion or attorney-client relationship for any specific matter. For actionable counsel, please arrange a formal case review.' 
-            : '本文内容仅供涉外法律实务研讨与一般信息参考，不构成针对任何具体案件的正式法律意见或委托关系。具体法律程序须结合案件全部证据、事实及相关管辖区法规一案一议。' }}</span>
+            : (isAr
+              ? 'محتوى هذا المقال للأغراض الأكاديمية والاطلاع العام ولا يشكل استشارة قانونية رسمية أو علاقة توكيل. تُحدد الإجراءات حسب ظروف وأدلة كل قضية.'
+              : (isEs
+                ? 'El contenido de este artículo tiene fines puramente informativos y de análisis práctico; no constituye dictamen legal vinculante ni relación abogado-cliente.'
+                : '本文内容仅供涉外法律实务研讨与一般信息参考，不构成针对任何具体案件的正式法律意见或委托关系。具体法律程序须结合案件全部证据、事实及相关管辖区法规一案一议。')) }}</span>
         </div>
 
         <!-- Related Articles / Topic Cluster -->
         <div v-if="relatedArticles.length" class="related-articles-section">
           <div class="related-head">
-            <h3>{{ isEn ? 'Related Legal Insights' : '相关法律实务与推荐阅读' }}</h3>
-            <NuxtLink :to="isEn ? '/en/articles' : '/articles'" class="more-link">
-              {{ isEn ? 'View all' : '查看全部' }} &rarr;
+            <h3>{{ isEn ? 'Related Legal Insights' : (isAr ? 'رؤى قانونية ذات صلة ومقالات مقترحة' : (isEs ? 'Artículos Jurídicos Relacionados' : '相关法律实务与推荐阅读')) }}</h3>
+            <NuxtLink :to="isAr ? '/ar/articles' : (isEs ? '/es/articles' : (isEn ? '/en/articles' : '/articles'))" class="more-link">
+              {{ isEn ? 'View all' : (isAr ? 'عرض الكل' : (isEs ? 'Ver todos' : '查看全部')) }} &rarr;
             </NuxtLink>
           </div>
           <div class="related-grid">
             <NuxtLink
               v-for="rel in relatedArticles"
               :key="rel.id"
-              :to="isEn ? `/en/articles/${rel.slug}` : `/articles/${rel.slug}`"
+              :to="isAr ? `/ar/articles/${rel.slug}` : (isEs ? `/es/articles/${rel.slug}` : (isEn ? `/en/articles/${rel.slug}` : `/articles/${rel.slug}`))"
               class="related-card"
             >
               <span class="rel-badge">{{ rel.business }}</span>
@@ -77,21 +82,25 @@
         <!-- Article Bottom Consultation Box -->
         <div class="bottom-consult-box">
           <div class="consult-copy">
-            <h3>{{ isEn ? 'Facing a similar cross-border legal issue?' : '遇到类似跨境纠纷或需要法律协助？' }}</h3>
+            <h3>{{ isEn ? 'Facing a similar cross-border legal issue?' : (isAr ? 'هل تواجه نزاعاً تجارياً عابراً للحدود أو تحتاج دعماً قانونياً؟' : (isEs ? '¿Enfrenta una disputa transfronteriza similar o requiere asistencia legal?' : '遇到类似跨境纠纷或需要法律协助？')) }}</h3>
             <p>{{ isEn 
               ? 'Our bilingual dispute resolution team can provide an initial case review within 24 hours.' 
-              : '提交您的案情简述或扫码微信沟通，我们将在 24 小时内为您出具初步分析建议。' }}</p>
+              : (isAr
+                ? 'فريقنا القانوني المتخصص مستعد لإجراء تقييم أولي لموقفكم القانوني خلال 24 ساعة.'
+                : (isEs
+                  ? 'Nuestro equipo legal internacional puede realizar una evaluación preliminar de su caso en menos de 24 horas.'
+                  : '提交您的案情简述或扫码微信沟通，我们将在 24 小时内为您出具初步分析建议。')) }}</p>
           </div>
-          <NuxtLink :to="isEn ? '/en#intake' : '/#intake'" class="button button-primary">
-            {{ isEn ? 'Free Legal Consultation →' : '免费法律咨询评估 →' }}
+          <NuxtLink :to="isAr ? '/ar#intake' : (isEs ? '/es#intake' : (isEn ? '/en#intake' : '/#intake'))" class="button button-primary">
+            {{ isEn ? 'Free Legal Consultation →' : (isAr ? 'طلب استشارة قانونية أولية ←' : (isEs ? 'Consulta Legal Gratuita →' : '免费法律咨询评估 →')) }}
           </NuxtLink>
         </div>
       </article>
 
       <div v-else class="not-found">
-        <p>{{ isEn ? 'Article not found.' : '未找到相关文章。' }}</p>
-        <NuxtLink :to="isEn ? '/en/articles' : '/articles'" class="button button-outline">
-          {{ isEn ? 'Return to Articles' : '返回专栏列表' }}
+        <p>{{ isEn ? 'Article not found.' : (isAr ? 'لم يتم العثور على المقال المطلوب.' : (isEs ? 'Artículo no encontrado.' : '未找到相关文章。')) }}</p>
+        <NuxtLink :to="isAr ? '/ar/articles' : (isEs ? '/es/articles' : (isEn ? '/en/articles' : '/articles'))" class="button button-outline">
+          {{ isEn ? 'Return to Articles' : (isAr ? 'العودة إلى قائمة المقالات' : (isEs ? 'Volver a Artículos' : '返回专栏列表')) }}
         </NuxtLink>
       </div>
     </div>
