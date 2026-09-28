@@ -27,37 +27,37 @@
             :class="{ active: selectedFilter === 'ALL' }"
             @click="selectedFilter = 'ALL'"
           >
-            {{ isEn ? 'All Articles' : '全部文章' }}
+            {{ isAr ? 'جميع المقالات' : (isEs ? 'Todos los Artículos' : (isEn ? 'All Articles' : '全部文章')) }}
           </button>
           <button 
             class="filter-pill" 
             :class="{ active: selectedFilter === 'TRADE' }"
             @click="selectedFilter = 'TRADE'"
           >
-            {{ isEn ? 'International Trade' : '国际贸易' }}
+            {{ isAr ? 'التجارة الدولية' : (isEs ? 'Comercio Internacional' : (isEn ? 'International Trade' : '国际贸易')) }}
           </button>
           <button 
             class="filter-pill" 
             :class="{ active: selectedFilter === 'RECOVERY' }"
             @click="selectedFilter = 'RECOVERY'"
           >
-            {{ isEn ? 'Litigation & Recovery' : '诉讼与追收' }}
+            {{ isAr ? 'التقاضي والتحصيل' : (isEs ? 'Litigios y Cobro' : (isEn ? 'Litigation & Recovery' : '诉讼与追收')) }}
           </button>
           <button 
             class="filter-pill" 
             :class="{ active: selectedFilter === 'LEGACY' }"
             @click="selectedFilter = 'LEGACY'"
           >
-            {{ isEn ? 'Inheritance & Legacy' : '继承与家族资产' }}
+            {{ isAr ? 'الميراث والأصول العائلية' : (isEs ? 'Herencias y Patrimonio' : (isEn ? 'Inheritance & Legacy' : '继承与家族资产')) }}
           </button>
         </div>
 
         <div v-if="loading" class="loading-state">
-          <span>{{ isEn ? 'Loading legal insights...' : '正在加载法律专栏文章...' }}</span>
+          <span>{{ isAr ? 'جارٍ تحميل مقالات الرؤى القانونية...' : (isEs ? 'Cargando artículos de perspectivas legales...' : (isEn ? 'Loading legal insights...' : '正在加载法律专栏文章...')) }}</span>
         </div>
 
         <div v-else-if="filteredArticles.length === 0" class="empty-state">
-          <p>{{ isEn ? 'No articles found in this category.' : '该分类下暂无文章。' }}</p>
+          <p>{{ isAr ? 'لا توجد مقالات ضمن هذا التصنيف حالياً.' : (isEs ? 'No se encontraron artículos en esta categoría.' : (isEn ? 'No articles found in this category.' : '该分类下暂无文章。')) }}</p>
         </div>
 
         <div v-else class="articles-grid">
