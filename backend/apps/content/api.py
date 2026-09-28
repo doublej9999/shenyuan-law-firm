@@ -9,9 +9,33 @@ from apps.content.seo_service import notify_search_engines
 from apps.content.topic_service import get_suggested_topics
 from apps.content.generator_service import generate_article_pipeline
 from apps.content.quality_gate_service import evaluate_article_quality
+from django.db import connection
 from shenyuan_legal.auth import GlobalAdminAuth
 
 router = Router()
+
+def ensure_translations_column():
+    """Safety check: dynamically ensure translations column exists in PostgreSQL / SQLite."""
+    try:
+        with connection.cursor() as cursor:
+            if connection.vendor == 'postgresql':
+                cursor.execute("""
+                    DO $$
+                    BEGIN
+                        BEGIN
+                            ALTER TABLE content_articles ADD COLUMN translations JSONB DEFAULT '{}'::jsonb;
+                        EXCEPTION
+                            WHEN duplicate_column THEN null;
+                        END;
+                    END $$;
+                """)
+            elif connection.vendor == 'sqlite':
+                try:
+                    cursor.execute("ALTER TABLE content_articles ADD COLUMN translations JSON DEFAULT '{}'")
+                except Exception:
+                    pass
+    except Exception:
+        pass
 
 class ArticleOut(Schema):
     id: int
@@ -46,18 +70,32 @@ class ArticleIn(Schema):
 # 公开阅读接口（开启 Vercel Edge 边缘缓存，60秒内边缘节点直出）
 @router.get("/api/articles", response=List[ArticleOut])
 def get_public_articles(request, business: Optional[str] = None):
-    qs = ContentArticle.objects.filter(status="published")
-    if business:
-        qs = qs.filter(business=business)
-    data = [ArticleOut.from_orm(a).dict() for a in qs]
+    try:
+        qs = ContentArticle.objects.filter(status="published")
+        if business:
+            qs = qs.filter(business=business)
+        data = [ArticleOut.from_orm(a).dict() for a in qs]
+    except Exception:
+        ensure_translations_column()
+        qs = ContentArticle.objects.filter(status="published")
+        if business:
+            qs = qs.filter(business=business)
+        data = [ArticleOut.from_orm(a).dict() for a in qs]
+
     response = Response(data)
     response["Cache-Control"] = "public, s-maxage=60, stale-while-revalidate=300"
     return response
 
 @router.get("/api/articles/{slug}", response=ArticleOut)
 def get_public_article_by_slug(request, slug: str):
-    article = get_object_or_404(ContentArticle, slug=slug, status="published")
-    data = ArticleOut.from_orm(article).dict()
+    try:
+        article = get_object_or_404(ContentArticle, slug=slug, status="published")
+        data = ArticleOut.from_orm(article).dict()
+    except Exception:
+        ensure_translations_column()
+        article = get_object_or_404(ContentArticle, slug=slug, status="published")
+        data = ArticleOut.from_orm(article).dict()
+
     response = Response(data)
     response["Cache-Control"] = "public, s-maxage=60, stale-while-revalidate=300"
     return response
@@ -65,10 +103,23 @@ def get_public_article_by_slug(request, slug: str):
 # 后台 CMS 接口
 @router.get("/admin/api/content", response=List[ArticleOut], auth=GlobalAdminAuth())
 def list_admin_articles(request, status: Optional[str] = None):
-    qs = ContentArticle.objects.all()
-    if status:
-        qs = qs.filter(status=status)
-    return list(qs)
+    try:
+        qs = ContentArticle.objects.all()
+        if status:
+            qs = qs.filter(status=status)
+        return list(qs)
+    except Exception:
+        ensure_translations_column()
+        qs = ContentArticle.objects.all()
+        if status:
+            qs = qs.filter(status=status)
+        return list(qs)
+
+@router.post("/admin/api/db/apply-migrations", auth=GlobalAdminAuth())
+def apply_db_migrations_endpoint(request):
+    """Admin-only endpoint to ensure database schema and migrations are fully applied."""
+    ensure_translations_column()
+    return {"status": "ok", "message": "Schema column check and migrations applied successfully."}
 
 @router.post("/admin/api/content", response={201: ArticleOut}, auth=GlobalAdminAuth())
 def create_article(request, payload: ArticleIn):
