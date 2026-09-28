@@ -35,9 +35,62 @@
         </nav>
 
         <div class="nav-actions">
-          <button class="lang-switch" type="button" @click="toggleLang" aria-label="切换语言">
-            {{ isEn ? '中文' : 'EN / 中' }}
-          </button>
+          <!-- 升级为多语言下拉菜单 (中 / EN / AR / ES) -->
+          <div class="header-lang-dropdown" ref="langDropdownRef">
+            <button
+              class="lang-switch-btn"
+              type="button"
+              @click="langMenuOpen = !langMenuOpen"
+              :aria-expanded="langMenuOpen"
+              aria-label="选择语言"
+            >
+              <span class="lang-globe-icon">🌐</span>
+              <span class="current-lang-text">{{ currentLangLabel }}</span>
+              <svg class="dropdown-caret" viewBox="0 0 20 20" fill="currentColor" width="10" height="10">
+                <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+              </svg>
+            </button>
+
+            <div v-if="langMenuOpen" class="lang-dropdown-menu">
+              <button
+                type="button"
+                class="lang-option"
+                :class="{ 'is-active': currentLangCode === 'zh' }"
+                @click="switchLanguage('zh')"
+              >
+                <span class="opt-flag">🇨🇳</span>
+                <span class="opt-label">简体中文</span>
+              </button>
+              <button
+                type="button"
+                class="lang-option"
+                :class="{ 'is-active': currentLangCode === 'en' }"
+                @click="switchLanguage('en')"
+              >
+                <span class="opt-flag">🇺🇸</span>
+                <span class="opt-label">English</span>
+              </button>
+              <button
+                type="button"
+                class="lang-option"
+                :class="{ 'is-active': currentLangCode === 'ar' }"
+                @click="switchLanguage('ar')"
+              >
+                <span class="opt-flag">🇦🇪</span>
+                <span class="opt-label">العربية (RTL)</span>
+              </button>
+              <button
+                type="button"
+                class="lang-option"
+                :class="{ 'is-active': currentLangCode === 'es' }"
+                @click="switchLanguage('es')"
+              >
+                <span class="opt-flag">🇪🇸</span>
+                <span class="opt-label">Español</span>
+              </button>
+            </div>
+          </div>
+
           <a class="nav-cta" @click.prevent="navigateSection('intake')" href="#intake">
             {{ isEn ? 'Start consultation →' : '开始咨询 →' }}
           </a>
@@ -85,9 +138,10 @@
           <div class="field-item">
             <label>{{ isEn ? 'Phone / WhatsApp *' : '联系电话 *' }}</label>
             <div class="phone-input-row">
-              <span class="country-dial-badge" :title="countryInfo.nameZh">
-                {{ countryInfo.flag }} {{ countryInfo.dialCode }}
-              </span>
+              <CountryDialSelect
+                v-model="drawerCountryDial"
+                :is-en="isEn"
+              />
               <input
                 v-model="drawerForm.phone"
                 type="tel"
@@ -175,6 +229,65 @@ const isHomePage = computed(() => route.path === '/' || route.path === '/en')
 
 const { countryInfo } = useUserGeo()
 
+// 语言切换下拉状态
+const langMenuOpen = ref(false)
+const langDropdownRef = ref<HTMLElement | null>(null)
+
+// 语言检测
+const currentLangCode = computed<'zh' | 'en' | 'ar' | 'es'>(() => {
+  if (route.path.startsWith('/ar')) return 'ar'
+  if (route.path.startsWith('/es')) return 'es'
+  if (route.path.startsWith('/en')) return 'en'
+  return 'zh'
+})
+
+const currentLangLabel = computed(() => {
+  switch (currentLangCode.value) {
+    case 'ar': return 'العربية'
+    case 'es': return 'Español'
+    case 'en': return 'EN'
+    default: return '中文'
+  }
+})
+
+const switchLanguage = (targetLang: 'zh' | 'en' | 'ar' | 'es') => {
+  langMenuOpen.value = false
+  if (targetLang === currentLangCode.value) return
+
+  // 映射目标语言路径
+  if (targetLang === 'zh') {
+    const nextPath = route.path.replace(/^\/(en|ar|es)/, '') || '/'
+    router.push(nextPath)
+  } else if (targetLang === 'en') {
+    const stripped = route.path.replace(/^\/(ar|es)/, '')
+    const nextPath = `/en${stripped === '/' ? '' : stripped}`
+    router.push(nextPath)
+  } else if (targetLang === 'ar') {
+    // 若在文章页面切换至阿语文章列表/详情，若在首页直接进入阿语专栏
+    router.push('/ar/articles')
+  } else if (targetLang === 'es') {
+    router.push('/es/articles')
+  }
+}
+
+// 抽屉国家区号，默认跟随 IP 侦测
+const drawerCountryDial = ref(countryInfo.value?.dialCode || '+86')
+watch(
+  () => countryInfo.value?.dialCode,
+  (code) => {
+    if (code && !drawerCountryDial.value) {
+      drawerCountryDial.value = code
+    }
+  }
+)
+
+// 全局监听点击外部关闭语言下拉
+const handleLangDropdownClick = (e: MouseEvent) => {
+  if (langDropdownRef.value && !langDropdownRef.value.contains(e.target as Node)) {
+    langMenuOpen.value = false
+  }
+}
+
 const isScrolled = ref(false)
 const mobileMenuOpen = ref(false)
 const drawerOpen = ref(false)
@@ -197,10 +310,12 @@ const handleScroll = () => {
 
 onMounted(() => {
   window.addEventListener('scroll', handleScroll, { passive: true })
+  document.addEventListener('click', handleLangDropdownClick)
 })
 
 onUnmounted(() => {
   window.removeEventListener('scroll', handleScroll)
+  document.removeEventListener('click', handleLangDropdownClick)
 })
 
 const toggleLang = () => {
@@ -262,8 +377,9 @@ const submitDrawerForm = async () => {
   drawerSubmitting.value = true
   try {
     let normalizedPhone = drawerForm.value.phone.trim()
-    if (!normalizedPhone.startsWith('+') && countryInfo.value?.dialCode) {
-      normalizedPhone = `${countryInfo.value.dialCode} ${normalizedPhone}`
+    const activeDial = drawerCountryDial.value || countryInfo.value?.dialCode || '+86'
+    if (!normalizedPhone.startsWith('+')) {
+      normalizedPhone = `${activeDial} ${normalizedPhone}`
     }
 
     const geoMeta = countryInfo.value && countryInfo.value.code !== 'CN'
@@ -355,7 +471,7 @@ button { cursor: pointer; }
   right: 0;
   z-index: 100;
   color: #f8f5ef;
-  transition: background 0.25s ease, box-shadow 0.25s ease;
+  transition: background 0.25s ease, box-shadow 0.25s ease, min-height 0.25s ease;
   background: rgba(8, 77, 80, 0.95);
   backdrop-filter: blur(10px);
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
@@ -370,15 +486,20 @@ button { cursor: pointer; }
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 24px;
-  min-height: 80px;
+  gap: 20px;
+  min-height: 58px; /* 从 80px 极致压缩至 58px，释出垂直高度 */
+  padding: 4px 0;
+}
+
+.site-header.is-scrolled .nav {
+  min-height: 52px;
 }
 
 .brand {
   display: inline-flex;
   align-items: center;
-  gap: 12px;
-  font-size: 15px;
+  gap: 10px;
+  font-size: 14px;
   font-weight: 700;
   letter-spacing: .05em;
   color: #fff;
@@ -387,26 +508,26 @@ button { cursor: pointer; }
 .brand-mark {
   display: grid;
   place-items: center;
-  width: 36px;
-  height: 36px;
+  width: 32px;
+  height: 32px;
   color: var(--teal-deep);
   background: #f7f2e9;
-  border-radius: 8px;
+  border-radius: 6px;
   font-family: var(--serif);
-  font-size: 19px;
+  font-size: 17px;
   font-weight: 700;
   box-shadow: 0 2px 6px rgba(0,0,0,0.15);
 }
 
 .brand-text { display: grid; gap: 1px; }
-.brand-text span { font-weight: 700; font-size: 15px; }
-.brand-text small { color: rgba(255,255,255,.72); font-size: 11px; font-weight: 500; }
+.brand-text span { font-weight: 700; font-size: 14px; line-height: 1.15; }
+.brand-text small { color: rgba(255,255,255,.72); font-size: 10px; font-weight: 500; }
 
 .nav-links {
   display: flex;
   align-items: center;
-  gap: 24px;
-  font-size: 14px;
+  gap: 20px;
+  font-size: 13.5px;
   color: rgba(255,255,255,.82);
 }
 
@@ -423,37 +544,113 @@ button { cursor: pointer; }
 .nav-actions {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
 }
 
-.lang-switch {
-  padding: 7px 12px;
-  color: rgba(255,255,255,.9);
-  background: transparent;
-  border: 1px solid rgba(255,255,255,.3);
+/* 多语言下拉组件样式 */
+.header-lang-dropdown {
+  position: relative;
+}
+
+.lang-switch-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 11px;
+  color: rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.25);
   border-radius: 999px;
   font-size: 12px;
   font-weight: 600;
+  cursor: pointer;
   transition: all 0.2s;
+  white-space: nowrap;
 }
 
-.lang-switch:hover {
-  background: rgba(255,255,255,.1);
+.lang-switch-btn:hover {
+  background: rgba(255, 255, 255, 0.16);
   color: #fff;
-  border-color: rgba(255,255,255,.6);
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+.lang-globe-icon {
+  font-size: 12px;
+  line-height: 1;
+}
+
+.current-lang-text {
+  font-size: 12px;
+}
+
+.dropdown-caret {
+  opacity: 0.7;
+}
+
+.lang-dropdown-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  width: 150px;
+  background: #0b3438;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.35);
+  padding: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  z-index: 1000;
+}
+
+.lang-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 7px 10px;
+  border: none;
+  background: transparent;
+  color: #e2e8f0;
+  font-size: 12.5px;
+  text-align: left;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.lang-option:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+.lang-option.is-active {
+  background: rgba(241, 182, 143, 0.2);
+  color: #f1b68f;
+  font-weight: 600;
+}
+
+.opt-flag {
+  font-size: 14px;
+  line-height: 1;
+}
+
+.opt-label {
+  flex: 1;
 }
 
 .nav-cta {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 9px 18px;
+  gap: 6px;
+  padding: 7px 15px;
   color: #fff;
   background: var(--orange);
   border-radius: 6px;
-  font-size: 13px;
+  font-size: 12.5px;
   font-weight: 700;
   transition: background 0.2s, transform 0.2s;
+  white-space: nowrap;
 }
 
 .nav-cta:hover {
@@ -463,7 +660,7 @@ button { cursor: pointer; }
 
 .menu-button {
   display: none;
-  padding: 8px;
+  padding: 6px;
   color: #fff;
   background: transparent;
   border: 0;
@@ -775,6 +972,35 @@ button { cursor: pointer; }
 }
 
 @media (max-width: 880px) {
+  .nav {
+    min-height: 52px;
+    gap: 12px;
+  }
+  .site-header.is-scrolled .nav {
+    min-height: 48px;
+  }
+  .brand-text span {
+    font-size: 13px;
+  }
+  .brand-text small {
+    display: none; /* 移动端隐藏小副标，保持高度精致 */
+  }
+  .brand-mark {
+    width: 28px;
+    height: 28px;
+    font-size: 15px;
+  }
+  .nav-cta {
+    padding: 6px 10px;
+    font-size: 11.5px;
+  }
+  .lang-switch-btn {
+    padding: 4px 8px;
+    font-size: 11px;
+  }
+  .current-lang-text {
+    font-size: 11px;
+  }
   .nav-links {
     display: none;
     position: absolute;
