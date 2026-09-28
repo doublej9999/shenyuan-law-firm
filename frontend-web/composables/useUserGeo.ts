@@ -127,6 +127,7 @@ export function useUserGeo() {
         type: 'switch-lang' as const,
         flag,
         text: `Visiting from ${nameEn}? We offer comprehensive Chinese language services.`,
+        shortText: `来自${nameZh}？可切换至中文版`,
         actionLabel: '切换至中文版',
         actionUrl: route.path.replace(/^\/en/, '') || '/',
       }
@@ -140,6 +141,7 @@ export function useUserGeo() {
           type: 'jurisdiction-guide' as const,
           flag,
           text: `检测到您来自${nameZh}。深远涉外团队提供${nameZh}诉讼清收、合规与双语服务。`,
+          shortText: `来自${nameZh}？查看本地诉讼与合规指引`,
           actionLabel: `查看${nameZh}指引 →`,
           actionUrl: `/countries/${jurisdictionSlug}`,
           langSwitchLabel: 'English',
@@ -152,6 +154,7 @@ export function useUserGeo() {
         type: 'switch-lang' as const,
         flag,
         text: `Welcome from ${nameEn}! Browse our cross-border dispute resolution services in English.`,
+        shortText: `Welcome! Browse in English`,
         actionLabel: 'Switch to English',
         actionUrl: `/en${route.path === '/' ? '' : route.path}`,
       }
@@ -163,6 +166,7 @@ export function useUserGeo() {
         type: 'jurisdiction-guide' as const,
         flag,
         text: `Visiting from ${nameEn}? Explore our local ${nameEn} cross-border legal solutions.`,
+        shortText: `From ${nameEn}? View local solutions`,
         actionLabel: `View ${nameEn} Guide →`,
         actionUrl: `/en/countries/${jurisdictionSlug}`,
       }

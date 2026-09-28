@@ -4,7 +4,8 @@
       <div class="wrap geo-banner-wrap">
         <div class="geo-banner-content">
           <span class="geo-flag" aria-hidden="true">{{ smartRecommendation.flag }}</span>
-          <span class="geo-text">{{ smartRecommendation.text }}</span>
+          <span class="geo-text geo-text-full">{{ smartRecommendation.text }}</span>
+          <span class="geo-text geo-text-short">{{ smartRecommendation.shortText || smartRecommendation.text }}</span>
         </div>
 
         <div class="geo-banner-actions">
@@ -25,16 +26,16 @@
           >
             {{ smartRecommendation.langSwitchLabel }}
           </NuxtLink>
-
-          <button
-            type="button"
-            class="geo-close-btn"
-            aria-label="关闭提示"
-            @click="onDismiss"
-          >
-            ✕
-          </button>
         </div>
+
+        <button
+          type="button"
+          class="geo-close-btn"
+          aria-label="关闭提示"
+          @click.stop="onDismiss"
+        >
+          ✕
+        </button>
       </div>
     </div>
   </transition>
@@ -64,6 +65,7 @@ const onDismiss = () => {
   position: relative;
   z-index: 1000;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+  padding-top: env(safe-area-inset-top, 0);
 }
 
 .geo-banner-wrap {
@@ -73,6 +75,7 @@ const onDismiss = () => {
   padding: 8px 16px;
   gap: 12px;
   min-height: 40px;
+  position: relative;
 }
 
 .geo-banner-content {
@@ -93,8 +96,17 @@ const onDismiss = () => {
   color: #e2e8f0;
   font-weight: 400;
   letter-spacing: normal;
+}
+
+.geo-text-full {
+  display: inline;
   overflow: hidden;
   text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.geo-text-short {
+  display: none;
 }
 
 .geo-banner-actions {
@@ -142,16 +154,21 @@ const onDismiss = () => {
   background: none;
   border: none;
   color: #94a3b8;
-  font-size: 13px;
+  font-size: 14px;
   cursor: pointer;
-  padding: 4px 6px;
+  padding: 6px 8px;
   line-height: 1;
-  border-radius: 3px;
-  transition: color 0.15s ease;
+  border-radius: 4px;
+  transition: all 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
 }
 
 .geo-close-btn:hover {
   color: #ffffff;
+  background: rgba(255, 255, 255, 0.1);
 }
 
 .geo-slide-enter-active,
@@ -165,21 +182,75 @@ const onDismiss = () => {
   opacity: 0;
 }
 
+/* 移动端紧凑响应式适配 (< 768px) */
 @media (max-width: 768px) {
+  .geo-smart-banner {
+    padding-top: max(4px, env(safe-area-inset-top));
+  }
+
   .geo-banner-wrap {
     flex-direction: column;
     align-items: flex-start;
-    padding: 10px 14px;
-    gap: 8px;
+    padding: 8px 12px 10px 12px;
+    gap: 6px;
+    min-height: auto;
+  }
+
+  .geo-banner-content {
+    width: 100%;
+    padding-right: 36px; /* 为右上角关闭按钮留足安全空间，防止重叠 */
+    align-items: flex-start;
+  }
+
+  .geo-flag {
+    margin-top: 1px;
+    font-size: 15px;
+  }
+
+  .geo-text-full {
+    display: none;
+  }
+
+  .geo-text-short {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    font-size: 12px;
+    line-height: 1.35;
+    color: #e2e8f0;
   }
 
   .geo-banner-actions {
     width: 100%;
-    justify-content: flex-end;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    margin-top: 2px;
   }
 
-  .geo-text {
-    font-size: 12px;
+  .geo-btn {
+    font-size: 11px;
+    padding: 4px 10px;
+    border-radius: 4px;
+  }
+
+  /* 右上角固定关闭按钮，提供舒适的防误触热区 */
+  .geo-close-btn {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    font-size: 13px;
+    color: #94a3b8;
+  }
+
+  .geo-close-btn:active {
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.15);
   }
 }
 </style>
