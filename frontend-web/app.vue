@@ -1,36 +1,36 @@
 <template>
-  <div class="site-shell">
+  <div class="site-shell" :class="{ 'is-rtl': currentLangCode === 'ar' }">
     <!-- 智能地理位置与多语言导流横幅（非侵入式，爬虫自动忽略） -->
     <GeoSmartBanner />
 
     <header class="site-header" :class="{ 'is-scrolled': isScrolled || !isHomePage }">
       <div class="wrap nav">
-        <NuxtLink :to="isEn ? '/en' : '/'" class="brand" aria-label="Shenyuan International 首页">
+        <NuxtLink :to="homePath" class="brand" aria-label="Shenyuan International 首页">
           <span class="brand-mark">深</span>
           <span class="brand-text">
             <span>Shenyuan International</span>
-            <small>{{ isEn ? 'Shenyuan International Law' : '深远(国际)律师事务所' }}</small>
+            <small>{{ i18n.brandSub }}</small>
           </span>
         </NuxtLink>
 
         <nav class="nav-links" :class="{ 'mobile-open': mobileMenuOpen }">
           <a @click.prevent="navigateSection('services')" href="#services">
-            {{ isEn ? 'Services' : '服务范围' }}
+            {{ i18n.services }}
           </a>
           <a @click.prevent="navigateSection('cases')" href="#cases">
-            {{ isEn ? 'Results' : '成果与案例' }}
+            {{ i18n.cases }}
           </a>
           <a @click.prevent="navigateSection('global')" href="#global">
-            {{ isEn ? 'Global reach' : '全球网络' }}
+            {{ i18n.global }}
           </a>
           <a @click.prevent="navigateSection('team')" href="#team">
-            {{ isEn ? 'Team' : '团队' }}
+            {{ i18n.team }}
           </a>
           <a @click.prevent="navigateSection('faq')" href="#faq">
-            {{ isEn ? 'FAQ' : '常见问题' }}
+            {{ i18n.faq }}
           </a>
-          <NuxtLink :to="isEn ? '/en/articles' : '/articles'">
-            {{ isEn ? 'Insights' : '法律专栏' }}
+          <NuxtLink :to="articlesPath">
+            {{ i18n.articles }}
           </NuxtLink>
         </nav>
 
@@ -92,7 +92,7 @@
           </div>
 
           <a class="nav-cta" @click.prevent="navigateSection('intake')" href="#intake">
-            {{ isEn ? 'Start consultation →' : '开始咨询 →' }}
+            {{ i18n.cta }}
           </a>
           <button class="menu-button" type="button" @click="mobileMenuOpen = !mobileMenuOpen" aria-label="打开菜单">
             {{ mobileMenuOpen ? '✕' : '☰' }}
@@ -108,16 +108,16 @@
     <!-- 浮动咨询快捷按钮 -->
     <div class="consult-float-pill" @click="openQuickConsult" title="免费咨询">
       <span class="pill-icon">💬</span>
-      <span class="pill-text">{{ isEn ? 'Free Consultation' : '免费法律咨询' }}</span>
+      <span class="pill-text">{{ i18n.quickConsult }}</span>
     </div>
 
     <!-- 浮动侧边/弹窗咨询抽屉 (在非主页或点击悬浮按钮时使用) -->
     <div v-if="drawerOpen" class="consult-drawer-backdrop" @click.self="drawerOpen = false">
-      <div class="consult-drawer">
+      <div class="consult-drawer" :class="{ 'is-rtl': currentLangCode === 'ar' }">
         <div class="drawer-head">
           <div>
-            <h3>{{ isEn ? 'Initial Legal Consultation' : '跨境法律咨询与评估' }}</h3>
-            <p>{{ isEn ? '24h response from licensed cross-border lawyers.' : '涉外执业团队 24 小时内首响，先评估再行动。' }}</p>
+            <h3>{{ i18n.drawerTitle }}</h3>
+            <p>{{ i18n.drawerSub }}</p>
           </div>
           <button class="close-x" @click="drawerOpen = false">×</button>
         </div>
@@ -125,54 +125,54 @@
         <div class="wechat-mini-card">
           <img src="/wechat-qrcode.png" alt="WeChat QR" class="drawer-qr" />
           <div>
-            <strong>{{ isEn ? 'WeChat Direct' : '微信快速咨询' }}</strong>
-            <p>{{ isEn ? 'Add ShenyuanLegal for instant contact' : '微信号：ShenyuanLegal' }}</p>
+            <strong>{{ i18n.wechatTitle }}</strong>
+            <p>{{ i18n.wechatDesc }}</p>
           </div>
         </div>
 
         <form @submit.prevent="submitDrawerForm" class="drawer-fields">
           <div class="field-item">
-            <label>{{ isEn ? 'Your Name *' : '您的称呼 *' }}</label>
-            <input v-model="drawerForm.name" required :placeholder="isEn ? 'e.g. Mr. Zhang' : '例如：王女士 / 陈先生'" />
+            <label>{{ i18n.formName }}</label>
+            <input v-model="drawerForm.name" required :placeholder="i18n.formNamePlaceholder" />
           </div>
           <div class="field-item">
-            <label>{{ isEn ? 'Phone / WhatsApp *' : '联系电话 *' }}</label>
+            <label>{{ i18n.formPhone }}</label>
             <div class="phone-input-row">
               <CountryDialSelect
                 v-model="drawerCountryDial"
-                :is-en="isEn"
+                :is-en="currentLangCode !== 'zh'"
               />
               <input
                 v-model="drawerForm.phone"
                 type="tel"
                 required
-                :placeholder="isEn ? 'Local number / WhatsApp' : '手机号码，用于及时回访'"
+                :placeholder="i18n.formPhonePlaceholder"
               />
             </div>
           </div>
           <div class="field-item">
-            <label>{{ isEn ? 'Email (Optional)' : '电子邮箱（选填）' }}</label>
-            <input v-model="drawerForm.email" type="email" :placeholder="isEn ? 'For document checklist' : '用于接收材料清单与备忘录'" />
+            <label>{{ i18n.formEmail }}</label>
+            <input v-model="drawerForm.email" type="email" :placeholder="i18n.formEmailPlaceholder" />
           </div>
           <div class="field-item">
-            <label>{{ isEn ? 'Matter Type *' : '事项类型 *' }}</label>
+            <label>{{ i18n.formMatter }}</label>
             <select v-model="drawerForm.matter" required>
-              <option value="国际贸易争议">{{ isEn ? 'International Trade Dispute' : '国际贸易争议' }}</option>
-              <option value="诉讼与债务追收">{{ isEn ? 'Litigation & Debt Recovery' : '诉讼与债务追收' }}</option>
-              <option value="继承与家族资产纠纷">{{ isEn ? 'Inheritance & Family Assets' : '继承与家族资产纠纷' }}</option>
-              <option value="不确定，希望先沟通">{{ isEn ? 'Not Sure / Needs Consultation' : '不确定，希望先沟通' }}</option>
+              <option value="国际贸易争议">{{ currentLangCode === 'en' ? 'International Trade Dispute' : (currentLangCode === 'ar' ? 'نزاع التجارة الدولية' : (currentLangCode === 'es' ? 'Disputa de Comercio Internacional' : '国际贸易争议')) }}</option>
+              <option value="诉讼与债务追收">{{ currentLangCode === 'en' ? 'Litigation & Debt Recovery' : (currentLangCode === 'ar' ? 'التقاضي وتحصيل الديون' : (currentLangCode === 'es' ? 'Litigio y Recuperación de Créditos' : '诉讼与债务追收')) }}</option>
+              <option value="继承与家族资产纠纷">{{ currentLangCode === 'en' ? 'Inheritance & Family Assets' : (currentLangCode === 'ar' ? 'الميراث والأصول العائلية' : (currentLangCode === 'es' ? 'Herencia y Patrimonio Familiar' : '继承与家族资产纠纷')) }}</option>
+              <option value="不确定，希望先沟通">{{ currentLangCode === 'en' ? 'Not Sure / Needs Consultation' : (currentLangCode === 'ar' ? 'غير متأكد، أرغب في الاستشارة أولاً' : (currentLangCode === 'es' ? 'No estoy seguro, deseo consultar primero' : '不确定，希望先沟通')) }}</option>
             </select>
           </div>
           <div class="field-item">
-            <label>{{ isEn ? 'Brief Description *' : '一句话描述问题 *' }}</label>
-            <textarea v-model="drawerForm.summary" rows="3" required :placeholder="isEn ? 'Briefly describe your situation...' : '简要说明涉案金额、对方所在地与当前诉求...'"></textarea>
+            <label>{{ i18n.formSummary }}</label>
+            <textarea v-model="drawerForm.summary" rows="3" required :placeholder="i18n.formSummaryPlaceholder"></textarea>
           </div>
           <label class="drawer-consent">
             <input type="checkbox" v-model="drawerForm.consent" required />
-            <span>{{ isEn ? 'I agree to the privacy statement and authorize consultation.' : '我已阅读并同意《隐私说明》，同意提交以上信息用于初步咨询评估。' }}</span>
+            <span>{{ i18n.formConsent }}</span>
           </label>
           <button type="submit" class="drawer-submit-btn" :disabled="drawerSubmitting">
-            {{ drawerSubmitting ? (isEn ? 'Submitting...' : '提交中...') : (isEn ? 'Submit for Guidance →' : '提交，获取下一步建议 →') }}
+            {{ drawerSubmitting ? i18n.formSubmitting : i18n.formSubmit }}
           </button>
         </form>
       </div>
@@ -188,30 +188,32 @@
         <div class="footer-grid">
           <div class="footer-brand">
             Shenyuan International
-            <small>{{ isEn 
-              ? 'Shenyuan International Law Firm · Cross-border dispute resolution & family asset protection' 
-              : '深远(国际)律师事务所 · 跨境争议解决与家族资产保护' }}</small>
+            <small>{{ i18n.footerDesc }}</small>
           </div>
           <div class="footer-col">
-            <h4>{{ isEn ? 'Practice Areas' : '服务范围' }}</h4>
-            <a @click.prevent="navigateSection('services')" href="#services">{{ isEn ? 'International Trade Disputes' : '国际贸易争议' }}</a>
-            <a @click.prevent="navigateSection('services')" href="#services">{{ isEn ? 'Litigation & Debt Recovery' : '诉讼与债务追收' }}</a>
-            <a @click.prevent="navigateSection('services')" href="#services">{{ isEn ? 'Inheritance & Family Assets' : '继承与家族资产纠纷' }}</a>
+            <h4>{{ i18n.services }}</h4>
+            <a @click.prevent="navigateSection('services')" href="#services">{{ currentLangCode === 'en' ? 'International Trade Disputes' : (currentLangCode === 'ar' ? 'نزاعات التجارة الدولية' : (currentLangCode === 'es' ? 'Disputas Comerciales Internacionales' : '国际贸易争议')) }}</a>
+            <a @click.prevent="navigateSection('services')" href="#services">{{ currentLangCode === 'en' ? 'Litigation & Debt Recovery' : (currentLangCode === 'ar' ? 'التقاضي وتحصيل الديون' : (currentLangCode === 'es' ? 'Litigios y Cobro de Deudas' : '诉讼与债务追收')) }}</a>
+            <a @click.prevent="navigateSection('services')" href="#services">{{ currentLangCode === 'en' ? 'Inheritance & Family Assets' : (currentLangCode === 'ar' ? 'الميراث والأصول العائلية' : (currentLangCode === 'es' ? 'Herencias y Patrimonio Familiar' : '继承与家族资产纠纷')) }}</a>
           </div>
           <div class="footer-col">
-            <h4>{{ isEn ? 'Quick Links' : '快速入口' }}</h4>
-            <a @click.prevent="navigateSection('intake')" href="#intake">{{ isEn ? 'Free Consultation' : '免费法律咨询' }}</a>
-            <NuxtLink :to="isEn ? '/en/articles' : '/articles'">{{ isEn ? 'Legal Insights' : '法律专栏' }}</NuxtLink>
-            <a @click.prevent="navigateSection('global')" href="#global">{{ isEn ? 'Global Network' : '全球网络' }}</a>
-            <a @click.prevent="navigateSection('team')" href="#team">{{ isEn ? 'Legal Team' : '律师团队' }}</a>
-            <a @click.prevent="navigateSection('faq')" href="#faq">{{ isEn ? 'FAQ' : '常见问题' }}</a>
+            <h4>{{ currentLangCode === 'en' ? 'Quick Links' : (currentLangCode === 'ar' ? 'روابط سريعة' : (currentLangCode === 'es' ? 'Enlaces Rápidos' : '快速入口')) }}</h4>
+            <a @click.prevent="navigateSection('intake')" href="#intake">{{ i18n.quickConsult }}</a>
+            <NuxtLink :to="articlesPath">{{ i18n.articles }}</NuxtLink>
+            <a @click.prevent="navigateSection('global')" href="#global">{{ i18n.global }}</a>
+            <a @click.prevent="navigateSection('team')" href="#team">{{ i18n.team }}</a>
+            <a @click.prevent="navigateSection('faq')" href="#faq">{{ i18n.faq }}</a>
           </div>
         </div>
         <div class="footer-meta">
           © 2026 Shenyuan International · 深远(国际)律师事务所<br>
-          <span>{{ isEn 
-            ? 'This website provides general information only and does not constitute formal legal advice. Foreign legal proceedings are conducted through locally licensed counsel.' 
-            : '本网站内容仅供一般信息参考，不构成正式法律意见。境外法律程序通过与当地执业律所合作提供。' }}</span>
+          <span>{{ currentLangCode === 'en'
+            ? 'This website provides general information only and does not constitute formal legal advice. Foreign legal proceedings are conducted through locally licensed counsel.'
+            : (currentLangCode === 'ar'
+              ? 'محتويات هذا الموقع للأغراض الإعلامية العامة فقط ولا تشكل استشارة قانونية رسمية. يتم تقديم الإجراءات القضائية في الخارج من خلال مكاتب المحاماة المرخصة محلياً.'
+              : (currentLangCode === 'es'
+                ? 'El contenido de este sitio web es solo para fines informativos y no constituye asesoramiento legal formal. Los procedimientos judiciales en el extranjero se llevan a cabo a través de firmas locales asociadas.'
+                : '本网站内容仅供一般信息参考，不构成正式法律意见。境外法律程序通过与当地执业律所合作提供。')) }}</span>
         </div>
       </div>
     </footer>
@@ -221,25 +223,49 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { getApiClient, parseApiError } from '@/api/client'
 import { useUserGeo } from '@/composables/useUserGeo'
+import { I18N_DICT, type SupportedLang } from '@/composables/useI18nDict'
 
 const route = useRoute()
 const router = useRouter()
-const isEn = computed(() => route.path.startsWith('/en'))
-const isHomePage = computed(() => route.path === '/' || route.path === '/en')
+
+// 语言检测
+const currentLangCode = computed<SupportedLang>(() => {
+  if (route.path.startsWith('/ar')) return 'ar'
+  if (route.path.startsWith('/es')) return 'es'
+  if (route.path.startsWith('/en')) return 'en'
+  return 'zh'
+})
+
+// 多语言当前字典
+const i18n = computed(() => I18N_DICT[currentLangCode.value] || I18N_DICT.zh)
+
+// 首页与文章链接动态计算
+const homePath = computed(() => {
+  if (currentLangCode.value === 'ar') return '/ar'
+  if (currentLangCode.value === 'es') return '/es'
+  if (currentLangCode.value === 'en') return '/en'
+  return '/'
+})
+
+const articlesPath = computed(() => {
+  if (currentLangCode.value === 'ar') return '/ar/articles'
+  if (currentLangCode.value === 'es') return '/es/articles'
+  if (currentLangCode.value === 'en') return '/en/articles'
+  return '/articles'
+})
+
+const isHomePage = computed(() => {
+  const p = route.path
+  return p === '/' || p === '/en' || p === '/ar' || p === '/es'
+})
+
+const isEn = computed(() => currentLangCode.value === 'en')
 
 const { countryInfo } = useUserGeo()
 
 // 语言切换下拉状态
 const langMenuOpen = ref(false)
 const langDropdownRef = ref<HTMLElement | null>(null)
-
-// 语言检测
-const currentLangCode = computed<'zh' | 'en' | 'ar' | 'es'>(() => {
-  if (route.path.startsWith('/ar')) return 'ar'
-  if (route.path.startsWith('/es')) return 'es'
-  if (route.path.startsWith('/en')) return 'en'
-  return 'zh'
-})
 
 const currentLangLabel = computed(() => {
   switch (currentLangCode.value) {
@@ -250,23 +276,55 @@ const currentLangLabel = computed(() => {
   }
 })
 
-const switchLanguage = (targetLang: 'zh' | 'en' | 'ar' | 'es') => {
+/**
+ * 健壮的跨语种路由跳转解析器，彻底杜绝 404
+ */
+const switchLanguage = (targetLang: SupportedLang) => {
   langMenuOpen.value = false
   if (targetLang === currentLangCode.value) return
 
-  // 映射目标语言路径
+  const curPath = route.path
+  // 1. 去除当前语言前缀得到干净的根路由
+  let basePath = curPath.replace(/^\/(en|ar|es)(\/|$)/, '/')
+  if (!basePath.startsWith('/')) basePath = '/' + basePath
+
+  // 2. 根据目标语言与当前页面类型智能路由
   if (targetLang === 'zh') {
-    const nextPath = route.path.replace(/^\/(en|ar|es)/, '') || '/'
-    router.push(nextPath)
-  } else if (targetLang === 'en') {
-    const stripped = route.path.replace(/^\/(ar|es)/, '')
-    const nextPath = `/en${stripped === '/' ? '' : stripped}`
-    router.push(nextPath)
-  } else if (targetLang === 'ar') {
-    // 若在文章页面切换至阿语文章列表/详情，若在首页直接进入阿语专栏
-    router.push('/ar/articles')
-  } else if (targetLang === 'es') {
-    router.push('/es/articles')
+    // 切换至中文：basePath 即可
+    router.push(basePath)
+    return
+  }
+
+  // 切换至英文
+  if (targetLang === 'en') {
+    const next = basePath === '/' ? '/en' : `/en${basePath}`
+    router.push(next)
+    return
+  }
+
+  // 切换至阿拉伯语 (ar)
+  if (targetLang === 'ar') {
+    if (basePath === '/') {
+      router.push('/ar')
+    } else if (basePath.startsWith('/articles')) {
+      router.push(`/ar${basePath}`)
+    } else {
+      // 其它如 /services 等暂无独立阿语子页面，安全引向阿语首页
+      router.push('/ar')
+    }
+    return
+  }
+
+  // 切换至西班牙语 (es)
+  if (targetLang === 'es') {
+    if (basePath === '/') {
+      router.push('/es')
+    } else if (basePath.startsWith('/articles')) {
+      router.push(`/es${basePath}`)
+    } else {
+      router.push('/es')
+    }
+    return
   }
 }
 

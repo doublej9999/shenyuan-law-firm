@@ -610,7 +610,15 @@ import { getApiClient, parseApiError } from '@/api/client'
 import { useUserGeo } from '@/composables/useUserGeo'
 
 const route = useRoute()
-const isEn = computed(() => route.path.startsWith('/en'))
+const currentLang = computed<'zh' | 'en' | 'ar' | 'es'>(() => {
+  if (route.path.startsWith('/ar')) return 'ar'
+  if (route.path.startsWith('/es')) return 'es'
+  if (route.path.startsWith('/en')) return 'en'
+  return 'zh'
+})
+const isAr = computed(() => currentLang.value === 'ar')
+const isEs = computed(() => currentLang.value === 'es')
+const isEn = computed(() => currentLang.value === 'en')
 const { countryInfo } = useUserGeo()
 
 // 首页表单国家区号，默认跟随 IP 侦测
@@ -626,21 +634,42 @@ watch(
 
 // ---- SEO --------------------------------------------------------------
 const siteUrl = 'https://shenyuanlegal.com'
-const canonical = computed(() => isEn.value ? `${siteUrl}/en` : `${siteUrl}/`)
+const canonical = computed(() => {
+  if (isAr.value) return `${siteUrl}/ar`
+  if (isEs.value) return `${siteUrl}/es`
+  if (isEn.value) return `${siteUrl}/en`
+  return `${siteUrl}/`
+})
 
 useSeoMeta({
-  title: () => isEn.value
-    ? 'Shenyuan International | Cross-Border Dispute Resolution & Family Asset Protection'
-    : 'Shenyuan International | 深远(国际)律师事务所',
-  description: () => isEn.value
-    ? 'Shenyuan International Law Firm helps Chinese businesses and families resolve international trade disputes, recover cross-border debts and protect inherited family assets — bilingual, executed through a global network of local counsel.'
-    : 'Shenyuan International 深远(国际)律师事务所：为中国企业与家庭提供跨境商事争议、债务追收、继承与家族资产的国际法律服务，中英双语，覆盖全球 30+ 国家与地区的合作律所网络。',
-  ogTitle: () => isEn.value
-    ? 'Shenyuan International | Cross-Border Dispute Resolution'
-    : 'Shenyuan International | 深远(国际)律师事务所',
-  ogDescription: () => isEn.value
-    ? 'Cross-border disputes, executed globally. Trade disputes, debt recovery, inheritance and family assets.'
-    : '跨境争议，全球落地执行。跨境商事争议、债务追收、继承与家族资产——中英双语，全球协作网络。',
+  title: () => isAr.value
+    ? 'مكتب شينيوان الدولي للمحاماة | حل النزاعات العابرة للحدود وحماية الأصول'
+    : (isEs.value
+      ? 'Bufete Shenyuan Internacional | Resolución de Disputas Transfronterizas y Protección Patrimonial'
+      : (isEn.value
+        ? 'Shenyuan International | Cross-Border Dispute Resolution & Family Asset Protection'
+        : 'Shenyuan International | 深远(国际)律师事务所')),
+  description: () => isAr.value
+    ? 'مكتب شينيوان الدولي للمحاماة يقدم خدمات التقاضي في النزاعات التجارية الدولية، وتحصيل الديون العابرة للحدود، وحماية الميراث والأصول العائلية.'
+    : (isEs.value
+      ? 'El Bufete Internacional Shenyuan asiste en la resolución de disputas comerciales internacionales, recuperación de deudas transfronterizas y protección patrimonial.'
+      : (isEn.value
+        ? 'Shenyuan International Law Firm helps Chinese businesses and families resolve international trade disputes, recover cross-border debts and protect inherited family assets — bilingual, executed through a global network of local counsel.'
+        : 'Shenyuan International 深远(国际)律师事务所：为中国企业与家庭提供跨境商事争议、债务追收、继承与家族资产的国际法律服务，中英双语，覆盖全球 30+ 国家与地区的合作律所网络。')),
+  ogTitle: () => isAr.value
+    ? 'مكتب شينيوان الدولي للمحاماة | حل النزاعات الدولية'
+    : (isEs.value
+      ? 'Bufete Shenyuan Internacional | Disputas Transfronterizas'
+      : (isEn.value
+        ? 'Shenyuan International | Cross-Border Dispute Resolution'
+        : 'Shenyuan International | 深远(国际)律师事务所')),
+  ogDescription: () => isAr.value
+    ? 'نزاعات تجارية دولية، تحصيل ديون، وتنفيذ قضائي عالمي.'
+    : (isEs.value
+      ? 'Disputas comerciales internacionales, recuperación de deudas y ejecución global.'
+      : (isEn.value
+        ? 'Cross-border disputes, executed globally. Trade disputes, debt recovery, inheritance and family assets.'
+        : '跨境争议，全球落地执行。跨境商事争议、债务追收、继承与家族资产——中英双语，全球协作网络。')),
   ogType: 'website',
   ogUrl: () => canonical.value,
   ogImage: () => `${siteUrl}/og-image.png`,
@@ -651,10 +680,16 @@ useSeoMeta({
 })
 
 useHead({
+  htmlAttrs: {
+    lang: () => currentLang.value === 'zh' ? 'zh-CN' : currentLang.value,
+    dir: () => isAr.value ? 'rtl' : 'ltr',
+  },
   link: [
     { rel: 'canonical', href: () => canonical.value },
     { rel: 'alternate', hreflang: 'zh-CN', href: `${siteUrl}/` },
     { rel: 'alternate', hreflang: 'en', href: `${siteUrl}/en` },
+    { rel: 'alternate', hreflang: 'ar', href: `${siteUrl}/ar` },
+    { rel: 'alternate', hreflang: 'es', href: `${siteUrl}/es` },
     { rel: 'alternate', hreflang: 'x-default', href: `${siteUrl}/` },
     { rel: 'alternate', type: 'application/rss+xml', title: 'Shenyuan Legal RSS Feed', href: `${siteUrl}/feed.xml` },
   ],
