@@ -103,12 +103,14 @@ import { computed } from 'vue'
 import { getApiClient } from '@/api/client'
 
 const route = useRoute()
-const currentLang = computed<'zh' | 'en' | 'ar'>(() => {
+const currentLang = computed<'zh' | 'en' | 'ar' | 'es'>(() => {
   if (route.path.startsWith('/ar')) return 'ar'
+  if (route.path.startsWith('/es')) return 'es'
   if (route.path.startsWith('/en')) return 'en'
   return 'zh'
 })
 const isAr = computed(() => currentLang.value === 'ar')
+const isEs = computed(() => currentLang.value === 'es')
 const isEn = computed(() => currentLang.value === 'en')
 
 // Article bodies are fetched during SSR so crawlers receive the full text,
@@ -408,6 +410,11 @@ const arTrans = computed(() => {
   return (trans && typeof trans === 'object') ? trans.ar : null
 })
 
+const esTrans = computed(() => {
+  const trans = (article.value as any)?.translations
+  return (trans && typeof trans === 'object') ? trans.es : null
+})
+
 const renderedBody = computed(() => {
   if (!article.value) return ''
   if (isAr.value) {
@@ -415,6 +422,14 @@ const renderedBody = computed(() => {
       return parseMarkdownToHtml(arTrans.value.body)
     }
     const fallbackText = `> ⚠️ **ملاحظة:** الترجمة العربية لهذا الدليل قيد الاعتماد والمراجعة القانونية.\n\n` +
+      (article.value.body_en || article.value.body_zh)
+    return parseMarkdownToHtml(fallbackText)
+  }
+  if (isEs.value) {
+    if (esTrans.value?.body) {
+      return parseMarkdownToHtml(esTrans.value.body)
+    }
+    const fallbackText = `> ⚠️ **Nota:** La versión oficial en español de esta guía jurídica está en proceso de revisión legal.\n\n` +
       (article.value.body_en || article.value.body_zh)
     return parseMarkdownToHtml(fallbackText)
   }
@@ -431,6 +446,7 @@ const title = computed(() => {
   const art: any = article.value
   if (!art) return ''
   if (isAr.value && arTrans.value?.title) return arTrans.value.title
+  if (isEs.value && esTrans.value?.title) return esTrans.value.title
   return isEn.value ? (art.title_en || art.title_zh) : art.title_zh
 })
 
@@ -438,21 +454,25 @@ const description = computed(() => {
   const art: any = article.value
   if (!art) return ''
   if (isAr.value && arTrans.value?.description) return arTrans.value.description
+  if (isEs.value && esTrans.value?.description) return esTrans.value.description
   return isEn.value ? (art.description_en || art.description_zh) : art.description_zh
 })
 
 const zhPath = computed(() => `/articles/${route.params.slug}`)
 const enPath = computed(() => `/en/articles/${route.params.slug}`)
 const arPath = computed(() => `/ar/articles/${route.params.slug}`)
+const esPath = computed(() => `/es/articles/${route.params.slug}`)
 
 const canonical = computed(() => {
   if (isAr.value) return `${siteUrl}${arPath.value}`
+  if (isEs.value) return `${siteUrl}${esPath.value}`
   if (isEn.value) return `${siteUrl}${enPath.value}`
   return `${siteUrl}${zhPath.value}`
 })
 
 const siteName = computed(() => {
   if (isAr.value) return 'مكتب شينيوان الدولي للمحاماة (Shenyuan International)'
+  if (isEs.value) return 'Bufete de Abogados Internacional Shenyuan'
   return isEn.value ? 'Shenyuan International Law Firm' : '深远(国际)律师事务所'
 })
 
@@ -461,15 +481,23 @@ const hasArabic = computed(() => {
   return Boolean(trans && trans.ar && (trans.ar.title || trans.ar.body))
 })
 
+const hasSpanish = computed(() => {
+  const trans = (article.value as any)?.translations
+  return Boolean(trans && trans.es && (trans.es.title || trans.es.body))
+})
+
 const alternateLinks = computed(() => {
   const links = [
     { rel: 'canonical', href: () => canonical.value },
     { rel: 'alternate', hreflang: 'zh-CN', href: () => `${siteUrl}${zhPath.value}` },
     { rel: 'alternate', hreflang: 'en', href: () => `${siteUrl}${enPath.value}` },
   ]
-  // 严格遵守 SEO 原则：当且仅当存在真实阿语内容或当前为阿语路由时，向搜索引擎声明 hreflang="ar"
+  // 严格遵守 SEO 原则：当且仅当存在真实阿语/西语内容时，向搜索引擎声明 hreflang
   if (hasArabic.value || isAr.value) {
     links.push({ rel: 'alternate', hreflang: 'ar', href: () => `${siteUrl}${arPath.value}` })
+  }
+  if (hasSpanish.value || isEs.value) {
+    links.push({ rel: 'alternate', hreflang: 'es', href: () => `${siteUrl}${esPath.value}` })
   }
   links.push({ rel: 'alternate', hreflang: 'x-default', href: () => `${siteUrl}${zhPath.value}` })
   return links
