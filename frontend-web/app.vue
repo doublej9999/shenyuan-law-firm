@@ -288,44 +288,14 @@ const switchLanguage = (targetLang: SupportedLang) => {
   let basePath = curPath.replace(/^\/(en|ar|es)(\/|$)/, '/')
   if (!basePath.startsWith('/')) basePath = '/' + basePath
 
-  // 2. 根据目标语言与当前页面类型智能路由
+  // 2. 根据目标语言进行精准无缝路由跳转
   if (targetLang === 'zh') {
-    // 切换至中文：basePath 即可
     router.push(basePath)
     return
   }
 
-  // 切换至英文
-  if (targetLang === 'en') {
-    const next = basePath === '/' ? '/en' : `/en${basePath}`
-    router.push(next)
-    return
-  }
-
-  // 切换至阿拉伯语 (ar)
-  if (targetLang === 'ar') {
-    if (basePath === '/') {
-      router.push('/ar')
-    } else if (basePath.startsWith('/articles')) {
-      router.push(`/ar${basePath}`)
-    } else {
-      // 其它如 /services 等暂无独立阿语子页面，安全引向阿语首页
-      router.push('/ar')
-    }
-    return
-  }
-
-  // 切换至西班牙语 (es)
-  if (targetLang === 'es') {
-    if (basePath === '/') {
-      router.push('/es')
-    } else if (basePath.startsWith('/articles')) {
-      router.push(`/es${basePath}`)
-    } else {
-      router.push('/es')
-    }
-    return
-  }
+  const next = basePath === '/' ? `/${targetLang}` : `/${targetLang}${basePath}`
+  router.push(next)
 }
 
 // 抽屉国家区号，默认跟随 IP 侦测

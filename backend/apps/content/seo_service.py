@@ -39,17 +39,17 @@ DEFAULT_SITE_URL = "https://shenyuanlegal.com"
 SHIPPED_ROUTE_FAMILIES = "core,articles,countries,services"
 DEFAULT_ROUTE_FAMILIES = SHIPPED_ROUTE_FAMILIES
 
-# Marketing pages that exist in both languages: (zh_path, en_path, changefreq, priority)
-STATIC_PAIRS: List[Tuple[str, str, str, str]] = [
-    ("/", "/en", "daily", "1.0"),
-    ("/services", "/en/services", "weekly", "0.9"),
-    ("/articles", "/en/articles", "daily", "0.9"),
+# Marketing pages that exist in all languages: (zh_path, en_path, ar_path, es_path, changefreq, priority)
+STATIC_PAIRS: List[Tuple[str, str, str, str, str, str]] = [
+    ("/", "/en", "/ar", "/es", "daily", "1.0"),
+    ("/services", "/en/services", "/ar/services", "/es/services", "weekly", "0.9"),
+    ("/articles", "/en/articles", "/ar/articles", "/es/articles", "daily", "0.9"),
 ]
 
 # Landing-page families that also have an index page.
-FAMILY_INDEX: Dict[str, Tuple[str, str, str, str]] = {
-    "countries": ("/countries", "/en/countries", "weekly", "0.8"),
-    "services": ("", "", "weekly", "0.8"),  # no index page: /services is in STATIC_PAIRS
+FAMILY_INDEX: Dict[str, Tuple[str, str, str, str, str, str]] = {
+    "countries": ("/countries", "/en/countries", "/ar/countries", "/es/countries", "weekly", "0.8"),
+    "services": ("", "", "", "", "weekly", "0.8"),  # no index page: /services is in STATIC_PAIRS
 }
 
 
@@ -63,13 +63,25 @@ def _enabled_families() -> set:
     return {part.strip() for part in raw.split(",") if part.strip()}
 
 
-def _hreflang_links(base_url: str, zh_path: str, en_path: str, indent: str = "    ") -> str:
-    """xhtml:link alternates for a zh/en URL pair, including x-default."""
-    return (
-        f'{indent}<xhtml:link rel="alternate" hreflang="zh-CN" href="{base_url}{zh_path}"/>\n'
-        f'{indent}<xhtml:link rel="alternate" hreflang="en" href="{base_url}{en_path}"/>\n'
-        f'{indent}<xhtml:link rel="alternate" hreflang="x-default" href="{base_url}{zh_path}"/>\n'
-    )
+def _hreflang_links(
+    base_url: str,
+    zh_path: str,
+    en_path: str,
+    ar_path: Optional[str] = None,
+    es_path: Optional[str] = None,
+    indent: str = "    ",
+) -> str:
+    """xhtml:link alternates for a multilingual URL set, including x-default."""
+    links = [
+        f'{indent}<xhtml:link rel="alternate" hreflang="zh-CN" href="{base_url}{zh_path}"/>\n',
+        f'{indent}<xhtml:link rel="alternate" hreflang="en" href="{base_url}{en_path}"/>\n',
+    ]
+    if ar_path:
+        links.append(f'{indent}<xhtml:link rel="alternate" hreflang="ar" href="{base_url}{ar_path}"/>\n')
+    if es_path:
+        links.append(f'{indent}<xhtml:link rel="alternate" hreflang="es" href="{base_url}{es_path}"/>\n')
+    links.append(f'{indent}<xhtml:link rel="alternate" hreflang="x-default" href="{base_url}{zh_path}"/>\n')
+    return "".join(links)
 
 
 def _article_hreflang_links(base_url: str, slug: str, translations: Optional[dict] = None, indent: str = "    ") -> Tuple[str, List[str]]:
@@ -101,50 +113,81 @@ def _article_hreflang_links(base_url: str, slug: str, translations: Optional[dic
 def frontend_routes() -> List[Dict[str, str]]:
     """Every non-article frontend URL the sitemap should advertise.
 
-    Returns dicts of ``{zh, en, changefreq, priority}``. Article detail URLs are
+    Returns dicts of ``{zh, en, ar, es, changefreq, priority}``. Article detail URLs are
     derived from the database in :func:`generate_sitemap_xml` instead, because
     they carry a real ``lastmod``.
     """
     families = _enabled_families()
     routes: List[Dict[str, str]] = []
 
-    def add(zh: str, en: str, changefreq: str, priority: str) -> None:
-        routes.append({"zh": zh, "en": en, "changefreq": changefreq, "priority": priority})
+    def add(zh: str, en: str, ar: str, es: str, changefreq: str, priority: str) -> None:
+        routes.append({
+            "zh": zh,
+            "en": en,
+            "ar": ar,
+            "es": es,
+            "changefreq": changefreq,
+            "priority": priority,
+        })
 
     if "core" in families:
-        for zh, en, changefreq, priority in STATIC_PAIRS:
-            add(zh, en, changefreq, priority)
+        for zh, en, ar, es, changefreq, priority in STATIC_PAIRS:
+            add(zh, en, ar, es, changefreq, priority)
 
     if "countries" in families:
-        zh_index, en_index, changefreq, priority = FAMILY_INDEX["countries"]
-        add(zh_index, en_index, changefreq, priority)
+        zh_index, en_index, ar_index, es_index, changefreq, priority = FAMILY_INDEX["countries"]
+        add(zh_index, en_index, ar_index, es_index, changefreq, priority)
         for slug in site_content.get_countries():
-            add(f"/countries/{slug}", f"/en/countries/{slug}", "monthly", "0.7")
+            add(
+                f"/countries/{slug}",
+                f"/en/countries/{slug}",
+                f"/ar/countries/{slug}",
+                f"/es/countries/{slug}",
+                "monthly",
+                "0.7",
+            )
 
     if "services" in families:
         for slug in site_content.get_services():
-            add(f"/services/{slug}", f"/en/services/{slug}", "monthly", "0.8")
+            add(
+                f"/services/{slug}",
+                f"/en/services/{slug}",
+                f"/ar/services/{slug}",
+                f"/es/services/{slug}",
+                "monthly",
+                "0.8",
+            )
 
     return routes
 
 
 def generate_sitemap_xml() -> str:
-    """Sitemaps 0.9 document with zh/en pairs linked by hreflang and x-default."""
+    """Sitemaps 0.9 document with multilingual pairs linked by hreflang and x-default."""
     base_url = get_base_url()
     entries: List[str] = []
 
     now = datetime.now(timezone.utc).strftime("%Y-%m-%d")
     for route in frontend_routes():
-        zh_loc = f"{base_url}{route['zh']}"
-        en_loc = f"{base_url}{route['en']}"
-        for loc in (zh_loc, en_loc):
+        locs = [f"{base_url}{route['zh']}", f"{base_url}{route['en']}"]
+        if route.get("ar"):
+            locs.append(f"{base_url}{route['ar']}")
+        if route.get("es"):
+            locs.append(f"{base_url}{route['es']}")
+        hreflangs = _hreflang_links(
+            base_url,
+            route["zh"],
+            route["en"],
+            route.get("ar"),
+            route.get("es"),
+        )
+        for loc in locs:
             entries.append(
                 "  <url>\n"
                 f"    <loc>{loc}</loc>\n"
                 f"    <lastmod>{now}</lastmod>\n"
                 f"    <changefreq>{route['changefreq']}</changefreq>\n"
                 f"    <priority>{route['priority']}</priority>\n"
-                + _hreflang_links(base_url, route["zh"], route["en"])
+                + hreflangs
                 + "  </url>\n"
             )
 
