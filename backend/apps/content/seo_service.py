@@ -277,6 +277,10 @@ def generate_llms_txt() -> str:
         "inheritance. Local counsel network in 30+ jurisdictions. Free initial "
         "assessment with a 24-hour response.",
         "",
+        "## Multilingual Portals (Regional Legal Direct Access)",
+        "- Arabic Portal (العربية): /ar — خدمات تسوية النزاعات التجارية الدولية، تحصيل الديون وتنفيذ الأحكام القضائية في الصين والشرق الأوسط (دبي/الإمارات).",
+        "- Spanish Portal (Español): /es — Servicios jurídicos de resolución de disputas de comercio internacional, cobro transfronterizo de deudas y sucesiones en China, España y Latinoamérica.",
+        "",
         "## Services",
     ]
     for slug, service in site_content.get_services().items():
@@ -665,6 +669,14 @@ def generate_llms_full_txt() -> str:
         lines.append(f"### [{title}]({base_url}/articles/{article.slug})")
         lines.append(f"- Business Line: {article.business}")
         lines.append(f"- Summary: {desc}")
+        translations = article.translations or {}
+        if isinstance(translations, dict):
+            ar_trans = translations.get("ar")
+            if isinstance(ar_trans, dict) and ar_trans.get("title"):
+                lines.append(f"- Arabic Edition: [{ar_trans['title']}]({base_url}/ar/articles/{article.slug})")
+            es_trans = translations.get("es")
+            if isinstance(es_trans, dict) and es_trans.get("title"):
+                lines.append(f"- Spanish Edition: [{es_trans['title']}]({base_url}/es/articles/{article.slug})")
         lines.append("")
 
     return "\n".join(lines)
