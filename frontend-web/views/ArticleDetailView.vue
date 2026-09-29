@@ -57,6 +57,24 @@
                 : '本文内容仅供涉外法律实务研讨与一般信息参考，不构成针对任何具体案件的正式法律意见或委托关系。具体法律程序须结合案件全部证据、事实及相关管辖区法规一案一议。')) }}</span>
         </div>
 
+        <!-- Pillar Hubs Interlinking Matrix (Topic Cluster Anchor) -->
+        <div v-if="matchedService || matchedCountry" class="pillar-hubs-matrix">
+          <div v-if="matchedService" class="pillar-hub-card">
+            <span class="hub-label">{{ isEn ? 'Core Practice Area Hub' : (isAr ? 'مجال الممارسة الرئيسي' : (isEs ? 'Área Principal de Práctica' : '核心业务支柱专区')) }}</span>
+            <NuxtLink :to="isAr ? `/ar/services/${matchedService.slug}` : (isEs ? `/es/services/${matchedService.slug}` : (isEn ? `/en/services/${matchedService.slug}` : `/services/${matchedService.slug}`))" class="hub-link">
+              <h4>{{ matchedService.name }} &rarr;</h4>
+              <p>{{ matchedService.desc }}</p>
+            </NuxtLink>
+          </div>
+          <div v-if="matchedCountry" class="pillar-hub-card country-hub">
+            <span class="hub-label">{{ isEn ? 'Relevant Jurisdiction Hub' : (isAr ? 'المركز الإقليمي للاختصاص القضائي' : (isEs ? 'Centro Jurisdiccional Relacionado' : '关联国别法域专区')) }}</span>
+            <NuxtLink :to="isAr ? `/ar/countries/${matchedCountry.slug}` : (isEs ? `/es/countries/${matchedCountry.slug}` : (isEn ? `/en/countries/${matchedCountry.slug}` : `/countries/${matchedCountry.slug}`))" class="hub-link">
+              <h4>{{ matchedCountry.name }} {{ isEn ? 'Cross-Border Legal Hub' : (isAr ? 'المركز القانوني' : (isEs ? 'Portal Legal' : '跨境法律专区')) }} &rarr;</h4>
+              <p>{{ isEn ? `Explore dispute resolution procedures, limitation periods, and local enforcement rules for ${matchedCountry.name}.` : (isAr ? `تعرف على إجراءات التقاضي، مدد التقادم، وقواعد التنفيذ المتبعة في ${matchedCountry.name}.` : (isEs ? `Conozca los procedimientos judiciales, plazos de prescripción y normas de ejecución en ${matchedCountry.name}.` : `查看针对${matchedCountry.name}的涉外诉讼管辖、判决承认执行与实务要点`)) }}</p>
+            </NuxtLink>
+          </div>
+        </div>
+
         <!-- Related Articles / Topic Cluster -->
         <div v-if="relatedArticles.length" class="related-articles-section">
           <div class="related-head">
@@ -526,6 +544,82 @@ useSeoMeta({
   twitterImage: () => `${siteUrl}/og-image.png`,
 })
 
+// ---- Pillar-Cluster Hub Interlinking ----------------------------------
+const COUNTRY_SLUGS = [
+  { slug: 'united-arab-emirates', zh: '阿联酋', en: 'UAE (Dubai)', ar: 'الإمارات (دبي)', es: 'EAU (Dubái)', aliases: ['阿联酋', '迪拜', 'dubai', 'uae', 'emirates'] },
+  { slug: 'spain', zh: '西班牙', en: 'Spain', ar: 'إسبانيا', es: 'España', aliases: ['西班牙', 'spain', 'madrid', 'barcelona', '马德里'] },
+  { slug: 'united-states', zh: '美国', en: 'United States', ar: 'الولايات المتحدة', es: 'Estados Unidos', aliases: ['美国', '美方', 'us', 'usa', 'united states', '加州', '纽约'] },
+  { slug: 'united-kingdom', zh: '英国', en: 'United Kingdom', ar: 'المملكة المتحدة', es: 'Reino Unido', aliases: ['英国', 'uk', 'london', 'united kingdom'] },
+  { slug: 'singapore', zh: '新加坡', en: 'Singapore', ar: 'سنغافورة', es: 'Singapur', aliases: ['新加坡', 'singapore'] },
+  { slug: 'germany', zh: '德国', en: 'Germany', ar: 'ألمانيا', es: 'Alemania', aliases: ['德国', 'germany'] },
+  { slug: 'canada', zh: '加拿大', en: 'Canada', ar: 'كندا', es: 'Canadá', aliases: ['加拿大', 'canada'] },
+  { slug: 'australia', zh: '澳大利亚', en: 'Australia', ar: 'أستراليا', es: 'Australia', aliases: ['澳大利亚', '澳洲', 'australia'] },
+  { slug: 'hong-kong', zh: '中国香港', en: 'Hong Kong', ar: 'هونغ كونغ', es: 'Hong Kong', aliases: ['香港', 'hong kong'] },
+  { slug: 'brazil', zh: '巴西', en: 'Brazil', ar: 'البرازيل', es: 'Brasil', aliases: ['巴西', 'brazil'] },
+  { slug: 'france', zh: '法国', en: 'France', ar: 'فرنسا', es: 'Francia', aliases: ['法国', 'france'] },
+  { slug: 'italy', zh: '意大利', en: 'Italy', ar: 'إيطاليا', es: 'Italia', aliases: ['意大利', 'italy'] },
+  { slug: 'japan', zh: '日本', en: 'Japan', ar: 'اليابان', es: 'Japón', aliases: ['日本', 'japan'] },
+  { slug: 'south-korea', zh: '韩国', en: 'South Korea', ar: 'كوريا الجنوبية', es: 'Corea del Sur', aliases: ['韩国', 'korea'] },
+  { slug: 'netherlands', zh: '荷兰', en: 'Netherlands', ar: 'هولندا', es: 'Países Bajos', aliases: ['荷兰', 'netherlands'] },
+  { slug: 'switzerland', zh: '瑞士', en: 'Switzerland', ar: 'سويسرا', es: 'Suiza', aliases: ['瑞士', 'switzerland'] },
+  { slug: 'thailand', zh: '泰国', en: 'Thailand', ar: 'تايلاند', es: 'Tailandia', aliases: ['泰国', 'thailand'] },
+  { slug: 'vietnam', zh: '越南', en: 'Vietnam', ar: 'فيتنام', es: 'Vietnam', aliases: ['越南', 'vietnam'] },
+  { slug: 'malaysia', zh: '马来西亚', en: 'Malaysia', ar: 'ماليزيا', es: 'Malasia', aliases: ['马来西亚', 'malaysia'] },
+  { slug: 'new-zealand', zh: '新西兰', en: 'New Zealand', ar: 'نيوزيلندا', es: 'Nueva Zelanda', aliases: ['新西兰', 'new zealand'] },
+  { slug: 'india', zh: '印度', en: 'India', ar: 'الهند', es: 'India', aliases: ['印度', 'india'] },
+  { slug: 'ireland', zh: '爱尔兰', en: 'Ireland', ar: 'أيرلندا', es: 'Irlanda', aliases: ['爱尔兰', 'ireland'] }
+]
+
+const matchedService = computed(() => {
+  const art: any = article.value
+  if (!art) return null
+  const b = (art.business || '').toLowerCase()
+  if (b.includes('trade') || b.includes('贸易')) {
+    return {
+      slug: 'trade',
+      name: isEn.value ? 'International Trade Disputes' : (isAr.value ? 'النزاعات التجارية الدولية' : (isEs.value ? 'Disputas de Comercio Internacional' : '国际贸易争议')),
+      desc: isEn.value ? 'Specialized dispute resolution for foreign trade contracts, invoices, and customs.' : (isAr.value ? 'حل النزاعات المتخصصة لعقود التجارة الخارجية والفواتير والجمارك.' : (isEs.value ? 'Resolución especializada de disputas en contratos de comercio exterior y aduanas.' : '涉外合同违约、货款拖欠、信用证及海关质量争议专业处置')),
+    }
+  }
+  if (b.includes('recovery') || b.includes('追收') || b.includes('诉讼') || b.includes('债')) {
+    return {
+      slug: 'recovery',
+      name: isEn.value ? 'Cross-Border Litigation & Debt Recovery' : (isAr.value ? 'التقاضي وتحصيل الديون عبر الحدود' : (isEs.value ? 'Litigios y Recobro Transfronterizo' : '诉讼与债务追收')),
+      desc: isEn.value ? 'Commercial debt collection, asset tracing, and cross-border enforcement of judgments.' : (isAr.value ? 'تحصيل الديون التجارية وتتبع الأصول وتنفيذ الأحكام القضائية عبر الحدود.' : (isEs.value ? 'Cobro de créditos comerciales, rastreo de activos y ejecución de sentencias extranjeras.' : '海外客户欠款追收、境内外资产穿透调查与判决仲裁跨国执行')),
+    }
+  }
+  if (b.includes('legacy') || b.includes('继承') || b.includes('家事') || b.includes('资产')) {
+    return {
+      slug: 'legacy',
+      name: isEn.value ? 'Inheritance & Family Wealth Protection' : (isAr.value ? 'الميراث ونزاعات الأصول العائلية' : (isEs.value ? 'Herencias y Protección Patrimonial' : '继承与家族资产纠纷')),
+      desc: isEn.value ? 'Multi-jurisdictional inheritance, property transmission, and wealth succession.' : (isAr.value ? 'التركات عبر الحدود ونقل الملكيات العقارية وتسوية النزاعات العائلية.' : (isEs.value ? 'Herencias multijurisdiccionales, transmisión de bienes y planificación sucesoria.' : '跨境多地房产、股权、存款继承，遗嘱执行与涉外遗产纠纷')),
+    }
+  }
+  return {
+    slug: 'trade',
+    name: isEn.value ? 'Cross-Border Legal Practice' : (isAr.value ? 'الممارسات القانونية عبر الحدود' : (isEs.value ? 'Práctica Jurídica Transfronteriza' : '涉外法律实务总览')),
+    desc: isEn.value ? 'Full-spectrum cross-border dispute resolution and legal counsel.' : (isAr.value ? 'خدمات شاملة لحل النزاعات القانونية الدولية.' : (isEs.value ? 'Servicios integrales de resolución de disputas transfronterizas.' : '涵盖贸易纠纷、债务追收与涉外资产全流程争议解决')),
+  }
+})
+
+const matchedCountry = computed(() => {
+  const art: any = article.value
+  if (!art) return null
+  const haystack = ((art.title_zh || '') + ' ' + (art.description_zh || '') + ' ' + (art.body_zh || '') + ' ' + (art.slug || '')).toLowerCase()
+  for (const c of COUNTRY_SLUGS) {
+    if (c.aliases.some(alias => haystack.includes(alias.toLowerCase()))) {
+      return {
+        slug: c.slug,
+        name: isEn.value ? c.en : (isAr.value ? c.ar : (isEs.value ? c.es : c.zh)),
+      }
+    }
+  }
+  return null
+})
+
+// ---- Schema.org 4-Language Structured Data ----------------------------
+const langCode = computed(() => isEn.value ? 'en' : (isAr.value ? 'ar' : (isEs.value ? 'es' : 'zh-CN')))
+
 const articleJsonLd = computed(() => {
   const art: any = article.value
   if (!art) return null
@@ -536,7 +630,7 @@ const articleJsonLd = computed(() => {
     'description': description.value,
     'datePublished': art.published_at || art.created_at,
     'dateModified': art.updated_at || art.published_at,
-    'inLanguage': isEn.value ? 'en' : 'zh-CN',
+    'inLanguage': langCode.value,
     'author': {
       '@type': 'Organization',
       'name': 'Shenyuan International Legal Team',
@@ -562,7 +656,7 @@ const faqJsonLd = computed(() => {
   return {
     '@context': 'https://schema.org',
     '@type': 'FAQPage',
-    'inLanguage': isEn.value ? 'en' : 'zh-CN',
+    'inLanguage': langCode.value,
     'mainEntity': articleFaqs.value.map((f: any) => ({
       '@type': 'Question',
       'name': f.question,
@@ -576,35 +670,55 @@ const faqJsonLd = computed(() => {
 
 const breadcrumbJsonLd = computed(() => {
   if (!article.value) return null
+  const homeName = isEn.value ? 'Home' : (isAr.value ? 'الرئيسية' : (isEs.value ? 'Inicio' : '首页'))
+  const homeUrl = isEn.value ? `${siteUrl}/en` : (isAr.value ? `${siteUrl}/ar` : (isEs.value ? `${siteUrl}/es` : siteUrl))
+  const articlesName = isEn.value ? 'Legal Insights' : (isAr.value ? 'المقالات القانونية' : (isEs.value ? 'Artículos Jurídicos' : '涉外法律专栏'))
+  const articlesUrl = isEn.value ? `${siteUrl}/en/articles` : (isAr.value ? `${siteUrl}/ar/articles` : (isEs.value ? `${siteUrl}/es/articles` : `${siteUrl}/articles`))
+
+  const items = [
+    {
+      '@type': 'ListItem',
+      'position': 1,
+      'name': homeName,
+      'item': homeUrl,
+    },
+    {
+      '@type': 'ListItem',
+      'position': 2,
+      'name': articlesName,
+      'item': articlesUrl,
+    },
+  ]
+
+  let pos = 3
+  if (matchedService.value) {
+    const sSlug = matchedService.value.slug
+    const sUrl = isEn.value ? `${siteUrl}/en/services/${sSlug}` : (isAr.value ? `${siteUrl}/ar/services/${sSlug}` : (isEs.value ? `${siteUrl}/es/services/${sSlug}` : `${siteUrl}/services/${sSlug}`))
+    items.push({
+      '@type': 'ListItem',
+      'position': pos++,
+      'name': matchedService.value.name,
+      'item': sUrl,
+    })
+  }
+
+  items.push({
+    '@type': 'ListItem',
+    'position': pos,
+    'name': title.value,
+    'item': canonical.value,
+  })
+
   return {
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
-    'itemListElement': [
-      {
-        '@type': 'ListItem',
-        'position': 1,
-        'name': isEn.value ? 'Home' : '首页',
-        'item': isEn.value ? `${siteUrl}/en` : siteUrl,
-      },
-      {
-        '@type': 'ListItem',
-        'position': 2,
-        'name': isEn.value ? 'Legal Insights' : '涉外法律专栏',
-        'item': isEn.value ? `${siteUrl}/en/articles` : `${siteUrl}/articles`,
-      },
-      {
-        '@type': 'ListItem',
-        'position': 3,
-        'name': title.value,
-        'item': canonical.value,
-      },
-    ],
+    'itemListElement': items,
   }
 })
 
 useHead({
   htmlAttrs: computed(() => ({
-    lang: isAr.value ? 'ar' : (isEn.value ? 'en' : 'zh-CN'),
+    lang: isAr.value ? 'ar' : (isEs.value ? 'es' : (isEn.value ? 'en' : 'zh-CN')),
     dir: isAr.value ? 'rtl' : 'ltr',
   })),
   link: alternateLinks,
@@ -961,6 +1075,79 @@ useHead({
 
 .article-disclaimer strong {
   color: var(--teal-deep);
+}
+
+.pillar-hubs-matrix {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+  margin: 28px 0 36px;
+}
+
+.pillar-hub-card {
+  background: linear-gradient(135deg, #f8f6f0 0%, #f4efe4 100%);
+  border: 1px solid var(--line);
+  border-left: 4px solid var(--teal-deep);
+  border-radius: 8px;
+  padding: 18px 22px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.pillar-hub-card.country-hub {
+  border-left-color: var(--gold);
+}
+
+.pillar-hub-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0,0,0,0.06);
+  border-color: var(--teal);
+}
+
+.hub-label {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--teal-deep);
+  margin-bottom: 6px;
+}
+
+.pillar-hub-card.country-hub .hub-label {
+  color: #8b6b23;
+}
+
+.hub-link {
+  text-decoration: none;
+  display: block;
+}
+
+.hub-link h4 {
+  font-family: var(--serif);
+  font-size: 16px;
+  color: var(--teal-deep);
+  margin: 0 0 6px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.hub-link p {
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--muted);
+  margin: 0;
+}
+
+/* RTL 适配 */
+.article-detail-view.is-rtl .pillar-hub-card {
+  border-left: 1px solid var(--line);
+  border-right: 4px solid var(--teal-deep);
+  text-align: right;
+}
+
+.article-detail-view.is-rtl .pillar-hub-card.country-hub {
+  border-right-color: var(--gold);
 }
 
 .related-articles-section {
