@@ -45,7 +45,7 @@ def get_llm_api_key() -> str:
     return ""
 
 LLM_API_BASE = os.environ.get("LLM_API_BASE", "https://cpa.927900.xyz/v1").rstrip("/")
-LLM_MODEL = os.environ.get("LLM_MODEL", "deepseek-v4.1-flash").strip()
+LLM_MODEL = os.environ.get("LLM_MODEL", "deepseek-v4-flash").strip()
 ADMIN_TOKEN = get_admin_token()
 LLM_KEY = get_llm_api_key()
 
