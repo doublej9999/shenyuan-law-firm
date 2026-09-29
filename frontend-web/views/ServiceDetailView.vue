@@ -250,7 +250,59 @@ useSeoMeta({
   twitterImage: () => `${siteUrl}/og-image.png`,
 })
 
+const serviceJsonLd = computed(() => {
+  const s: any = service.value
+  if (!s) return null
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'LegalService',
+    'name': `${title.value} | ${isEn.value ? 'Shenyuan International' : (isAr.value ? 'مكتب شينيوان الدولي' : (isEs.value ? 'Shenyuan International' : '深远(国际)律师事务所'))}`,
+    'description': description.value,
+    'url': canonical.value,
+    'inLanguage': isEn.value ? 'en' : (isAr.value ? 'ar' : (isEs.value ? 'es' : 'zh-CN')),
+    'provider': {
+      '@type': 'LegalService',
+      'name': 'Shenyuan International Law Firm',
+      'url': siteUrl,
+    },
+    'serviceType': s.zh_title,
+    'areaServed': 'Global',
+  }
+})
+
+const breadcrumbJsonLd = computed(() => {
+  if (!service.value) return null
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    'itemListElement': [
+      {
+        '@type': 'ListItem',
+        'position': 1,
+        'name': isEn.value ? 'Home' : (isAr.value ? 'الرئيسية' : (isEs.value ? 'Inicio' : '首页')),
+        'item': isEn.value ? `${siteUrl}/en` : (isAr.value ? `${siteUrl}/ar` : (isEs.value ? `${siteUrl}/es` : siteUrl)),
+      },
+      {
+        '@type': 'ListItem',
+        'position': 2,
+        'name': isEn.value ? 'Practice Areas' : (isAr.value ? 'مجالات الممارسة' : (isEs.value ? 'Áreas de Práctica' : '服务范围')),
+        'item': isEn.value ? `${siteUrl}/en/services` : (isAr.value ? `${siteUrl}/ar/services` : (isEs.value ? `${siteUrl}/es/services` : `${siteUrl}/services`)),
+      },
+      {
+        '@type': 'ListItem',
+        'position': 3,
+        'name': title.value,
+        'item': canonical.value,
+      },
+    ],
+  }
+})
+
 useHead({
+  htmlAttrs: computed(() => ({
+    lang: isAr.value ? 'ar' : (isEs.value ? 'es' : (isEn.value ? 'en' : 'zh-CN')),
+    dir: isAr.value ? 'rtl' : 'ltr',
+  })),
   link: [
     { rel: 'canonical', href: () => canonical.value },
     { rel: 'alternate', hreflang: 'zh-CN', href: () => `${siteUrl}${zhPath.value}` },
@@ -259,6 +311,16 @@ useHead({
     { rel: 'alternate', hreflang: 'es', href: () => `${siteUrl}${esPath.value}` },
     { rel: 'alternate', hreflang: 'x-default', href: () => `${siteUrl}${zhPath.value}` },
   ],
+  script: computed(() => {
+    const scripts: any[] = []
+    if (serviceJsonLd.value) {
+      scripts.push({ type: 'application/ld+json', innerHTML: JSON.stringify(serviceJsonLd.value) })
+    }
+    if (breadcrumbJsonLd.value) {
+      scripts.push({ type: 'application/ld+json', innerHTML: JSON.stringify(breadcrumbJsonLd.value) })
+    }
+    return scripts
+  }),
 })
 </script>
 
