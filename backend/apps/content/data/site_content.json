@@ -56,7 +56,41 @@
         "Bills of lading, logistics, customs, and quality inspection documents",
         "Emails, WeChat, WhatsApp, or other communications",
         "Counterparty company name, address, and contact details"
-      ]
+      ],
+      "translations": {
+        "ar": {
+          "title": "النزاعات التجارية الدولية",
+          "intro": "معالجة النزاعات الناشئة عن تنفيذ الصفقات، الفواتير غير المسددة، عقود الوكالة والتوزيع والعقود عبر الحدود، مع تقييم مسارات التفاوض أو التحصيل أو التقاضي بناءً على وقائع الدين والأدلة المتاحة.",
+          "items": [
+            "تأخر سداد الفواتير / إخلال الموردين بالالتزامات",
+            "صياغة ومراجعة عقود الوكالة والتوزيع والعقود التجارية الدولية",
+            "نزاعات الجمارك، اللوجستيات ومطابقة جودة البضائع",
+            "كشف الاحتيال التجاري الدولي وآليات التعامل القانوني معه"
+          ],
+          "materials": [
+            "العقود، أوامر الشراء، الفواتير وسجلات التحويل المالي",
+            "بوالص الشحن، مستندات التخليص الجمركي وتقارير فحص الجودة",
+            "المراسلات عبر البريد الإلكتروني، واتساب أو أي قنوات تواصل أخرى",
+            "اسم الشركة الطرف الآخر، العنوان وتفاصيل الاتصال بالمسؤولين"
+          ]
+        },
+        "es": {
+          "title": "Disputas de Comercio Internacional",
+          "intro": "Gestionamos disputas sobre cumplimiento comercial, impago de facturas, agencias, distribución y contratos transfronterizos — evaluando vías de negociación, recobro o litigio a partir de las pruebas documentales.",
+          "items": [
+            "Impago de facturas / incumplimiento contractual de proveedores",
+            "Revisión de contratos de agencia, distribución y comercio exterior",
+            "Disputas aduaneras, logísticas y de disconformidad de calidad",
+            "Identificación y respuesta legal ante fraudes comerciales internacionales"
+          ],
+          "materials": [
+            "Contratos, órdenes de compra, facturas y comprobantes de pago",
+            "Conocimientos de embarque (B/L), despachos aduaneros y actas de inspección",
+            "Comunicaciones por correo electrónico, WhatsApp u otros canales",
+            "Denominación de la empresa contraparte, domicilio y datos de contacto"
+          ]
+        }
+      }
     },
     "recovery": {
       "slug": "recovery",
@@ -88,7 +122,41 @@
         "Debtor company or individual information",
         "Contracts, statements, and demand records",
         "Existing judgments, arbitral awards, or asset clues"
-      ]
+      ],
+      "translations": {
+        "ar": {
+          "title": "التقاضي وتحصيل الديون عبر الحدود",
+          "intro": "تقييم خيارات التحصيل والتقاضي والتنفيذ القضائي استناداً إلى وقائع المديونية وتتبع الأصول، بما يشمل الأصول داخل البر الرئيسي للصين وخارجها.",
+          "items": [
+            "تحصيل ديون العملاء والشركات في الخارج",
+            "التحري عن الأصول وتتبعها في الصين وخارجها",
+            "تنفيذ الأحكام القضائية وقرارات التحكيم عبر الحدود",
+            "التحقيق في وقائع الاحتيال التجاري والمالي"
+          ],
+          "materials": [
+            "قيمة الدين وتاريخ الاستحقاق",
+            "بيانات الشركة أو الشخص المدين",
+            "العقود، كشوف الحساب وسجلات الإخطارات والمطالبات",
+            "الأحكام القضائية أو قرارات التحكيم السابقة أو دلائل الأصول"
+          ]
+        },
+        "es": {
+          "title": "Litigios y Recobro Transfronterizo de Deudas",
+          "intro": "Evaluamos opciones de cobro, litigio y ejecución a partir de los hechos del impago y el rastreo patrimonial, abarcando activos tanto en China continental como en el extranjero.",
+          "items": [
+            "Cobro de deudas a clientes extranjeros y empresas morosas",
+            "Investigación y rastreo de activos en China y en el exterior",
+            "Reconocimiento y ejecución transfronteriza de sentencias y laudos arbitrales",
+            "Investigación de fraude comercial y patrimonial"
+          ],
+          "materials": [
+            "Importe adeudado y fecha de vencimiento",
+            "Datos de la empresa deudora o persona física",
+            "Contratos, facturas, estados de cuenta y requerimientos de pago",
+            "Sentencias o laudos existentes o pistas sobre bienes y activos"
+          ]
+        }
+      }
     },
     "legacy": {
       "slug": "legacy",
@@ -120,7 +188,41 @@
         "Death certificate, will, or estate documents",
         "Property, equity, deposit, or other asset clues",
         "Relevant countries or regions and family member contact details"
-      ]
+      ],
+      "translations": {
+        "ar": {
+          "title": "الميراث ونزاعات الأصول العائلية",
+          "intro": "المساعدة في حل نزاعات التركات والميراث والعقارات والأسهم والأصول العائلية عبر اختصاصات قضائية متعددة بين الصين والخارج، مع توضيح المستندات والاختصاصات والترتيب الإجرائي.",
+          "items": [
+            "الميراث عبر الحدود بين الصين ودول متعددة",
+            "حصر تركات العقارات وحصص الشركات والحسابات المصرفية",
+            "تنفيذ الوصايا وتقسيم التركات العائلية",
+            "إجراءات حالات غياب الورثة أو الخلافات بين أفراد الأسرة"
+          ],
+          "materials": [
+            "إثبات صلة القرابة (شجرة العائلة / القيود الرسمية)",
+            "شهادة الوفاة، الوصية أو وثائق حصر التركة",
+            "بيانات ودلائل الأصول (عقارات، أسهم، حسابات بنكية)",
+            "الدول أو الأقاليم المعنية وبيانات الاتصال بأفراد الأسرة"
+          ]
+        },
+        "es": {
+          "title": "Herencias y Disputas de Activos Familiares",
+          "intro": "Facilitamos la tramitación de herencias multijurisdiccionales, inmuebles, participaciones societarias y conflictos familiares entre China y el exterior, clarificando requisitos documentales y orden procesal.",
+          "items": [
+            "Herencias transfronterizas entre China continental y terceros países",
+            "Transmisión de bienes inmuebles, acciones corporativas y cuentas bancarias",
+            "Testamentos y partición judicial o notarial de herencias",
+            "Gestión de herederos no localizables o desacuerdos familiares"
+          ],
+          "materials": [
+            "Certificados y actas que acrediten el parentesco",
+            "Certificado de defunción, testamento o inventario de bienes",
+            "Pistas o documentación sobre activos (inmuebles, acciones, depósitos)",
+            "Países involucrados e información de contacto de los herederos"
+          ]
+        }
+      }
     }
   },
   "countries": {
@@ -166,7 +268,73 @@
         "Can a Chinese judgment be enforced in the United States?|Most states recognise foreign money judgments without requiring reciprocity, but rules differ by state; apply for recognition in the local court and assess early.",
         "What is the statute of limitations for collecting a debt in the US?|Limitation periods vary by state, commonly 2-6 years; confirm early and preserve evidence.",
         "What procedure applies when a Chinese citizen inherits US property?|Probate is usually required; Chinese notarised documents do not replace local procedure, and local counsel is needed."
-      ]
+      ],
+      "translations": {
+        "ar": {
+          "name": "الولايات المتحدة",
+          "title": "الخدمات القانونية في الولايات المتحدة: تحصيل الديون · تنفيذ الأحكام · الميراث العقاري",
+          "intro": "Unpaid invoices from US buyers, Chinese judgments to enforce in the United States, and property left behind in America — time zones and unfamiliar procedures make many businesses and families delay. This page maps the three most common cross-border matters: trade recovery, judgment enforcement, and inheritance.",
+          "items": [
+            "Debt recovery & demand letters against US buyers",
+            "Recognition & enforcement of Chinese judgments in the US",
+            "Tracing US property and bank accounts",
+            "Cross-border inheritance & US probate"
+          ],
+          "points": [
+            "Most states recognize foreign money judgments without reciprocity, but rules differ by state",
+            "Statutes of limitation vary by state, commonly 2-6 years — confirm early",
+            "Asset preservation requires a court order; plan tracing and preservation together",
+            "Federal and state courts are separate systems; local licensed counsel is required",
+            "Inheritance usually runs through probate; Chinese notarized documents do not replace local procedure"
+          ],
+          "faq": [
+            {
+              "question": "Can a Chinese judgment be enforced in the United States?",
+              "answer": "Most states recognise foreign money judgments without requiring reciprocity, but rules differ by state; apply for recognition in the local court and assess early."
+            },
+            {
+              "question": "What is the statute of limitations for collecting a debt in the US?",
+              "answer": "Limitation periods vary by state, commonly 2-6 years; confirm early and preserve evidence."
+            },
+            {
+              "question": "What procedure applies when a Chinese citizen inherits US property?",
+              "answer": "Probate is usually required; Chinese notarised documents do not replace local procedure, and local counsel is needed."
+            }
+          ]
+        },
+        "es": {
+          "name": "Estados Unidos",
+          "title": "Servicios Legales en EE. UU.: Cobro de Deudas · Ejecución de Sentencias · Herencias",
+          "intro": "Unpaid invoices from US buyers, Chinese judgments to enforce in the United States, and property left behind in America — time zones and unfamiliar procedures make many businesses and families delay. This page maps the three most common cross-border matters: trade recovery, judgment enforcement, and inheritance.",
+          "items": [
+            "Debt recovery & demand letters against US buyers",
+            "Recognition & enforcement of Chinese judgments in the US",
+            "Tracing US property and bank accounts",
+            "Cross-border inheritance & US probate"
+          ],
+          "points": [
+            "Most states recognize foreign money judgments without reciprocity, but rules differ by state",
+            "Statutes of limitation vary by state, commonly 2-6 years — confirm early",
+            "Asset preservation requires a court order; plan tracing and preservation together",
+            "Federal and state courts are separate systems; local licensed counsel is required",
+            "Inheritance usually runs through probate; Chinese notarized documents do not replace local procedure"
+          ],
+          "faq": [
+            {
+              "question": "Can a Chinese judgment be enforced in the United States?",
+              "answer": "Most states recognise foreign money judgments without requiring reciprocity, but rules differ by state; apply for recognition in the local court and assess early."
+            },
+            {
+              "question": "What is the statute of limitations for collecting a debt in the US?",
+              "answer": "Limitation periods vary by state, commonly 2-6 years; confirm early and preserve evidence."
+            },
+            {
+              "question": "What procedure applies when a Chinese citizen inherits US property?",
+              "answer": "Probate is usually required; Chinese notarised documents do not replace local procedure, and local counsel is needed."
+            }
+          ]
+        }
+      }
     },
     "canada": {
       "name_zh": "加拿大",
@@ -210,7 +378,73 @@
         "Can a Chinese judgment be enforced in Canada?|Common-law provinces have settled foreign-judgment rules, mostly without reciprocity; apply for recognition under provincial procedure.",
         "What is the limitation period for collecting a debt in Canada?|Limitation periods vary by province, commonly 2-6 years.",
         "Is there an estate tax in Canada?|No estate tax, but deemed disposition at death can trigger capital gains tax — plan ahead."
-      ]
+      ],
+      "translations": {
+        "ar": {
+          "name": "كندا",
+          "title": "الخدمات القانونية في كندا: تحصيل الديون · تنفيذ الأحكام · الميراث العقاري",
+          "intro": "Unpaid amounts from Canadian customers, Chinese judgments to enforce in Canada, and property in Vancouver or Toronto — common law and provincial differences complicate cross-border matters. This page maps the common paths.",
+          "items": [
+            "Debt recovery & negotiation with Canadian counterparties",
+            "Recognition & enforcement of Chinese judgments in Canada",
+            "Tracing Canadian property and assets",
+            "Cross-border inheritance & estate administration"
+          ],
+          "points": [
+            "Common-law provinces have settled foreign-judgment rules, mostly without reciprocity",
+            "Rules vary by province; Quebec is a civil-law province with different procedures",
+            "No estate tax, but deemed disposition at death can trigger capital gains tax",
+            "Limitation periods vary by province, commonly 2-6 years",
+            "Bank and property record access varies by province; local counsel is needed"
+          ],
+          "faq": [
+            {
+              "question": "Can a Chinese judgment be enforced in Canada?",
+              "answer": "Common-law provinces have settled foreign-judgment rules, mostly without reciprocity; apply for recognition under provincial procedure."
+            },
+            {
+              "question": "What is the limitation period for collecting a debt in Canada?",
+              "answer": "Limitation periods vary by province, commonly 2-6 years."
+            },
+            {
+              "question": "Is there an estate tax in Canada?",
+              "answer": "No estate tax, but deemed disposition at death can trigger capital gains tax — plan ahead."
+            }
+          ]
+        },
+        "es": {
+          "name": "Canadá",
+          "title": "Servicios Legales en Canadá: Cobro de Deudas · Ejecución de Sentencias · Herencias",
+          "intro": "Unpaid amounts from Canadian customers, Chinese judgments to enforce in Canada, and property in Vancouver or Toronto — common law and provincial differences complicate cross-border matters. This page maps the common paths.",
+          "items": [
+            "Debt recovery & negotiation with Canadian counterparties",
+            "Recognition & enforcement of Chinese judgments in Canada",
+            "Tracing Canadian property and assets",
+            "Cross-border inheritance & estate administration"
+          ],
+          "points": [
+            "Common-law provinces have settled foreign-judgment rules, mostly without reciprocity",
+            "Rules vary by province; Quebec is a civil-law province with different procedures",
+            "No estate tax, but deemed disposition at death can trigger capital gains tax",
+            "Limitation periods vary by province, commonly 2-6 years",
+            "Bank and property record access varies by province; local counsel is needed"
+          ],
+          "faq": [
+            {
+              "question": "Can a Chinese judgment be enforced in Canada?",
+              "answer": "Common-law provinces have settled foreign-judgment rules, mostly without reciprocity; apply for recognition under provincial procedure."
+            },
+            {
+              "question": "What is the limitation period for collecting a debt in Canada?",
+              "answer": "Limitation periods vary by province, commonly 2-6 years."
+            },
+            {
+              "question": "Is there an estate tax in Canada?",
+              "answer": "No estate tax, but deemed disposition at death can trigger capital gains tax — plan ahead."
+            }
+          ]
+        }
+      }
     },
     "australia": {
       "name_zh": "澳大利亚",
@@ -254,7 +488,73 @@
         "Can a Chinese judgment be enforced in Australia?|Enforcement follows state Foreign Judgments Acts and common law — a settled path; apply for recognition in the local court.",
         "What is the limitation period for collecting a debt in Australia?|Limitation for commercial debts is typically 6 years; start early.",
         "Is there an inheritance tax in Australia?|No inheritance tax, but selling inherited property may trigger capital gains tax."
-      ]
+      ],
+      "translations": {
+        "ar": {
+          "name": "أستراليا",
+          "title": "الخدمات القانونية في أستراليا: تحصيل الديون · تنفيذ الأحكام · الميراث العقاري",
+          "intro": "Unpaid invoices from Australian buyers, Chinese judgments to enforce in Australia, and property in Sydney or Melbourne — enforcement paths are clear but procedural. This page maps the common cross-border matters.",
+          "items": [
+            "Debt recovery & demand letters against Australian buyers",
+            "Enforcement of Chinese judgments in Australia",
+            "Tracing Australian property and assets",
+            "Cross-border inheritance & probate"
+          ],
+          "points": [
+            "Enforcement follows state Foreign Judgments Acts and common law — a settled path",
+            "Limitation for commercial debts is typically 6 years; start early",
+            "No inheritance tax, but selling inherited property may trigger capital gains tax",
+            "Lawyers are admitted per state; multi-state matters need coordination",
+            "Court procedure and document legalization are strict; use local counsel"
+          ],
+          "faq": [
+            {
+              "question": "Can a Chinese judgment be enforced in Australia?",
+              "answer": "Enforcement follows state Foreign Judgments Acts and common law — a settled path; apply for recognition in the local court."
+            },
+            {
+              "question": "What is the limitation period for collecting a debt in Australia?",
+              "answer": "Limitation for commercial debts is typically 6 years; start early."
+            },
+            {
+              "question": "Is there an inheritance tax in Australia?",
+              "answer": "No inheritance tax, but selling inherited property may trigger capital gains tax."
+            }
+          ]
+        },
+        "es": {
+          "name": "Australia",
+          "title": "Servicios Legales en Australia: Cobro de Deudas · Ejecución de Sentencias · Herencias",
+          "intro": "Unpaid invoices from Australian buyers, Chinese judgments to enforce in Australia, and property in Sydney or Melbourne — enforcement paths are clear but procedural. This page maps the common cross-border matters.",
+          "items": [
+            "Debt recovery & demand letters against Australian buyers",
+            "Enforcement of Chinese judgments in Australia",
+            "Tracing Australian property and assets",
+            "Cross-border inheritance & probate"
+          ],
+          "points": [
+            "Enforcement follows state Foreign Judgments Acts and common law — a settled path",
+            "Limitation for commercial debts is typically 6 years; start early",
+            "No inheritance tax, but selling inherited property may trigger capital gains tax",
+            "Lawyers are admitted per state; multi-state matters need coordination",
+            "Court procedure and document legalization are strict; use local counsel"
+          ],
+          "faq": [
+            {
+              "question": "Can a Chinese judgment be enforced in Australia?",
+              "answer": "Enforcement follows state Foreign Judgments Acts and common law — a settled path; apply for recognition in the local court."
+            },
+            {
+              "question": "What is the limitation period for collecting a debt in Australia?",
+              "answer": "Limitation for commercial debts is typically 6 years; start early."
+            },
+            {
+              "question": "Is there an inheritance tax in Australia?",
+              "answer": "No inheritance tax, but selling inherited property may trigger capital gains tax."
+            }
+          ]
+        }
+      }
     },
     "singapore": {
       "name_zh": "新加坡",
@@ -298,7 +598,73 @@
         "Can a Chinese judgment be enforced in Singapore?|Singapore is a common-law system with a mature foreign-judgment enforcement path; apply for recognition in the local court.",
         "Are arbitral awards easy to enforce in Singapore?|Awards enforce under the New York Convention — fast and predictable, a common route for cross-border disputes.",
         "What is the limitation period for collecting a debt in Singapore?|Limitation for debts is typically 6 years."
-      ]
+      ],
+      "translations": {
+        "ar": {
+          "name": "سنغافورة",
+          "title": "الخدمات القانونية في سنغافورة: تحصيل الديون · التحكيم الدولي · إدارة الأصول",
+          "intro": "Singapore is a hub for Chinese business expansion and family wealth — intermediary disputes, award enforcement, family trusts and inheritance. This page maps the common cross-border matters.",
+          "items": [
+            "Debt recovery from Singapore buyers and intermediaries",
+            "Enforcement of Chinese judgments and arbitral awards in Singapore",
+            "Tracing Singapore bank and corporate assets",
+            "Cross-border inheritance, trusts & family wealth planning"
+          ],
+          "points": [
+            "Common-law system with a mature foreign-judgment enforcement path",
+            "Arbitral awards enforce under the New York Convention — fast and predictable",
+            "Limitation for debts is typically 6 years",
+            "Family offices and trusts are common; succession planning demand is high",
+            "Banking secrecy is strict; asset tracing needs court processes"
+          ],
+          "faq": [
+            {
+              "question": "Can a Chinese judgment be enforced in Singapore?",
+              "answer": "Singapore is a common-law system with a mature foreign-judgment enforcement path; apply for recognition in the local court."
+            },
+            {
+              "question": "Are arbitral awards easy to enforce in Singapore?",
+              "answer": "Awards enforce under the New York Convention — fast and predictable, a common route for cross-border disputes."
+            },
+            {
+              "question": "What is the limitation period for collecting a debt in Singapore?",
+              "answer": "Limitation for debts is typically 6 years."
+            }
+          ]
+        },
+        "es": {
+          "name": "Singapur",
+          "title": "Servicios Legales en Singapur: Cobro de Deudas · Arbitraje Internacional · Gestión Patrimonial",
+          "intro": "Singapore is a hub for Chinese business expansion and family wealth — intermediary disputes, award enforcement, family trusts and inheritance. This page maps the common cross-border matters.",
+          "items": [
+            "Debt recovery from Singapore buyers and intermediaries",
+            "Enforcement of Chinese judgments and arbitral awards in Singapore",
+            "Tracing Singapore bank and corporate assets",
+            "Cross-border inheritance, trusts & family wealth planning"
+          ],
+          "points": [
+            "Common-law system with a mature foreign-judgment enforcement path",
+            "Arbitral awards enforce under the New York Convention — fast and predictable",
+            "Limitation for debts is typically 6 years",
+            "Family offices and trusts are common; succession planning demand is high",
+            "Banking secrecy is strict; asset tracing needs court processes"
+          ],
+          "faq": [
+            {
+              "question": "Can a Chinese judgment be enforced in Singapore?",
+              "answer": "Singapore is a common-law system with a mature foreign-judgment enforcement path; apply for recognition in the local court."
+            },
+            {
+              "question": "Are arbitral awards easy to enforce in Singapore?",
+              "answer": "Awards enforce under the New York Convention — fast and predictable, a common route for cross-border disputes."
+            },
+            {
+              "question": "What is the limitation period for collecting a debt in Singapore?",
+              "answer": "Limitation for debts is typically 6 years."
+            }
+          ]
+        }
+      }
     },
     "united-kingdom": {
       "name_zh": "英国",
@@ -342,7 +708,73 @@
         "Can a Chinese judgment be enforced in the UK?|Enforcement follows the Foreign Judgments Act and common law; apply for recognition in the local court.",
         "What is the limitation period for collecting a debt in the UK?|Limitation for commercial debts is typically 6 years.",
         "Is UK inheritance tax high?|Inheritance tax reaches 40% — planning windows matter."
-      ]
+      ],
+      "translations": {
+        "ar": {
+          "name": "المملكة المتحدة",
+          "title": "الخدمات القانونية في بريطانيا: تحصيل الديون · تنفيذ الأحكام · الميراث العقاري",
+          "intro": "Unpaid invoices from UK buyers, Chinese judgments to enforce in the UK, and London property and estates — common-law tradition and inheritance tax make planning essential. This page maps the common cross-border matters.",
+          "items": [
+            "Debt recovery & demand letters against UK buyers",
+            "Enforcement of Chinese judgments and awards in the UK",
+            "Tracing UK property and assets",
+            "Cross-border inheritance, probate & inheritance tax planning"
+          ],
+          "points": [
+            "Enforcement follows the Foreign Judgments Act and common law",
+            "Limitation for commercial debts is typically 6 years",
+            "Inheritance tax reaches 40% — planning windows matter",
+            "Solicitors and barristers have distinct roles in proceedings",
+            "Land registry searches are accessible, making tracing easier"
+          ],
+          "faq": [
+            {
+              "question": "Can a Chinese judgment be enforced in the UK?",
+              "answer": "Enforcement follows the Foreign Judgments Act and common law; apply for recognition in the local court."
+            },
+            {
+              "question": "What is the limitation period for collecting a debt in the UK?",
+              "answer": "Limitation for commercial debts is typically 6 years."
+            },
+            {
+              "question": "Is UK inheritance tax high?",
+              "answer": "Inheritance tax reaches 40% — planning windows matter."
+            }
+          ]
+        },
+        "es": {
+          "name": "Reino Unido",
+          "title": "Servicios Legales en el Reino Unido: Cobro de Deudas · Ejecución de Sentencias · Herencias",
+          "intro": "Unpaid invoices from UK buyers, Chinese judgments to enforce in the UK, and London property and estates — common-law tradition and inheritance tax make planning essential. This page maps the common cross-border matters.",
+          "items": [
+            "Debt recovery & demand letters against UK buyers",
+            "Enforcement of Chinese judgments and awards in the UK",
+            "Tracing UK property and assets",
+            "Cross-border inheritance, probate & inheritance tax planning"
+          ],
+          "points": [
+            "Enforcement follows the Foreign Judgments Act and common law",
+            "Limitation for commercial debts is typically 6 years",
+            "Inheritance tax reaches 40% — planning windows matter",
+            "Solicitors and barristers have distinct roles in proceedings",
+            "Land registry searches are accessible, making tracing easier"
+          ],
+          "faq": [
+            {
+              "question": "Can a Chinese judgment be enforced in the UK?",
+              "answer": "Enforcement follows the Foreign Judgments Act and common law; apply for recognition in the local court."
+            },
+            {
+              "question": "What is the limitation period for collecting a debt in the UK?",
+              "answer": "Limitation for commercial debts is typically 6 years."
+            },
+            {
+              "question": "Is UK inheritance tax high?",
+              "answer": "Inheritance tax reaches 40% — planning windows matter."
+            }
+          ]
+        }
+      }
     },
     "hong-kong": {
       "name_zh": "香港",
@@ -386,7 +818,73 @@
         "Can a mainland Chinese judgment be enforced in Hong Kong?|Since 29 January 2024, the Mainland–Hong Kong Arrangement on Recognition and Enforcement of Civil and Commercial Judgments allows most mainland judgments to be recognised and enforced in Hong Kong courts, no longer limited to jurisdiction-agreement cases.",
         "What is the limitation period for collecting a debt in Hong Kong?|Under the Limitation Ordinance, the limitation period for debts is generally 6 years; start early and preserve evidence.",
         "Is there an estate tax in Hong Kong?|No estate, gift or capital gains tax applies in Hong Kong; cross-border inheritance mainly concerns probate and the linkage of mainland notarised documents."
-      ]
+      ],
+      "translations": {
+        "ar": {
+          "name": "هونغ كونغ",
+          "title": "الخدمات القانونية في هونغ كونغ: النزاعات التجارية · تنفيذ الأحكام عبر الحدود · الصناديق الاستئمانية",
+          "intro": "Mainland–Hong Kong trade is dense, and commercial disputes, unpaid debts and cross-border inheritance are common. Since 2024, mainland civil and commercial judgments can be recognised and enforced in Hong Kong courts. This page maps the common cross-border matters.",
+          "items": [
+            "Recognition & enforcement of mainland judgments in Hong Kong",
+            "Debt recovery from Hong Kong buyers and intermediaries",
+            "Hong Kong company searches and asset tracing",
+            "Cross-border inheritance, probate & family assets"
+          ],
+          "points": [
+            "The 2024 Mainland–Hong Kong Judgment Arrangement covers most civil and commercial judgments (including non-money judgments), far beyond the old regime",
+            "Limitation for debts is generally 6 years (Limitation Ordinance)",
+            "No estate, gift or capital gains tax in Hong Kong",
+            "Solicitors and barristers are separate branches; local counsel is usual in court",
+            "Company and land searches are public, making tracing easier"
+          ],
+          "faq": [
+            {
+              "question": "Can a mainland Chinese judgment be enforced in Hong Kong?",
+              "answer": "Since 29 January 2024, the Mainland–Hong Kong Arrangement on Recognition and Enforcement of Civil and Commercial Judgments allows most mainland judgments to be recognised and enforced in Hong Kong courts, no longer limited to jurisdiction-agreement cases."
+            },
+            {
+              "question": "What is the limitation period for collecting a debt in Hong Kong?",
+              "answer": "Under the Limitation Ordinance, the limitation period for debts is generally 6 years; start early and preserve evidence."
+            },
+            {
+              "question": "Is there an estate tax in Hong Kong?",
+              "answer": "No estate, gift or capital gains tax applies in Hong Kong; cross-border inheritance mainly concerns probate and the linkage of mainland notarised documents."
+            }
+          ]
+        },
+        "es": {
+          "name": "Hong Kong",
+          "title": "Servicios Legales en Hong Kong: Disputas Comerciales · Ejecución Transfronteriza · Fideicomisos",
+          "intro": "Mainland–Hong Kong trade is dense, and commercial disputes, unpaid debts and cross-border inheritance are common. Since 2024, mainland civil and commercial judgments can be recognised and enforced in Hong Kong courts. This page maps the common cross-border matters.",
+          "items": [
+            "Recognition & enforcement of mainland judgments in Hong Kong",
+            "Debt recovery from Hong Kong buyers and intermediaries",
+            "Hong Kong company searches and asset tracing",
+            "Cross-border inheritance, probate & family assets"
+          ],
+          "points": [
+            "The 2024 Mainland–Hong Kong Judgment Arrangement covers most civil and commercial judgments (including non-money judgments), far beyond the old regime",
+            "Limitation for debts is generally 6 years (Limitation Ordinance)",
+            "No estate, gift or capital gains tax in Hong Kong",
+            "Solicitors and barristers are separate branches; local counsel is usual in court",
+            "Company and land searches are public, making tracing easier"
+          ],
+          "faq": [
+            {
+              "question": "Can a mainland Chinese judgment be enforced in Hong Kong?",
+              "answer": "Since 29 January 2024, the Mainland–Hong Kong Arrangement on Recognition and Enforcement of Civil and Commercial Judgments allows most mainland judgments to be recognised and enforced in Hong Kong courts, no longer limited to jurisdiction-agreement cases."
+            },
+            {
+              "question": "What is the limitation period for collecting a debt in Hong Kong?",
+              "answer": "Under the Limitation Ordinance, the limitation period for debts is generally 6 years; start early and preserve evidence."
+            },
+            {
+              "question": "Is there an estate tax in Hong Kong?",
+              "answer": "No estate, gift or capital gains tax applies in Hong Kong; cross-border inheritance mainly concerns probate and the linkage of mainland notarised documents."
+            }
+          ]
+        }
+      }
     },
     "germany": {
       "name_zh": "德国",
@@ -430,7 +928,73 @@
         "Can a Chinese judgment be enforced in Germany?|There is no bilateral treaty; German courts review foreign judgments case-by-case under §328 ZPO (including reciprocity), so outcomes vary and re-litigation is common — assess first.",
         "What is the limitation period for collecting a debt in Germany?|General claims lapse after 3 years, running from year-end after maturity; acting late can bar the claim.",
         "Is German inheritance tax high?|German inheritance tax is progressive by kinship and amount, up to about 50%; spouses enjoy a high allowance, so early planning matters."
-      ]
+      ],
+      "translations": {
+        "ar": {
+          "name": "ألمانيا",
+          "title": "الخدمات القانونية في ألمانيا: التجارة الدولية · تحصيل الديون · تنفيذ الأحكام",
+          "intro": "Germany is China's largest trading partner in Europe, and receivables disputes are common in machinery, automotive and chemicals. This page maps the common cross-border matters: trade recovery, judgment enforcement and inheritance.",
+          "items": [
+            "Debt recovery & demand letters against German buyers",
+            "Recognition & enforcement of Chinese judgments in Germany",
+            "Tracing German company and movable assets",
+            "Cross-border inheritance & German inheritance-tax planning"
+          ],
+          "points": [
+            "No bilateral judgment treaty with China; foreign judgments are reviewed under §328 ZPO with strict reciprocity — case-specific",
+            "General limitation for claims is 3 years (running from year-end after maturity)",
+            "German inheritance tax is progressive by kinship and amount, up to about 50%, with a high spouse allowance",
+            "Court proceedings generally require German counsel",
+            "The commercial register (Handelsregister) is public, giving tracing a solid basis"
+          ],
+          "faq": [
+            {
+              "question": "Can a Chinese judgment be enforced in Germany?",
+              "answer": "There is no bilateral treaty; German courts review foreign judgments case-by-case under §328 ZPO (including reciprocity), so outcomes vary and re-litigation is common — assess first."
+            },
+            {
+              "question": "What is the limitation period for collecting a debt in Germany?",
+              "answer": "General claims lapse after 3 years, running from year-end after maturity; acting late can bar the claim."
+            },
+            {
+              "question": "Is German inheritance tax high?",
+              "answer": "German inheritance tax is progressive by kinship and amount, up to about 50%; spouses enjoy a high allowance, so early planning matters."
+            }
+          ]
+        },
+        "es": {
+          "name": "Alemania",
+          "title": "Servicios Legales en Alemania: Comercio Internacional · Cobro de Deudas · Ejecución de Sentencias",
+          "intro": "Germany is China's largest trading partner in Europe, and receivables disputes are common in machinery, automotive and chemicals. This page maps the common cross-border matters: trade recovery, judgment enforcement and inheritance.",
+          "items": [
+            "Debt recovery & demand letters against German buyers",
+            "Recognition & enforcement of Chinese judgments in Germany",
+            "Tracing German company and movable assets",
+            "Cross-border inheritance & German inheritance-tax planning"
+          ],
+          "points": [
+            "No bilateral judgment treaty with China; foreign judgments are reviewed under §328 ZPO with strict reciprocity — case-specific",
+            "General limitation for claims is 3 years (running from year-end after maturity)",
+            "German inheritance tax is progressive by kinship and amount, up to about 50%, with a high spouse allowance",
+            "Court proceedings generally require German counsel",
+            "The commercial register (Handelsregister) is public, giving tracing a solid basis"
+          ],
+          "faq": [
+            {
+              "question": "Can a Chinese judgment be enforced in Germany?",
+              "answer": "There is no bilateral treaty; German courts review foreign judgments case-by-case under §328 ZPO (including reciprocity), so outcomes vary and re-litigation is common — assess first."
+            },
+            {
+              "question": "What is the limitation period for collecting a debt in Germany?",
+              "answer": "General claims lapse after 3 years, running from year-end after maturity; acting late can bar the claim."
+            },
+            {
+              "question": "Is German inheritance tax high?",
+              "answer": "German inheritance tax is progressive by kinship and amount, up to about 50%; spouses enjoy a high allowance, so early planning matters."
+            }
+          ]
+        }
+      }
     },
     "japan": {
       "name_zh": "日本",
@@ -474,7 +1038,73 @@
         "Can a Chinese judgment be enforced in Japan?|Japanese courts review foreign judgments under Art. 118 CCP, requiring reciprocity among other conditions; China–Japan recognition practice faces hurdles, so re-litigation is common.",
         "What is the limitation period for collecting a debt in Japan?|General claims lapse after 5 years following the 2020 Civil Code reform.",
         "Is Japanese inheritance tax high?|Japanese inheritance tax can reach about 55%; spouses enjoy a basic allowance of JPY 160 million, making early planning essential."
-      ]
+      ],
+      "translations": {
+        "ar": {
+          "name": "اليابان",
+          "title": "الخدمات القانونية في اليابان: التجارة الدولية · تحصيل الديون · التركات العقارية",
+          "intro": "Japan is a major trading partner of China, with ongoing demand on commercial disputes and inheritance of property held by Chinese families in Japan. This page maps the common cross-border matters.",
+          "items": [
+            "Debt recovery & negotiation with Japanese counterparties",
+            "Recognition & enforcement of Chinese judgments in Japan",
+            "Tracing Japanese real estate and assets",
+            "Cross-border inheritance & Japanese inheritance-tax planning"
+          ],
+          "points": [
+            "Foreign judgments execute under Art. 118 of the Code of Civil Procedure, requiring reciprocity among other conditions; China–Japan recognition practice is difficult and re-litigation is common",
+            "General claims lapse after 5 years (post-2020 Civil Code reform)",
+            "Japanese inheritance tax can reach about 55%; spouses have a basic allowance",
+            "Real-property registration and notarisation are strict; Japanese counsel/ judicial scriveners are involved in both transactions and inheritance",
+            "The commercial register is public, giving tracing a clear channel"
+          ],
+          "faq": [
+            {
+              "question": "Can a Chinese judgment be enforced in Japan?",
+              "answer": "Japanese courts review foreign judgments under Art. 118 CCP, requiring reciprocity among other conditions; China–Japan recognition practice faces hurdles, so re-litigation is common."
+            },
+            {
+              "question": "What is the limitation period for collecting a debt in Japan?",
+              "answer": "General claims lapse after 5 years following the 2020 Civil Code reform."
+            },
+            {
+              "question": "Is Japanese inheritance tax high?",
+              "answer": "Japanese inheritance tax can reach about 55%; spouses enjoy a basic allowance of JPY 160 million, making early planning essential."
+            }
+          ]
+        },
+        "es": {
+          "name": "Japón",
+          "title": "Servicios Legales en Japón: Comercio Internacional · Cobro de Deudas · Sucesiones Inmobiliarias",
+          "intro": "Japan is a major trading partner of China, with ongoing demand on commercial disputes and inheritance of property held by Chinese families in Japan. This page maps the common cross-border matters.",
+          "items": [
+            "Debt recovery & negotiation with Japanese counterparties",
+            "Recognition & enforcement of Chinese judgments in Japan",
+            "Tracing Japanese real estate and assets",
+            "Cross-border inheritance & Japanese inheritance-tax planning"
+          ],
+          "points": [
+            "Foreign judgments execute under Art. 118 of the Code of Civil Procedure, requiring reciprocity among other conditions; China–Japan recognition practice is difficult and re-litigation is common",
+            "General claims lapse after 5 years (post-2020 Civil Code reform)",
+            "Japanese inheritance tax can reach about 55%; spouses have a basic allowance",
+            "Real-property registration and notarisation are strict; Japanese counsel/ judicial scriveners are involved in both transactions and inheritance",
+            "The commercial register is public, giving tracing a clear channel"
+          ],
+          "faq": [
+            {
+              "question": "Can a Chinese judgment be enforced in Japan?",
+              "answer": "Japanese courts review foreign judgments under Art. 118 CCP, requiring reciprocity among other conditions; China–Japan recognition practice faces hurdles, so re-litigation is common."
+            },
+            {
+              "question": "What is the limitation period for collecting a debt in Japan?",
+              "answer": "General claims lapse after 5 years following the 2020 Civil Code reform."
+            },
+            {
+              "question": "Is Japanese inheritance tax high?",
+              "answer": "Japanese inheritance tax can reach about 55%; spouses enjoy a basic allowance of JPY 160 million, making early planning essential."
+            }
+          ]
+        }
+      }
     },
     "united-arab-emirates": {
       "name_zh": "阿联酋",
@@ -518,7 +1148,73 @@
         "Can a Chinese judgment be enforced in the UAE?|The 2004 China–UAE judicial assistance treaty covers judgment recognition and enforcement; applications go to UAE courts, with the federal and DIFC routes differing in efficiency — assess first.",
         "Is there an estate tax in the UAE?|No estate tax applies; since 2020 non-Muslims inherit under codified rules and may inherit by will, while Muslims follow Islamic inheritance rules.",
         "What matters when collecting a debt in Dubai?|Dubai's legal environment is creditor-friendly, but bank and fund-flow tracing needs court processes — preserve evidence early and evaluate the DIFC route."
-      ]
+      ],
+      "translations": {
+        "ar": {
+          "name": "الإمارات (دبي)",
+          "title": "الخدمات القانونية في الإمارات: تحصيل الديون · تنفيذ الأحكام · الميراث العقاري في دبي",
+          "intro": "تعد دبي مركز التجارة الإقليمي في الشرق الأوسط ومقراً رئيسياً لمجتمع الأعمال الدولي. تتركز فيها نزاعات الشحن والتحصيل وميراث الاستثمارات العقارية.",
+          "items": [
+            "تحصيل الديون من المشترين والوسطاء التجاريين في الإمارات",
+            "الاعتراف بالأحكام القضائية الصينية والأجنبية وتنفيذها في الإمارات",
+            "تتبع والتحري عن الأصول العقارية والحسابات المصرفية في دبي",
+            "تسوية التركات والميراث العائلي وتسجيل العقارات في دبي"
+          ],
+          "points": [
+            "اتفاقية المساعدة القضائية بين الصين والإمارات لعام 2004 تشمل الاعتراف بالأحكام وتنفيذها",
+            "نظام قضائي مزدوج: المحاكم الاتحادية ومحاكم مركز دبي المالي العالمي (DIFC)",
+            "إعفاء كامل من ضريبة الدخل وضريبة التركات؛ يخضع غير المسلمين لقانون الأحوال الشخصية المدني مع حرية الوصية",
+            "يخضع المسلمون لقواعد الميراث الشرعي مع تنظيم الوصايا في الحدود المقررة",
+            "يتطلب التحري عن الحسابات البنكية وحركة الأموال أوامر قضائية نظامية"
+          ],
+          "faq": [
+            {
+              "question": "هل يمكن تنفيذ حكم قضائي أجنبي أو صيني في دولة الإمارات؟",
+              "answer": "نعم، بموجب اتفاقية المساعدة القضائية المدنية والتجارية لعام 2004 وقوانين الإجراءات المدنية الإماراتية، يمكن تقديم طلب التنفيذ أمام المحاكم الاتحادية أو محاكم مركز دبي المالي العالمي (DIFC) بحسب طبيعة النزاع وموقع الأصول."
+            },
+            {
+              "question": "هل توجد ضريبة تركات أو ميراث في دولة الإمارات؟",
+              "answer": "لا تفرض الإمارات أي ضريبة تركات أو ميراث. بالنسبة لغير المسلمين، يتم تطبيق قانون الأحوال الشخصية المدني مع الاعتراف بالوصايا المسجلة، بينما يطبق على المسلمين نظام الميراث الشرعي."
+            },
+            {
+              "question": "ما هي الخطوات الأساسية لتحصيل الديون التجارية في دبي؟",
+              "answer": "تتميز دبي ببيئة قانونية فعالة لحماية الدائنين؛ يوصى بتوثيق الأدلة مبكراً وتوجيه إنذار قانوني عبر محامٍ معتمد وتقييم سرعة مسار محاكم DIFC أو القضاء المحلي."
+            }
+          ]
+        },
+        "es": {
+          "name": "EAU (Dubái)",
+          "title": "Servicios Legales en EAU: Cobro de Deudas · Ejecución de Sentencias · Herencias en Dubái",
+          "intro": "Dubái es el principal nodo comercial de Oriente Medio. Aquí se concentran disputas por facturas comerciales, cobro a intermediarios y sucesiones de inversiones inmobiliarias.",
+          "items": [
+            "Cobro de deudas a compradores e intermediarios comerciales en EAU",
+            "Reconocimiento y ejecución de sentencias extranjeras en los EAU",
+            "Rastreo e investigación de bienes inmuebles y cuentas bancarias en Dubái",
+            "Planificación de herencias transfronterizas y transmisión inmobiliaria en Dubái"
+          ],
+          "points": [
+            "El tratado de asistencia judicial China-EAU de 2004 ampara la ejecución de sentencias",
+            "Vía dual: Tribunales Federales y Tribunales del DIFC (Centro Financiero Internacional de Dubái)",
+            "Sin impuestos sobre sucesiones ni sobre la renta; ley civil de sucesiones para no musulmanes con validez del testamento",
+            "La sucesión de musulmanes se rige por el derecho sucesorio islámico",
+            "El rastreo bancario requiere mandamiento judicial previo"
+          ],
+          "faq": [
+            {
+              "question": "¿Se puede ejecutar una sentencia china o extranjera en los Emiratos Árabes Unidos?",
+              "answer": "Sí, en virtud del tratado bilateral de asistencia judicial de 2004 y la normativa procesal civil de EAU, se puede instar el reconocimiento ante los tribunales locales o ante las cortes del DIFC."
+            },
+            {
+              "question": "¿Existe impuesto de sucesiones o herencias en EAU?",
+              "answer": "No existe impuesto de sucesiones en EAU. Los no musulmanes pueden inscribir testamentos conforme al régimen civil especial, mientras que para musulmanes rige la ley islámica."
+            },
+            {
+              "question": "¿Qué aspectos son clave para reclamar una deuda comercial en Dubái?",
+              "answer": "El marco legal de Dubái ofrece sólidas garantías al acreedor. Conviene preservar la prueba documental con prontitud, emitir requerimiento formal y evaluar la vía de las cortes del DIFC."
+            }
+          ]
+        }
+      }
     },
     "new-zealand": {
       "name_zh": "新西兰",
@@ -562,7 +1258,73 @@
         "Can a Chinese judgment be enforced in New Zealand?|The Reciprocal Enforcement of Judgments Act covers designated countries only; China is not on the list, so re-litigation at common law is usual.",
         "Is there an estate tax in New Zealand?|No estate, gift or capital gains tax applies; cross-border inheritance mainly concerns probate and document legalisation.",
         "What is the limitation period for collecting a debt in New Zealand?|The limitation period for debts is generally 6 years."
-      ]
+      ],
+      "translations": {
+        "ar": {
+          "name": "نيوزيلندا",
+          "title": "الخدمات القانونية في نيوزيلندا: تحصيل الديون · تنفيذ الأحكام · الميراث",
+          "intro": "New Zealand has a large Chinese community; Auckland property inheritance and debt recovery from NZ/AU clients are steady demands. This page maps the common cross-border matters.",
+          "items": [
+            "Debt recovery & demand letters against New Zealand buyers",
+            "Recognition & enforcement of Chinese judgments in New Zealand",
+            "Tracing New Zealand property and assets",
+            "Cross-border inheritance & probate"
+          ],
+          "points": [
+            "The Reciprocal Enforcement of Judgments Act covers designated countries; otherwise re-litigation at common law",
+            "Limitation for debts is generally 6 years",
+            "No estate, gift or capital gains tax in New Zealand",
+            "Property conveyancing and probate both require lawyers",
+            "Land records (LINZ) are public, making tracing easy"
+          ],
+          "faq": [
+            {
+              "question": "Can a Chinese judgment be enforced in New Zealand?",
+              "answer": "The Reciprocal Enforcement of Judgments Act covers designated countries only; China is not on the list, so re-litigation at common law is usual."
+            },
+            {
+              "question": "Is there an estate tax in New Zealand?",
+              "answer": "No estate, gift or capital gains tax applies; cross-border inheritance mainly concerns probate and document legalisation."
+            },
+            {
+              "question": "What is the limitation period for collecting a debt in New Zealand?",
+              "answer": "The limitation period for debts is generally 6 years."
+            }
+          ]
+        },
+        "es": {
+          "name": "Nueva Zelanda",
+          "title": "Servicios Legales en Nueva Zelanda: Cobro de Deudas · Ejecución de Sentencias · Herencias",
+          "intro": "New Zealand has a large Chinese community; Auckland property inheritance and debt recovery from NZ/AU clients are steady demands. This page maps the common cross-border matters.",
+          "items": [
+            "Debt recovery & demand letters against New Zealand buyers",
+            "Recognition & enforcement of Chinese judgments in New Zealand",
+            "Tracing New Zealand property and assets",
+            "Cross-border inheritance & probate"
+          ],
+          "points": [
+            "The Reciprocal Enforcement of Judgments Act covers designated countries; otherwise re-litigation at common law",
+            "Limitation for debts is generally 6 years",
+            "No estate, gift or capital gains tax in New Zealand",
+            "Property conveyancing and probate both require lawyers",
+            "Land records (LINZ) are public, making tracing easy"
+          ],
+          "faq": [
+            {
+              "question": "Can a Chinese judgment be enforced in New Zealand?",
+              "answer": "The Reciprocal Enforcement of Judgments Act covers designated countries only; China is not on the list, so re-litigation at common law is usual."
+            },
+            {
+              "question": "Is there an estate tax in New Zealand?",
+              "answer": "No estate, gift or capital gains tax applies; cross-border inheritance mainly concerns probate and document legalisation."
+            },
+            {
+              "question": "What is the limitation period for collecting a debt in New Zealand?",
+              "answer": "The limitation period for debts is generally 6 years."
+            }
+          ]
+        }
+      }
     },
     "malaysia": {
       "name_zh": "马来西亚",
@@ -606,7 +1368,73 @@
         "Can a Chinese judgment be enforced in Malaysia?|The Reciprocal Enforcement of Judgments Act 1958 covers Commonwealth and designated countries only; China is not on the list, so re-litigation at common law is usual.",
         "Is there an estate tax in Malaysia?|Estate duty has been abolished; note the dual Muslim / non-Muslim succession systems.",
         "What is the limitation period for collecting a debt in Malaysia?|The limitation period for debts is generally 6 years."
-      ]
+      ],
+      "translations": {
+        "ar": {
+          "name": "ماليزيا",
+          "title": "الخدمات القانونية في ماليزيا: التجارة والاستثمار · تحصيل الديون · الأصول العائلية",
+          "intro": "Malaysia has a large Chinese community with active China–Malaysia trade and Kuala Lumpur property investment. This page maps the common cross-border matters.",
+          "items": [
+            "Debt recovery from Malaysian buyers and intermediaries",
+            "Enforcement of Chinese judgments in Malaysia",
+            "Tracing Kuala Lumpur property and assets",
+            "Cross-border inheritance (Muslim / non-Muslim dual system)"
+          ],
+          "points": [
+            "The Reciprocal Enforcement of Judgments Act 1958 covers Commonwealth and designated countries; China is not on the list, so re-litigation at common law is usual",
+            "Limitation for debts is generally 6 years",
+            "Estate duty has been abolished in Malaysia",
+            "Muslim and non-Muslim succession are separate systems with different procedures and laws",
+            "Company searches (SSM) are public, giving tracing a channel"
+          ],
+          "faq": [
+            {
+              "question": "Can a Chinese judgment be enforced in Malaysia?",
+              "answer": "The Reciprocal Enforcement of Judgments Act 1958 covers Commonwealth and designated countries only; China is not on the list, so re-litigation at common law is usual."
+            },
+            {
+              "question": "Is there an estate tax in Malaysia?",
+              "answer": "Estate duty has been abolished; note the dual Muslim / non-Muslim succession systems."
+            },
+            {
+              "question": "What is the limitation period for collecting a debt in Malaysia?",
+              "answer": "The limitation period for debts is generally 6 years."
+            }
+          ]
+        },
+        "es": {
+          "name": "Malasia",
+          "title": "Servicios Legales en Malasia: Comercio e Inversión · Cobro de Deudas · Activos Familiares",
+          "intro": "Malaysia has a large Chinese community with active China–Malaysia trade and Kuala Lumpur property investment. This page maps the common cross-border matters.",
+          "items": [
+            "Debt recovery from Malaysian buyers and intermediaries",
+            "Enforcement of Chinese judgments in Malaysia",
+            "Tracing Kuala Lumpur property and assets",
+            "Cross-border inheritance (Muslim / non-Muslim dual system)"
+          ],
+          "points": [
+            "The Reciprocal Enforcement of Judgments Act 1958 covers Commonwealth and designated countries; China is not on the list, so re-litigation at common law is usual",
+            "Limitation for debts is generally 6 years",
+            "Estate duty has been abolished in Malaysia",
+            "Muslim and non-Muslim succession are separate systems with different procedures and laws",
+            "Company searches (SSM) are public, giving tracing a channel"
+          ],
+          "faq": [
+            {
+              "question": "Can a Chinese judgment be enforced in Malaysia?",
+              "answer": "The Reciprocal Enforcement of Judgments Act 1958 covers Commonwealth and designated countries only; China is not on the list, so re-litigation at common law is usual."
+            },
+            {
+              "question": "Is there an estate tax in Malaysia?",
+              "answer": "Estate duty has been abolished; note the dual Muslim / non-Muslim succession systems."
+            },
+            {
+              "question": "What is the limitation period for collecting a debt in Malaysia?",
+              "answer": "The limitation period for debts is generally 6 years."
+            }
+          ]
+        }
+      }
     },
     "france": {
       "name_zh": "法国",
@@ -650,7 +1478,73 @@
         "Can a Chinese judgment be enforced in France?|No bilateral treaty exists; French courts review foreign judgments case-by-case under private-international-law rules — a settled regime, but assess each case.",
         "What is the limitation period for collecting a debt in France?|General claims lapse after 5 years.",
         "Is French inheritance tax high?|French inheritance tax reaches about 45% for direct descendants; spouses are exempt, and property succession involves notarial procedures — plan early."
-      ]
+      ],
+      "translations": {
+        "ar": {
+          "name": "فرنسا",
+          "title": "الخدمات القانونية في فرنسا: النزاعات التجارية · تحصيل الديون · الميراث العقاري",
+          "intro": "France is a major EU trading partner of China; receivables disputes are common in luxury goods, wine and machinery trade. This page maps the common cross-border matters.",
+          "items": [
+            "Debt recovery & demand letters against French buyers",
+            "Recognition & enforcement of Chinese judgments in France",
+            "Tracing French property and assets",
+            "Cross-border inheritance & French inheritance-tax planning"
+          ],
+          "points": [
+            "No bilateral treaty with China; French courts review foreign judgments under private-international-law rules — a settled but case-by-case regime",
+            "General claims lapse after 5 years (Art. 2224 Civil Code)",
+            "French inheritance tax reaches about 45% for direct descendants; spouses are exempt",
+            "Notaires play a key role in property transactions and succession",
+            "Land registration is public; tracing relies on notarial and registry channels"
+          ],
+          "faq": [
+            {
+              "question": "Can a Chinese judgment be enforced in France?",
+              "answer": "No bilateral treaty exists; French courts review foreign judgments case-by-case under private-international-law rules — a settled regime, but assess each case."
+            },
+            {
+              "question": "What is the limitation period for collecting a debt in France?",
+              "answer": "General claims lapse after 5 years."
+            },
+            {
+              "question": "Is French inheritance tax high?",
+              "answer": "French inheritance tax reaches about 45% for direct descendants; spouses are exempt, and property succession involves notarial procedures — plan early."
+            }
+          ]
+        },
+        "es": {
+          "name": "Francia",
+          "title": "Servicios Legales en Francia: Disputas Comerciales · Cobro de Deudas · Herencias Inmobiliarias",
+          "intro": "France is a major EU trading partner of China; receivables disputes are common in luxury goods, wine and machinery trade. This page maps the common cross-border matters.",
+          "items": [
+            "Debt recovery & demand letters against French buyers",
+            "Recognition & enforcement of Chinese judgments in France",
+            "Tracing French property and assets",
+            "Cross-border inheritance & French inheritance-tax planning"
+          ],
+          "points": [
+            "No bilateral treaty with China; French courts review foreign judgments under private-international-law rules — a settled but case-by-case regime",
+            "General claims lapse after 5 years (Art. 2224 Civil Code)",
+            "French inheritance tax reaches about 45% for direct descendants; spouses are exempt",
+            "Notaires play a key role in property transactions and succession",
+            "Land registration is public; tracing relies on notarial and registry channels"
+          ],
+          "faq": [
+            {
+              "question": "Can a Chinese judgment be enforced in France?",
+              "answer": "No bilateral treaty exists; French courts review foreign judgments case-by-case under private-international-law rules — a settled regime, but assess each case."
+            },
+            {
+              "question": "What is the limitation period for collecting a debt in France?",
+              "answer": "General claims lapse after 5 years."
+            },
+            {
+              "question": "Is French inheritance tax high?",
+              "answer": "French inheritance tax reaches about 45% for direct descendants; spouses are exempt, and property succession involves notarial procedures — plan early."
+            }
+          ]
+        }
+      }
     },
     "switzerland": {
       "name_zh": "瑞士",
@@ -694,7 +1588,73 @@
         "Can a Chinese judgment be enforced in Switzerland?|The 1988 China–Switzerland judicial assistance treaty covers recognition and enforcement of civil and commercial judgments; apply under Art. 25–32 PILA.",
         "What is the limitation period for collecting a debt in Switzerland?|General claims lapse after 10 years (Art. 127 Code of Obligations).",
         "How does Swiss estate tax work?|No federal estate tax; cantonal estate taxes vary widely, so plan according to the canton of residence."
-      ]
+      ],
+      "translations": {
+        "ar": {
+          "name": "سويسرا",
+          "title": "الخدمات القانونية في سويسرا: الحسابات المصرفية · النزاعات التجارية · الصناديق الاستئمانية",
+          "intro": "Switzerland is a global wealth hub, with concentrated demand for cross-border debt recovery, judgment enforcement and bank-asset tracing. This page maps the common cross-border matters.",
+          "items": [
+            "Debt recovery from Swiss counterparties",
+            "Recognition & enforcement of Chinese judgments in Switzerland",
+            "Tracing Swiss bank accounts and assets",
+            "Cross-border inheritance & Swiss tax planning"
+          ],
+          "points": [
+            "The 1988 China–Switzerland judicial assistance treaty covers recognition and enforcement of civil and commercial judgments",
+            "Foreign judgments enforce under Art. 25–32 PILA",
+            "General claims lapse after 10 years (Art. 127 Code of Obligations)",
+            "No federal estate tax; cantonal estate taxes vary widely — plan per canton",
+            "Banking secrecy coexists with CRS; tracing requires court processes"
+          ],
+          "faq": [
+            {
+              "question": "Can a Chinese judgment be enforced in Switzerland?",
+              "answer": "The 1988 China–Switzerland judicial assistance treaty covers recognition and enforcement of civil and commercial judgments; apply under Art. 25–32 PILA."
+            },
+            {
+              "question": "What is the limitation period for collecting a debt in Switzerland?",
+              "answer": "General claims lapse after 10 years (Art. 127 Code of Obligations)."
+            },
+            {
+              "question": "How does Swiss estate tax work?",
+              "answer": "No federal estate tax; cantonal estate taxes vary widely, so plan according to the canton of residence."
+            }
+          ]
+        },
+        "es": {
+          "name": "Suiza",
+          "title": "Servicios Legales en Suiza: Cuentas Bancarias · Disputas Comerciales · Fideicomisos",
+          "intro": "Switzerland is a global wealth hub, with concentrated demand for cross-border debt recovery, judgment enforcement and bank-asset tracing. This page maps the common cross-border matters.",
+          "items": [
+            "Debt recovery from Swiss counterparties",
+            "Recognition & enforcement of Chinese judgments in Switzerland",
+            "Tracing Swiss bank accounts and assets",
+            "Cross-border inheritance & Swiss tax planning"
+          ],
+          "points": [
+            "The 1988 China–Switzerland judicial assistance treaty covers recognition and enforcement of civil and commercial judgments",
+            "Foreign judgments enforce under Art. 25–32 PILA",
+            "General claims lapse after 10 years (Art. 127 Code of Obligations)",
+            "No federal estate tax; cantonal estate taxes vary widely — plan per canton",
+            "Banking secrecy coexists with CRS; tracing requires court processes"
+          ],
+          "faq": [
+            {
+              "question": "Can a Chinese judgment be enforced in Switzerland?",
+              "answer": "The 1988 China–Switzerland judicial assistance treaty covers recognition and enforcement of civil and commercial judgments; apply under Art. 25–32 PILA."
+            },
+            {
+              "question": "What is the limitation period for collecting a debt in Switzerland?",
+              "answer": "General claims lapse after 10 years (Art. 127 Code of Obligations)."
+            },
+            {
+              "question": "How does Swiss estate tax work?",
+              "answer": "No federal estate tax; cantonal estate taxes vary widely, so plan according to the canton of residence."
+            }
+          ]
+        }
+      }
     },
     "south-korea": {
       "name_zh": "韩国",
@@ -738,7 +1698,73 @@
         "Can a Chinese judgment be enforced in South Korea?|Korean courts review foreign judgments under Art. 217 CCP with strict reciprocity; China–Korea recognition practice faces hurdles, so re-litigation is common.",
         "What is the limitation period for collecting a debt in South Korea?|Commercial claims generally lapse after 5 years and general claims after 10; confirm by claim type.",
         "Is Korean inheritance tax high?|Korean inheritance tax is high, top bracket around 40-50%; spouses have an allowance, and planning under current law matters."
-      ]
+      ],
+      "translations": {
+        "ar": {
+          "name": "كوريا الجنوبية",
+          "title": "الخدمات القانونية في كوريا الجنوبية: التجارة الدولية · تحصيل الديون · حماية الملكية الفكرية",
+          "intro": "South Korea is a close neighbour and major trading partner of China; invoice disputes are common in semiconductors, cosmetics and consumer goods. This page maps the common cross-border matters.",
+          "items": [
+            "Debt recovery & demand letters against Korean buyers",
+            "Recognition & enforcement of Chinese judgments in South Korea",
+            "Tracing Korean company and assets",
+            "Cross-border inheritance & Korean inheritance-tax planning"
+          ],
+          "points": [
+            "Foreign judgments are reviewed under Art. 217 of the Civil Procedure Act with strict reciprocity; China–Korea recognition practice faces hurdles and re-litigation is common",
+            "Commercial claims generally lapse after 5 years; general claims after 10",
+            "Korean inheritance tax is high, top bracket around 40-50% — confirm current law",
+            "Korean counsel is generally required in proceedings",
+            "Company registers are public, giving tracing a channel"
+          ],
+          "faq": [
+            {
+              "question": "Can a Chinese judgment be enforced in South Korea?",
+              "answer": "Korean courts review foreign judgments under Art. 217 CCP with strict reciprocity; China–Korea recognition practice faces hurdles, so re-litigation is common."
+            },
+            {
+              "question": "What is the limitation period for collecting a debt in South Korea?",
+              "answer": "Commercial claims generally lapse after 5 years and general claims after 10; confirm by claim type."
+            },
+            {
+              "question": "Is Korean inheritance tax high?",
+              "answer": "Korean inheritance tax is high, top bracket around 40-50%; spouses have an allowance, and planning under current law matters."
+            }
+          ]
+        },
+        "es": {
+          "name": "Corea del Sur",
+          "title": "Servicios Legales en Corea del Sur: Comercio Internacional · Cobro de Deudas · Propiedad Intelectual",
+          "intro": "South Korea is a close neighbour and major trading partner of China; invoice disputes are common in semiconductors, cosmetics and consumer goods. This page maps the common cross-border matters.",
+          "items": [
+            "Debt recovery & demand letters against Korean buyers",
+            "Recognition & enforcement of Chinese judgments in South Korea",
+            "Tracing Korean company and assets",
+            "Cross-border inheritance & Korean inheritance-tax planning"
+          ],
+          "points": [
+            "Foreign judgments are reviewed under Art. 217 of the Civil Procedure Act with strict reciprocity; China–Korea recognition practice faces hurdles and re-litigation is common",
+            "Commercial claims generally lapse after 5 years; general claims after 10",
+            "Korean inheritance tax is high, top bracket around 40-50% — confirm current law",
+            "Korean counsel is generally required in proceedings",
+            "Company registers are public, giving tracing a channel"
+          ],
+          "faq": [
+            {
+              "question": "Can a Chinese judgment be enforced in South Korea?",
+              "answer": "Korean courts review foreign judgments under Art. 217 CCP with strict reciprocity; China–Korea recognition practice faces hurdles, so re-litigation is common."
+            },
+            {
+              "question": "What is the limitation period for collecting a debt in South Korea?",
+              "answer": "Commercial claims generally lapse after 5 years and general claims after 10; confirm by claim type."
+            },
+            {
+              "question": "Is Korean inheritance tax high?",
+              "answer": "Korean inheritance tax is high, top bracket around 40-50%; spouses have an allowance, and planning under current law matters."
+            }
+          ]
+        }
+      }
     },
     "thailand": {
       "name_zh": "泰国",
@@ -782,7 +1808,73 @@
         "Can a Chinese judgment be enforced in Thailand?|Thailand does not recognise foreign judgments; re-litigation in Thai courts is required, with the Chinese judgment usable as reference evidence.",
         "What is the limitation period for collecting a debt in Thailand?|General contractual claims lapse after 10 years.",
         "Can foreigners inherit property in Thailand?|Foreigners generally cannot directly own Thai land; special rules apply to inherited property — handle case-by-case with local counsel."
-      ]
+      ],
+      "translations": {
+        "ar": {
+          "name": "تايلاند",
+          "title": "الخدمات القانونية في تايلاند: النزاعات التجارية · الأصول العقارية · تأسيس الشركات",
+          "intro": "Thailand hosts large numbers of Chinese visitors and investors; Bangkok trade and property disputes and inheritance matters for Chinese families are steady demands. This page maps the common cross-border matters.",
+          "items": [
+            "Debt recovery from Thai buyers and intermediaries",
+            "Enforcement of Chinese judgments in Thailand (re-litigation)",
+            "Tracing Bangkok property and assets",
+            "Cross-border inheritance & Thai property restrictions"
+          ],
+          "points": [
+            "Thailand does not recognise foreign court judgments; re-litigation in Thai courts is required, with the foreign judgment usable as reference evidence",
+            "General contractual claims lapse after 10 years",
+            "The Thai inheritance tax law was enacted but has long remained unimplemented; monitor legislative developments",
+            "Foreigners generally cannot directly own Thai land; special rules apply to inherited property",
+            "Company and Land Department records are public, giving tracing a channel"
+          ],
+          "faq": [
+            {
+              "question": "Can a Chinese judgment be enforced in Thailand?",
+              "answer": "Thailand does not recognise foreign judgments; re-litigation in Thai courts is required, with the Chinese judgment usable as reference evidence."
+            },
+            {
+              "question": "What is the limitation period for collecting a debt in Thailand?",
+              "answer": "General contractual claims lapse after 10 years."
+            },
+            {
+              "question": "Can foreigners inherit property in Thailand?",
+              "answer": "Foreigners generally cannot directly own Thai land; special rules apply to inherited property — handle case-by-case with local counsel."
+            }
+          ]
+        },
+        "es": {
+          "name": "Tailandia",
+          "title": "Servicios Legales en Tailandia: Disputas Comerciales · Activos Inmobiliarios · Constitución Societaria",
+          "intro": "Thailand hosts large numbers of Chinese visitors and investors; Bangkok trade and property disputes and inheritance matters for Chinese families are steady demands. This page maps the common cross-border matters.",
+          "items": [
+            "Debt recovery from Thai buyers and intermediaries",
+            "Enforcement of Chinese judgments in Thailand (re-litigation)",
+            "Tracing Bangkok property and assets",
+            "Cross-border inheritance & Thai property restrictions"
+          ],
+          "points": [
+            "Thailand does not recognise foreign court judgments; re-litigation in Thai courts is required, with the foreign judgment usable as reference evidence",
+            "General contractual claims lapse after 10 years",
+            "The Thai inheritance tax law was enacted but has long remained unimplemented; monitor legislative developments",
+            "Foreigners generally cannot directly own Thai land; special rules apply to inherited property",
+            "Company and Land Department records are public, giving tracing a channel"
+          ],
+          "faq": [
+            {
+              "question": "Can a Chinese judgment be enforced in Thailand?",
+              "answer": "Thailand does not recognise foreign judgments; re-litigation in Thai courts is required, with the Chinese judgment usable as reference evidence."
+            },
+            {
+              "question": "What is the limitation period for collecting a debt in Thailand?",
+              "answer": "General contractual claims lapse after 10 years."
+            },
+            {
+              "question": "Can foreigners inherit property in Thailand?",
+              "answer": "Foreigners generally cannot directly own Thai land; special rules apply to inherited property — handle case-by-case with local counsel."
+            }
+          ]
+        }
+      }
     },
     "vietnam": {
       "name_zh": "越南",
@@ -826,7 +1918,73 @@
         "Can a Chinese judgment be enforced in Vietnam?|Under the 1998 China–Vietnam judicial assistance treaty, civil and commercial judgments may be recognised and enforced, with the application reviewed by the Supreme People's Procuracy and assigned to a court.",
         "What is the limitation period for collecting a debt in Vietnam?|Under the 2015 Civil Code, contract claims lapse after 3 years — start early.",
         "Is there an inheritance tax in Vietnam?|No inheritance tax is levied in Vietnam."
-      ]
+      ],
+      "translations": {
+        "ar": {
+          "name": "فيتنام",
+          "title": "الخدمات القانونية في فيتنام: الاستثمار والتصنيع · النزاعات التعاقدية · تحصيل الديون",
+          "intro": "Vietnam is a hotspot for supply-chain relocation and Chinese investment; factory invoice disputes and investment disagreements are growing fast. This page maps the common cross-border matters.",
+          "items": [
+            "Debt recovery from Vietnamese buyers and factories",
+            "Recognition & enforcement of Chinese judgments in Vietnam",
+            "Tracing Vietnamese company and assets",
+            "Investment disputes and arbitration"
+          ],
+          "points": [
+            "The 1998 China–Vietnam judicial assistance treaty covers recognition and enforcement; enforcement is reviewed by the Supreme People's Procuracy and assigned to a court",
+            "Contract claims lapse after 3 years (2015 Civil Code)",
+            "No inheritance tax in Vietnam",
+            "Arbitration is a common route for foreign-invested disputes (Vietnam is a New York Convention member)",
+            "Company registers are public; tracing follows registries and bank processes"
+          ],
+          "faq": [
+            {
+              "question": "Can a Chinese judgment be enforced in Vietnam?",
+              "answer": "Under the 1998 China–Vietnam judicial assistance treaty, civil and commercial judgments may be recognised and enforced, with the application reviewed by the Supreme People's Procuracy and assigned to a court."
+            },
+            {
+              "question": "What is the limitation period for collecting a debt in Vietnam?",
+              "answer": "Under the 2015 Civil Code, contract claims lapse after 3 years — start early."
+            },
+            {
+              "question": "Is there an inheritance tax in Vietnam?",
+              "answer": "No inheritance tax is levied in Vietnam."
+            }
+          ]
+        },
+        "es": {
+          "name": "Vietnam",
+          "title": "Servicios Legales en Vietnam: Inversión y Fabricación · Disputas Contractuales · Cobro de Deudas",
+          "intro": "Vietnam is a hotspot for supply-chain relocation and Chinese investment; factory invoice disputes and investment disagreements are growing fast. This page maps the common cross-border matters.",
+          "items": [
+            "Debt recovery from Vietnamese buyers and factories",
+            "Recognition & enforcement of Chinese judgments in Vietnam",
+            "Tracing Vietnamese company and assets",
+            "Investment disputes and arbitration"
+          ],
+          "points": [
+            "The 1998 China–Vietnam judicial assistance treaty covers recognition and enforcement; enforcement is reviewed by the Supreme People's Procuracy and assigned to a court",
+            "Contract claims lapse after 3 years (2015 Civil Code)",
+            "No inheritance tax in Vietnam",
+            "Arbitration is a common route for foreign-invested disputes (Vietnam is a New York Convention member)",
+            "Company registers are public; tracing follows registries and bank processes"
+          ],
+          "faq": [
+            {
+              "question": "Can a Chinese judgment be enforced in Vietnam?",
+              "answer": "Under the 1998 China–Vietnam judicial assistance treaty, civil and commercial judgments may be recognised and enforced, with the application reviewed by the Supreme People's Procuracy and assigned to a court."
+            },
+            {
+              "question": "What is the limitation period for collecting a debt in Vietnam?",
+              "answer": "Under the 2015 Civil Code, contract claims lapse after 3 years — start early."
+            },
+            {
+              "question": "Is there an inheritance tax in Vietnam?",
+              "answer": "No inheritance tax is levied in Vietnam."
+            }
+          ]
+        }
+      }
     },
     "netherlands": {
       "name_zh": "荷兰",
@@ -870,7 +2028,73 @@
         "Can a Chinese judgment be enforced in the Netherlands?|Under Art. 431 of the Dutch Code of Civil Procedure, foreign judgments are not directly enforceable absent a treaty — re-litigation is usually required.",
         "What is the limitation period for collecting a debt in the Netherlands?|General contractual claims lapse after 5 years.",
         "Is Dutch inheritance tax high?|Dutch inheritance tax reaches about 40%, with different rates for spouses and children — plan early."
-      ]
+      ],
+      "translations": {
+        "ar": {
+          "name": "هولندا",
+          "title": "الخدمات القانونية في هولندا: الخدمات اللوجستية البحرية · النزاعات التجارية · تحصيل الديون",
+          "intro": "The Netherlands is Europe's gateway and the Rotterdam port hub; China–Netherlands trade receivables disputes and property inheritance coexist. This page maps the common cross-border matters.",
+          "items": [
+            "Debt recovery & demand letters against Dutch buyers",
+            "Enforcement of Chinese judgments in the Netherlands (re-litigation)",
+            "Tracing Dutch company and assets",
+            "Cross-border inheritance & Dutch inheritance-tax planning"
+          ],
+          "points": [
+            "Art. 431 of the Dutch Code of Civil Procedure bars direct enforcement of foreign judgments absent a treaty — re-litigation is usually required",
+            "General contractual claims lapse after 5 years",
+            "Dutch inheritance tax reaches about 40%, with different rates for spouses and children",
+            "Dutch counsel is required in court proceedings",
+            "Chamber of Commerce (KvK) and land registers are public, making tracing easy"
+          ],
+          "faq": [
+            {
+              "question": "Can a Chinese judgment be enforced in the Netherlands?",
+              "answer": "Under Art. 431 of the Dutch Code of Civil Procedure, foreign judgments are not directly enforceable absent a treaty — re-litigation is usually required."
+            },
+            {
+              "question": "What is the limitation period for collecting a debt in the Netherlands?",
+              "answer": "General contractual claims lapse after 5 years."
+            },
+            {
+              "question": "Is Dutch inheritance tax high?",
+              "answer": "Dutch inheritance tax reaches about 40%, with different rates for spouses and children — plan early."
+            }
+          ]
+        },
+        "es": {
+          "name": "Países Bajos",
+          "title": "Servicios Legales en los Países Bajos: Logística y Puertos · Disputas Comerciales · Cobro de Deudas",
+          "intro": "The Netherlands is Europe's gateway and the Rotterdam port hub; China–Netherlands trade receivables disputes and property inheritance coexist. This page maps the common cross-border matters.",
+          "items": [
+            "Debt recovery & demand letters against Dutch buyers",
+            "Enforcement of Chinese judgments in the Netherlands (re-litigation)",
+            "Tracing Dutch company and assets",
+            "Cross-border inheritance & Dutch inheritance-tax planning"
+          ],
+          "points": [
+            "Art. 431 of the Dutch Code of Civil Procedure bars direct enforcement of foreign judgments absent a treaty — re-litigation is usually required",
+            "General contractual claims lapse after 5 years",
+            "Dutch inheritance tax reaches about 40%, with different rates for spouses and children",
+            "Dutch counsel is required in court proceedings",
+            "Chamber of Commerce (KvK) and land registers are public, making tracing easy"
+          ],
+          "faq": [
+            {
+              "question": "Can a Chinese judgment be enforced in the Netherlands?",
+              "answer": "Under Art. 431 of the Dutch Code of Civil Procedure, foreign judgments are not directly enforceable absent a treaty — re-litigation is usually required."
+            },
+            {
+              "question": "What is the limitation period for collecting a debt in the Netherlands?",
+              "answer": "General contractual claims lapse after 5 years."
+            },
+            {
+              "question": "Is Dutch inheritance tax high?",
+              "answer": "Dutch inheritance tax reaches about 40%, with different rates for spouses and children — plan early."
+            }
+          ]
+        }
+      }
     },
     "italy": {
       "name_zh": "意大利",
@@ -914,7 +2138,73 @@
         "Can a Chinese judgment be enforced in Italy?|No bilateral treaty exists; foreign judgments are reviewed for recognition case-by-case under Law 218/1995.",
         "What is the limitation period for collecting a debt in Italy?|General claims lapse after 10 years.",
         "Is Italian inheritance tax high?|Italian inheritance tax is low: about 4% for spouses and direct descendants, 6-8% for other relatives."
-      ]
+      ],
+      "translations": {
+        "ar": {
+          "name": "إيطاليا",
+          "title": "الخدمات القانونية في إيطاليا: التجارة والتوريد · تحصيل الديون · الميراث العقاري",
+          "intro": "Italy trades closely with China in luxury goods, machinery and fashion, where receivables disputes are common. This page maps the common cross-border matters.",
+          "items": [
+            "Debt recovery & demand letters against Italian buyers",
+            "Recognition & enforcement of Chinese judgments in Italy",
+            "Tracing Italian company and assets",
+            "Cross-border inheritance & Italian inheritance-tax planning"
+          ],
+          "points": [
+            "No bilateral treaty with China; foreign judgments are reviewed for recognition under Law 218/1995",
+            "General claims lapse after 10 years (Art. 2946 Civil Code)",
+            "Italian inheritance tax is low: about 4% for spouses and direct descendants, 6-8% for other relatives",
+            "Italian counsel is required in court proceedings",
+            "Company and property registers are public, giving tracing a channel"
+          ],
+          "faq": [
+            {
+              "question": "Can a Chinese judgment be enforced in Italy?",
+              "answer": "No bilateral treaty exists; foreign judgments are reviewed for recognition case-by-case under Law 218/1995."
+            },
+            {
+              "question": "What is the limitation period for collecting a debt in Italy?",
+              "answer": "General claims lapse after 10 years."
+            },
+            {
+              "question": "Is Italian inheritance tax high?",
+              "answer": "Italian inheritance tax is low: about 4% for spouses and direct descendants, 6-8% for other relatives."
+            }
+          ]
+        },
+        "es": {
+          "name": "Italia",
+          "title": "Servicios Legales en Italia: Comercio y Suministro · Cobro de Deudas · Herencias Inmobiliarias",
+          "intro": "Italy trades closely with China in luxury goods, machinery and fashion, where receivables disputes are common. This page maps the common cross-border matters.",
+          "items": [
+            "Debt recovery & demand letters against Italian buyers",
+            "Recognition & enforcement of Chinese judgments in Italy",
+            "Tracing Italian company and assets",
+            "Cross-border inheritance & Italian inheritance-tax planning"
+          ],
+          "points": [
+            "No bilateral treaty with China; foreign judgments are reviewed for recognition under Law 218/1995",
+            "General claims lapse after 10 years (Art. 2946 Civil Code)",
+            "Italian inheritance tax is low: about 4% for spouses and direct descendants, 6-8% for other relatives",
+            "Italian counsel is required in court proceedings",
+            "Company and property registers are public, giving tracing a channel"
+          ],
+          "faq": [
+            {
+              "question": "Can a Chinese judgment be enforced in Italy?",
+              "answer": "No bilateral treaty exists; foreign judgments are reviewed for recognition case-by-case under Law 218/1995."
+            },
+            {
+              "question": "What is the limitation period for collecting a debt in Italy?",
+              "answer": "General claims lapse after 10 years."
+            },
+            {
+              "question": "Is Italian inheritance tax high?",
+              "answer": "Italian inheritance tax is low: about 4% for spouses and direct descendants, 6-8% for other relatives."
+            }
+          ]
+        }
+      }
     },
     "spain": {
       "name_zh": "西班牙",
@@ -958,7 +2248,73 @@
         "Can a Chinese judgment be enforced in Spain?|The 1992 China–Spain judicial assistance treaty covers recognition and enforcement of civil and commercial judgments; apply under the treaty.",
         "What is the limitation period for collecting a debt in Spain?|General claims lapse after 5 years.",
         "Is Spanish inheritance tax high?|Spanish inheritance tax varies widely by autonomous community; the state rate reaches about 34%, with significant reliefs in some regions — assess by property location."
-      ]
+      ],
+      "translations": {
+        "ar": {
+          "name": "إسبانيا",
+          "title": "الخدمات القانونية في إسبانيا: تحصيل الديون · تنفيذ الأحكام · الميراث العقاري",
+          "intro": "تعتبر إسبانيا وجهة استثمارية وتجارية رئيسية في جنوب أوروبا؛ تتطلب النزاعات التجارية والتركات العقارية في مدريد وبرشلونة معرفة دقيقة بالإجراءات القانونية الإسبانية.",
+          "items": [
+            "تحصيل الديون التجارية وتوجيه الإنذارات القانونية للمدينين في إسبانيا",
+            "الاعتراف بالأحكام القضائية الصينية وتنفيذها في إسبانيا",
+            "التحري عن الأصول العقارية والشركات الإسبانية",
+            "إجراءات الميراث الدولي والتخطيط لضريبة التركات الإسبانية"
+          ],
+          "points": [
+            "اتفاقية المساعدة القضائية بين الصين وإسبانيا لعام 1992 تغطي الاعتراف بالأحكام المدنية والتجارية",
+            "التقادم العام للديون والمطالبات العقدية هو 5 سنوات (وفق تعديل 2015)",
+            "تختلف ضريبة التركات باختلاف الأقاليم ذات الحكم الذاتي، مع وجود إعفاءات مهمة في بعض المناطق",
+            "يلعب كاتب العدل (Notario) دوراً جوهرياً وإلزامياً في المعاملات العقارية",
+            "السجل العقاري والتجاري في إسبانيا علني مما يسهل التحري عن الأصول"
+          ],
+          "faq": [
+            {
+              "question": "هل يمكن تنفيذ الأحكام القضائية الصينية في إسبانيا؟",
+              "answer": "نعم، تغطي اتفاقية المساعدة القضائية الموقعة عام 1992 بين البلدين الاعتراف المتبادل بالأحكام المدنية والتجارية وتنفيذها أمام المحاكم الإسبانية."
+            },
+            {
+              "question": "ما هي المدة الزمنية لسقوط الحق في المطالبة بالديون التجارية في إسبانيا؟",
+              "answer": "مدة التقادم العام للمطالبات التعاقدية والشخصية هي 5 سنوات من تاريخ استحقاق الدين."
+            },
+            {
+              "question": "هل ضريبة التركات مرتفعة في إسبانيا؟",
+              "answer": "تخضع ضريبة التركات لتقدير كل إقليم ذي حكم ذاتي؛ وتصل النسبة الوطنية القصوى إلى 34% تقريباً، غير أن أقاليم مثل مدريد توفر إعفاءات تكاد تصل إلى 99% للأقارب من الدرجة الأولى."
+            }
+          ]
+        },
+        "es": {
+          "name": "España",
+          "title": "Servicios Legales en España: Cobro de Deudas · Ejecución de Sentencias · Herencias",
+          "intro": "Los bienes inmuebles en España y las relaciones comerciales bilaterales generan una demanda constante de asistencia en litigios, reclamaciones de cantidad y sucesiones en Madrid y Barcelona.",
+          "items": [
+            "Cobro de deudas a clientes españoles y emisión de burofax / requerimientos formales",
+            "Reconocimiento y ejecución (exequátur) de sentencias chinas y extranjeras en España",
+            "Investigación patrimonial y localización de bienes inmuebles y mercantiles",
+            "Herencias transfronterizas y optimización del Impuesto sobre Sucesiones"
+          ],
+          "points": [
+            "Tratado de asistencia judicial China-España de 1992 para sentencias civiles y mercantiles",
+            "Plazo de prescripción general de acciones personales de 5 años (art. 1964 CC reformado)",
+            "El Impuesto sobre Sucesiones varía según la Comunidad Autónoma, con importantes bonificaciones en regiones como Madrid",
+            "Intervención preceptiva del Notario en transmisiones de dominio y actos de herencia",
+            "El Registro de la Propiedad y Registro Mercantil son públicos y facilitan la investigación patrimonial"
+          ],
+          "faq": [
+            {
+              "question": "¿Se pueden ejecutar sentencias chinas en España?",
+              "answer": "Sí, conforme al tratado bilateral de auxilio judicial de 1992, se puede instar el correspondiente procedimiento de exequátur ante los juzgados españoles de primera instancia."
+            },
+            {
+              "question": "¿Cuál es el plazo de prescripción para reclamar una deuda en España?",
+              "answer": "El plazo general de prescripción de las deudas comerciales de carácter personal es de 5 años desde su vencimiento."
+            },
+            {
+              "question": "¿Es elevado el Impuesto sobre Sucesiones en España?",
+              "answer": "Depende fundamentalmente de la Comunidad Autónoma donde radican los bienes; el tipo estatal alcanza el 34%, pero comunidades como Madrid bonifican hasta el 99% de la cuota para herederos directos."
+            }
+          ]
+        }
+      }
     },
     "brazil": {
       "name_zh": "巴西",
@@ -1002,7 +2358,73 @@
         "Can a Chinese judgment be enforced in Brazil?|Foreign judgments must first be homologated by the Superior Court of Justice (STJ); no dedicated China–Brazil civil judgment treaty exists and the procedure takes time.",
         "What is the limitation period for collecting a debt in Brazil?|General contractual claims lapse after 10 years.",
         "Is Brazilian inheritance tax high?|Brazilian inheritance tax (ITCMD) is state-level at about 4-8%, varying by state."
-      ]
+      ],
+      "translations": {
+        "ar": {
+          "name": "البرازيل",
+          "title": "الخدمات القانونية في البرازيل: السلع الأساسية · النزاعات الجمركية والتجارية · تحصيل الديون",
+          "intro": "Brazil is Latin America's largest economy and a major destination for Chinese outbound investment; São Paulo trade receivables and investment disputes are common. This page maps the common cross-border matters.",
+          "items": [
+            "Debt recovery & demand letters against Brazilian buyers",
+            "Recognition & enforcement of Chinese judgments in Brazil",
+            "Tracing Brazilian company and assets",
+            "Investment disputes and arbitration"
+          ],
+          "points": [
+            "Foreign judgments must be homologated by the Superior Court of Justice (STJ) before enforcement; no dedicated China–Brazil civil judgment treaty exists",
+            "General contractual claims lapse after 10 years (Art. 206 Civil Code)",
+            "Brazilian inheritance tax (ITCMD) is state-level, 4-8% by state",
+            "Arbitration is a common route for foreign-invested disputes (Brazil is a New York Convention member)",
+            "Company (CNPJ) and property registers are public, giving tracing a channel"
+          ],
+          "faq": [
+            {
+              "question": "Can a Chinese judgment be enforced in Brazil?",
+              "answer": "Foreign judgments must first be homologated by the Superior Court of Justice (STJ); no dedicated China–Brazil civil judgment treaty exists and the procedure takes time."
+            },
+            {
+              "question": "What is the limitation period for collecting a debt in Brazil?",
+              "answer": "General contractual claims lapse after 10 years."
+            },
+            {
+              "question": "Is Brazilian inheritance tax high?",
+              "answer": "Brazilian inheritance tax (ITCMD) is state-level at about 4-8%, varying by state."
+            }
+          ]
+        },
+        "es": {
+          "name": "Brasil",
+          "title": "Servicios Legales en Brasil: Materias Primas · Disputas Aduaneras y Comerciales · Cobro de Deudas",
+          "intro": "Brazil is Latin America's largest economy and a major destination for Chinese outbound investment; São Paulo trade receivables and investment disputes are common. This page maps the common cross-border matters.",
+          "items": [
+            "Debt recovery & demand letters against Brazilian buyers",
+            "Recognition & enforcement of Chinese judgments in Brazil",
+            "Tracing Brazilian company and assets",
+            "Investment disputes and arbitration"
+          ],
+          "points": [
+            "Foreign judgments must be homologated by the Superior Court of Justice (STJ) before enforcement; no dedicated China–Brazil civil judgment treaty exists",
+            "General contractual claims lapse after 10 years (Art. 206 Civil Code)",
+            "Brazilian inheritance tax (ITCMD) is state-level, 4-8% by state",
+            "Arbitration is a common route for foreign-invested disputes (Brazil is a New York Convention member)",
+            "Company (CNPJ) and property registers are public, giving tracing a channel"
+          ],
+          "faq": [
+            {
+              "question": "Can a Chinese judgment be enforced in Brazil?",
+              "answer": "Foreign judgments must first be homologated by the Superior Court of Justice (STJ); no dedicated China–Brazil civil judgment treaty exists and the procedure takes time."
+            },
+            {
+              "question": "What is the limitation period for collecting a debt in Brazil?",
+              "answer": "General contractual claims lapse after 10 years."
+            },
+            {
+              "question": "Is Brazilian inheritance tax high?",
+              "answer": "Brazilian inheritance tax (ITCMD) is state-level at about 4-8%, varying by state."
+            }
+          ]
+        }
+      }
     },
     "india": {
       "name_zh": "印度",
@@ -1046,7 +2468,73 @@
         "Can a Chinese judgment be enforced in India?|Without reciprocity arrangements, re-litigation in India is usual, with the foreign judgment reviewed under s.13 CPC and usable as evidence.",
         "What is the limitation period for collecting a debt in India?|Contract debts generally lapse after 3 years.",
         "Is there an inheritance tax in India?|India abolished inheritance tax in 1985."
-      ]
+      ],
+      "translations": {
+        "ar": {
+          "name": "الهند",
+          "title": "الخدمات القانونية في الهند: التجارة عبر الحدود · تحصيل الديون · النزاعات التعاقدية",
+          "intro": "India's market is vast and fast-growing; China–India trade receivables and investment disputes are increasing. This page maps the common cross-border matters.",
+          "items": [
+            "Debt recovery & demand letters against Indian buyers",
+            "Recognition & enforcement of Chinese judgments in India",
+            "Tracing Indian company and assets",
+            "Commercial arbitration and investment disputes"
+          ],
+          "points": [
+            "Foreign judgments are reviewed under s.13 CPC; absent reciprocity arrangements with China, re-litigation is usual, with the foreign judgment as evidence",
+            "Contract debts generally lapse after 3 years (Limitation Act 1963)",
+            "No inheritance tax in India (abolished 1985)",
+            "Arbitration is a common route for foreign-invested disputes (India is a New York Convention member)",
+            "Company records (MCA) are public, giving tracing a channel"
+          ],
+          "faq": [
+            {
+              "question": "Can a Chinese judgment be enforced in India?",
+              "answer": "Without reciprocity arrangements, re-litigation in India is usual, with the foreign judgment reviewed under s.13 CPC and usable as evidence."
+            },
+            {
+              "question": "What is the limitation period for collecting a debt in India?",
+              "answer": "Contract debts generally lapse after 3 years."
+            },
+            {
+              "question": "Is there an inheritance tax in India?",
+              "answer": "India abolished inheritance tax in 1985."
+            }
+          ]
+        },
+        "es": {
+          "name": "India",
+          "title": "Servicios Legales en la India: Comercio Transfronterizo · Cobro de Deudas · Disputas Contractuales",
+          "intro": "India's market is vast and fast-growing; China–India trade receivables and investment disputes are increasing. This page maps the common cross-border matters.",
+          "items": [
+            "Debt recovery & demand letters against Indian buyers",
+            "Recognition & enforcement of Chinese judgments in India",
+            "Tracing Indian company and assets",
+            "Commercial arbitration and investment disputes"
+          ],
+          "points": [
+            "Foreign judgments are reviewed under s.13 CPC; absent reciprocity arrangements with China, re-litigation is usual, with the foreign judgment as evidence",
+            "Contract debts generally lapse after 3 years (Limitation Act 1963)",
+            "No inheritance tax in India (abolished 1985)",
+            "Arbitration is a common route for foreign-invested disputes (India is a New York Convention member)",
+            "Company records (MCA) are public, giving tracing a channel"
+          ],
+          "faq": [
+            {
+              "question": "Can a Chinese judgment be enforced in India?",
+              "answer": "Without reciprocity arrangements, re-litigation in India is usual, with the foreign judgment reviewed under s.13 CPC and usable as evidence."
+            },
+            {
+              "question": "What is the limitation period for collecting a debt in India?",
+              "answer": "Contract debts generally lapse after 3 years."
+            },
+            {
+              "question": "Is there an inheritance tax in India?",
+              "answer": "India abolished inheritance tax in 1985."
+            }
+          ]
+        }
+      }
     },
     "ireland": {
       "name_zh": "爱尔兰",
@@ -1090,7 +2578,73 @@
         "Can a Chinese judgment be enforced in Ireland?|No bilateral treaty exists; non-EU foreign judgments are usually re-litigated at common law in Ireland.",
         "What is the limitation period for collecting a debt in Ireland?|Contract debts generally lapse after 6 years.",
         "Is Irish inheritance tax high?|Irish Capital Acquisitions Tax (CAT) reaches 33%, with a high spouse allowance."
-      ]
+      ],
+      "translations": {
+        "ar": {
+          "name": "أيرلندا",
+          "title": "الخدمات القانونية في أيرلندا: الشركات متعددة الجنسيات · الملكية الفكرية · النزاعات التجارية",
+          "intro": "Ireland is a European tech and biopharma hub with active China–Ireland trade and Dublin investment. This page maps the common cross-border matters.",
+          "items": [
+            "Debt recovery & demand letters against Irish buyers",
+            "Recognition & enforcement of Chinese judgments in Ireland",
+            "Tracing Irish company and assets",
+            "Cross-border inheritance & Irish CAT planning"
+          ],
+          "points": [
+            "No bilateral treaty with China; non-EU foreign judgments are usually re-litigated at common law",
+            "Contract debts generally lapse after 6 years (Statute of Limitations 1957)",
+            "Irish Capital Acquisitions Tax (CAT) reaches 33%, with a high spouse allowance",
+            "Irish counsel is required in court proceedings",
+            "Company records (CRO) are public, giving tracing a channel"
+          ],
+          "faq": [
+            {
+              "question": "Can a Chinese judgment be enforced in Ireland?",
+              "answer": "No bilateral treaty exists; non-EU foreign judgments are usually re-litigated at common law in Ireland."
+            },
+            {
+              "question": "What is the limitation period for collecting a debt in Ireland?",
+              "answer": "Contract debts generally lapse after 6 years."
+            },
+            {
+              "question": "Is Irish inheritance tax high?",
+              "answer": "Irish Capital Acquisitions Tax (CAT) reaches 33%, with a high spouse allowance."
+            }
+          ]
+        },
+        "es": {
+          "name": "Irlanda",
+          "title": "Servicios Legales en Irlanda: Empresas Multinacionales · Propiedad Intelectual · Disputas Comerciales",
+          "intro": "Ireland is a European tech and biopharma hub with active China–Ireland trade and Dublin investment. This page maps the common cross-border matters.",
+          "items": [
+            "Debt recovery & demand letters against Irish buyers",
+            "Recognition & enforcement of Chinese judgments in Ireland",
+            "Tracing Irish company and assets",
+            "Cross-border inheritance & Irish CAT planning"
+          ],
+          "points": [
+            "No bilateral treaty with China; non-EU foreign judgments are usually re-litigated at common law",
+            "Contract debts generally lapse after 6 years (Statute of Limitations 1957)",
+            "Irish Capital Acquisitions Tax (CAT) reaches 33%, with a high spouse allowance",
+            "Irish counsel is required in court proceedings",
+            "Company records (CRO) are public, giving tracing a channel"
+          ],
+          "faq": [
+            {
+              "question": "Can a Chinese judgment be enforced in Ireland?",
+              "answer": "No bilateral treaty exists; non-EU foreign judgments are usually re-litigated at common law in Ireland."
+            },
+            {
+              "question": "What is the limitation period for collecting a debt in Ireland?",
+              "answer": "Contract debts generally lapse after 6 years."
+            },
+            {
+              "question": "Is Irish inheritance tax high?",
+              "answer": "Irish Capital Acquisitions Tax (CAT) reaches 33%, with a high spouse allowance."
+            }
+          ]
+        }
+      }
     }
   },
   "business_labels": {
