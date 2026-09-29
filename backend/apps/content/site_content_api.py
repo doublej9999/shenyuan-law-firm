@@ -33,6 +33,7 @@ class CountrySummaryOut(Schema):
     name_en: str
     zh_title: str
     en_title: str
+    translations: Optional[Dict[str, Any]] = None
 
 
 class CountryDetailOut(CountrySummaryOut):
@@ -57,6 +58,7 @@ class ServiceDetailOut(Schema):
     items_en: List[str]
     materials_zh: List[str]
     materials_en: List[str]
+    translations: Optional[Dict[str, Any]] = None
 
 
 def _json(data: Any) -> Response:
@@ -74,6 +76,7 @@ def _country_summary(slug: str, country: Dict[str, Any]) -> Dict[str, Any]:
         "name_en": country.get("name_en", ""),
         "zh_title": country.get("zh_title", ""),
         "en_title": country.get("en_title", ""),
+        "translations": country.get("translations", {}),
     }
 
 

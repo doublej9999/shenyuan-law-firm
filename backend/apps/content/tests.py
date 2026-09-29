@@ -155,6 +155,23 @@ class SiteContentApiTests(TestCase):
         detail = self.client.get("/api/services/trade").json()
         self.assertEqual(detail["zh_title"], "国际贸易争议")
         self.assertTrue(detail["materials_zh"])
+        self.assertIn("translations", detail)
+        self.assertIn("ar", detail["translations"])
+        self.assertIn("es", detail["translations"])
+        self.assertTrue(detail["translations"]["ar"]["title"])
+        self.assertTrue(detail["translations"]["es"]["title"])
+
+    def test_multilingual_country_detail(self):
+        uae = self.client.get("/api/countries/united-arab-emirates").json()
+        self.assertIn("translations", uae)
+        self.assertIn("ar", uae["translations"])
+        self.assertIn("es", uae["translations"])
+        self.assertIn("دبي", uae["translations"]["ar"]["name"])
+        self.assertTrue(uae["translations"]["ar"]["faq"])
+
+        spain = self.client.get("/api/countries/spain").json()
+        self.assertEqual(spain["translations"]["es"]["name"], "España")
+        self.assertTrue(spain["translations"]["es"]["faq"])
 
 
 class SitemapAndDiscoveryTests(TestCase):
