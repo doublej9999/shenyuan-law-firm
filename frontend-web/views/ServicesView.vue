@@ -1,14 +1,18 @@
 <template>
-  <div class="services-view">
+  <div class="services-view" :class="{ 'is-rtl': isAr }">
     <!-- Top Hero Banner -->
     <section class="services-hero">
       <div class="wrap">
-        <div class="eyebrow">{{ isEn ? 'Practice Areas' : '服务范围' }}</div>
-        <h1>{{ isEn ? 'Comprehensive Cross-Border Legal Practice' : '三类高频跨境事项，深远专业护航' }}</h1>
+        <div class="eyebrow">{{ isEn ? 'Practice Areas' : (isAr ? 'مجالات الممارسة' : (isEs ? 'Áreas de Práctica' : '服务范围')) }}</div>
+        <h1>{{ isEn ? 'Comprehensive Cross-Border Legal Practice' : (isAr ? 'ثلاث ممارسات قانونية عابرة للحدود بحماية مهنية' : (isEs ? 'Tres Áreas Legales Transfronterizas de Alta Frecuencia' : '三类高频跨境事项，深远专业护航')) }}</h1>
         <p>
           {{ isEn 
             ? 'From unpaid trade debts and cross-border commercial litigation to multi-jurisdiction family estate inheritance, we navigate complex legal landscapes in your native language.' 
-            : '围绕中国企业与家庭在出海及跨国经济往来中最常遇到的争议，以事实与法理为基石，通过境内专业团队与全球 30+ 法域合作律所网络落地执行。' }}
+            : (isAr
+              ? 'نركز على النزاعات التجارية وقضايا تحصيل الديون والميراث العائلي عبر الحدود، مدعومين بفريقنا وشبكة مكاتب محاماة في أكثر من 30 دولة.'
+              : (isEs
+                ? 'Asesoramos a empresas y familias en disputas comerciales internacionales, cobro de deudas transfronterizas y herencias multijurisdiccionales con ejecución local en más de 30 países.'
+                : '围绕中国企业与家庭在出海及跨国经济往来中最常遇到的争议，以事实与法理为基石，通过境内专业团队与全球 30+ 法域合作律所网络落地执行。')) }}
         </p>
       </div>
     </section>
@@ -20,32 +24,36 @@
         <article class="service-detail-card" id="trade">
           <div class="card-header">
             <span class="num-badge">01 / TRADE</span>
-            <h2>{{ isEn ? 'International Trade & Commercial Disputes' : '国际贸易争议与跨国合同' }}</h2>
+            <h2>{{ isEn ? 'International Trade & Commercial Disputes' : (isAr ? 'النزاعات التجارية الدولية والعقود العابرة للحدود' : (isEs ? 'Disputas de Comercio Internacional y Contratos' : '国际贸易争议与跨国合同')) }}</h2>
           </div>
           <p class="summary-text">
             {{ isEn 
               ? 'Providing prompt intervention for export-import contract defaults, non-payment, cargo quality discrepancies, and cross-border commercial fraud.' 
-              : '处理货物买卖履行、海外货款拖欠、代理经销违约、跨境合同审查及外贸欺诈识别与反制。' }}
+              : (isAr
+                ? 'التدخل الفوري في نزاعات عقود التصدير والاستيراد، والتخلف عن سداد الشحنات، وخلافات الجودة، ومكافحة الاحتيال التجاري.'
+                : (isEs
+                  ? 'Intervención inmediata en incumplimientos de compraventa internacional, impagos de exportación, controversias de calidad y fraude comercial.'
+                  : '处理货物买卖履行、海外货款拖欠、代理经销违约、跨境合同审查及外贸欺诈识别与反制。')) }}
           </p>
 
           <div class="practice-subgrid">
             <div class="sub-item">
-              <h4>{{ isEn ? 'Trade Debt Recovery' : '货款追收与违约索赔' }}</h4>
-              <p>{{ isEn ? 'Rapid issuance of attorney demand letters, freezing orders, and CIETAC/HKIAC arbitrations.' : '通过精准律师函、财产线索锁定与诉前保全，督促海外买方尽快履约支付。' }}</p>
+              <h4>{{ isEn ? 'Trade Debt Recovery' : (isAr ? 'تحصيل ديون التجارة والمطالبة بالتعويض' : (isEs ? 'Cobro de Deudas Comerciales e Indemnizaciones' : '货款追收与违约索赔')) }}</h4>
+              <p>{{ isEn ? 'Rapid issuance of attorney demand letters, freezing orders, and CIETAC/HKIAC arbitrations.' : (isAr ? 'إصدار خطابات الإنذار القضائية وأوامر تجميد الأصول والتحكيم الدولي لحث المشتري على السداد.' : (isEs ? 'Emisión rápida de cartas de requerimiento legal, medidas cautelares y arbitrajes comerciales.' : '通过精准律师函、财产线索锁定与诉前保全，督促海外买方尽快履约支付。')) }}</p>
             </div>
             <div class="sub-item">
-              <h4>{{ isEn ? 'Cross-Border Contract Review' : '涉外合同审查与条款设计' }}</h4>
-              <p>{{ isEn ? 'Drafting governing law and jurisdiction clauses to prevent multi-million dispute risks.' : '针对管辖权冲突、适用法律选择及争议解决机制（仲裁/诉讼）进行前置风险防范。' }}</p>
+              <h4>{{ isEn ? 'Cross-Border Contract Review' : (isAr ? 'مراجعة العقود الدولية وصياغة الشروط' : (isEs ? 'Revisión y Redacción de Contratos Transfronterizos' : '涉外合同审查与条款设计')) }}</h4>
+              <p>{{ isEn ? 'Drafting governing law and jurisdiction clauses to prevent multi-million dispute risks.' : (isAr ? 'صياغة شروط الاختصاص القضائي والقانون الحاكم للحد من النزاعات القضائية الباهظة.' : (isEs ? 'Redacción de cláusulas de jurisdicción y ley aplicable para prevenir litigios multimillonarios.' : '针对管辖权冲突、适用法律选择及争议解决机制（仲裁/诉讼）进行前置风险防范。')) }}</p>
             </div>
             <div class="sub-item">
-              <h4>{{ isEn ? 'Customs & Logistics Disputes' : '海关、物流与品质争议' }}</h4>
-              <p>{{ isEn ? 'Resolution of maritime bill of lading holds, detention disputes, and quality inspection claims.' : '应对提单滞港、无单放货、海关扣货及第三方质检争议。' }}</p>
+              <h4>{{ isEn ? 'Customs & Logistics Disputes' : (isAr ? 'نزاعات الجمارك والشحن واللوجستيات' : (isEs ? 'Disputas Aduaneras, Logísticas y de Calidad' : '海关、物流与品质争议')) }}</h4>
+              <p>{{ isEn ? 'Resolution of maritime bill of lading holds, detention disputes, and quality inspection claims.' : (isAr ? 'حل نزاعات احتجاز بوالص الشحن البحري وغرامات التأخير وفحوصات الجودة الفنية.' : (isEs ? 'Resolución de retenciones de conocimientos de embarque marítimo, demoras y discrepancias de calidad.' : '应对提单滞港、无单放货、海关扣货及第三方质检争议。')) }}</p>
             </div>
           </div>
 
           <div class="card-action">
-            <NuxtLink :to="isEn ? '/en#intake' : '/#intake'" class="button button-primary">
-              {{ isEn ? 'Consult Trade Disputes →' : '咨询国际贸易纠纷 →' }}
+            <NuxtLink :to="intakeRoute" class="button button-primary">
+              {{ isEn ? 'Consult Trade Disputes →' : (isAr ? 'استشارة في النزاعات التجارية ←' : (isEs ? 'Consultar Disputas Comerciales →' : '咨询国际贸易纠纷 →')) }}
             </NuxtLink>
           </div>
         </article>
@@ -54,32 +62,36 @@
         <article class="service-detail-card" id="recovery">
           <div class="card-header">
             <span class="num-badge">02 / RECOVERY</span>
-            <h2>{{ isEn ? 'Litigation, Asset Tracing & Debt Recovery' : '诉讼、全球资产调查与债务追收' }}</h2>
+            <h2>{{ isEn ? 'Litigation, Asset Tracing & Debt Recovery' : (isAr ? 'التقاضي، تتبع الأصول العالمية وتحصيل الديون' : (isEs ? 'Litigios, Rastreo de Activos y Cobro de Deudas' : '诉讼、全球资产调查与债务追收')) }}</h2>
           </div>
           <p class="summary-text">
             {{ isEn 
               ? 'Bridging judgments into real financial recovery through in-depth asset investigation and cross-border recognition of court judgments and arbitral awards.' 
-              : '从欠款事实与资产线索出发，综合运用境内外资产调查、财产保全与跨国承认执行程序，促成实质回款。' }}
+              : (isAr
+                ? 'تحويل الأحكام القضائية إلى استرداد مالي فعلي عبر التحقيق في الأصول وتطبيق قرارات الحجز والاعتراف المتبادل بالأحكام والقرارات التحكيمية.'
+                : (isEs
+                  ? 'Transformamos sentencias en recuperaciones reales mediante investigación exhaustiva de activos y ejecución transfronteriza de laudos y sentencias.'
+                  : '从欠款事实与资产线索出发，综合运用境内外资产调查、财产保全与跨国承认执行程序，促成实质回款。')) }}
           </p>
 
           <div class="practice-subgrid">
             <div class="sub-item">
-              <h4>{{ isEn ? 'Asset Tracing & Investigation' : '境内外财产线索穿透调查' }}</h4>
-              <p>{{ isEn ? 'Tracing bank accounts, real properties, equity shares, and concealed debtor transfers.' : '合法排查债务人及关联方银行账户、不动产、企业股权及隐匿资产转移轨迹。' }}</p>
+              <h4>{{ isEn ? 'Asset Tracing & Investigation' : (isAr ? 'التحقيق وتتبع الأصول داخل وخارج الدولة' : (isEs ? 'Investigación y Rastreo Internacional de Activos' : '境内外财产线索穿透调查')) }}</h4>
+              <p>{{ isEn ? 'Tracing bank accounts, real properties, equity shares, and concealed debtor transfers.' : (isAr ? 'تتبع الحسابات البنكية والعقارات وحصص الشركات وحركات تحويل الأصول الخفية للمدين.' : (isEs ? 'Rastreo de cuentas bancarias, inmuebles, participaciones societarias y desvío fraudulento de activos.' : '合法排查债务人及关联方银行账户、不动产、企业股权及隐匿资产转移轨迹。')) }}</p>
             </div>
             <div class="sub-item">
-              <h4>{{ isEn ? 'Cross-Border Judgment Enforcement' : '境外判决与仲裁裁决承认执行' }}</h4>
-              <p>{{ isEn ? 'Enforcing judgments between Mainland China, Hong Kong, Singapore, US, and Common Law jurisdictions.' : '依据双边司法协助条约及纽约公约，申请域外裁决在中国或境外各地的承认与强制执行。' }}</p>
+              <h4>{{ isEn ? 'Cross-Border Judgment Enforcement' : (isAr ? 'الاعتراف بالأحكام الأجنبية والقرارات التحكيمية وتنفيذها' : (isEs ? 'Reconocimiento y Ejecución de Sentencias y Laudos' : '境外判决与仲裁裁决承认执行')) }}</h4>
+              <p>{{ isEn ? 'Enforcing judgments between Mainland China, Hong Kong, Singapore, US, and Common Law jurisdictions.' : (isAr ? 'تنفيذ الأحكام القضائية وقرارات التحكيم بين الصين والدول الأجنبية بموجب اتفاقية نيويورك والمعاهدات الثنائية.' : (isEs ? 'Ejecución de resoluciones judiciales y laudos arbitrales bajo la Convención de Nueva York y tratados bilaterales.' : '依据双边司法协助条约及纽约公约，申请域外裁决在中国或境外各地的承认与强制执行。')) }}</p>
             </div>
             <div class="sub-item">
-              <h4>{{ isEn ? 'Commercial Debt Settlement' : '商业谈判与执行和解' }}</h4>
-              <p>{{ isEn ? 'Strategic negotiations backed by litigation pressure to achieve optimal commercial recoveries.' : '结合法律威慑与商业考量，促成具有实际担保效力的分期还款协议与执行和解。' }}</p>
+              <h4>{{ isEn ? 'Commercial Debt Settlement' : (isAr ? 'التفاوض التجاري والتسوية الودية الملزمة' : (isEs ? 'Negociación Comercial y Acuerdos de Pago' : '商业谈判与执行和解')) }}</h4>
+              <p>{{ isEn ? 'Strategic negotiations backed by litigation pressure to achieve optimal commercial recoveries.' : (isAr ? 'مفاوضات استراتيجية مدعومة بالضغط القانوني للوصول إلى اتفاقيات سداد مضمونة.' : (isEs ? 'Negociación estratégica respaldada por presión procesal para lograr acuerdos de pago con garantías reales.' : '结合法律威慑与商业考量，促成具有实际担保效力的分期还款协议与执行和解。')) }}</p>
             </div>
           </div>
 
           <div class="card-action">
-            <NuxtLink :to="isEn ? '/en#intake' : '/#intake'" class="button button-primary">
-              {{ isEn ? 'Consult Recovery Matters →' : '咨询债务追收与执行 →' }}
+            <NuxtLink :to="intakeRoute" class="button button-primary">
+              {{ isEn ? 'Consult Recovery Matters →' : (isAr ? 'استشارة في تحصيل الديون والتنفيذ ←' : (isEs ? 'Consultar Cobro y Ejecución →' : '咨询债务追收与执行 →')) }}
             </NuxtLink>
           </div>
         </article>
@@ -88,32 +100,36 @@
         <article class="service-detail-card" id="legacy">
           <div class="card-header">
             <span class="num-badge">03 / LEGACY</span>
-            <h2>{{ isEn ? 'Cross-Border Inheritance & Family Wealth Protection' : '跨国继承、遗嘱检验与家族资产保护' }}</h2>
+            <h2>{{ isEn ? 'Cross-Border Inheritance & Family Wealth Protection' : (isAr ? 'الميراث الدولي، توثيق الوصايا وحماية الثروات' : (isEs ? 'Sucesiones Internacionales y Protección Patrimonial' : '跨国继承、遗嘱检验与家族资产保护')) }}</h2>
           </div>
           <p class="summary-text">
             {{ isEn 
               ? 'Guiding overseas Chinese, multinational families, and heirs through probate, property transfers, and estate distribution across borders.' 
-              : '协助梳理涉及中国大陆、港澳台及海外多法域的房产、股权、存款继承，办结公证认证与外汇资金合规出境。' }}
+              : (isAr
+                ? 'مساعدة الورثة والعائلات متعددة الجنسيات في إجراءات حصر الإرث وتوزيع التركات الدولية وتصديق الوثائق والامتثال المالي.'
+                : (isEs
+                  ? 'Guiamos a familias internacionales y herederos en trámites sucesorios, adjudicación de bienes, apostillas y transferencias transfronterizas de fondos.'
+                  : '协助梳理涉及中国大陆、港澳台及海外多法域的房产、股权、存款继承，办结公证认证与外汇资金合规出境。')) }}
           </p>
 
           <div class="practice-subgrid">
             <div class="sub-item">
-              <h4>{{ isEn ? 'Multi-Jurisdiction Probate' : '跨国遗产继承与遗嘱检验' }}</h4>
-              <p>{{ isEn ? 'Navigating probate courts in the US, Canada, Australia, Singapore, and China.' : '协助国内继承人办理域外遗嘱检认（Probate），解决不同继承法冲突。' }}</p>
+              <h4>{{ isEn ? 'Multi-Jurisdiction Probate' : (isAr ? 'إجراءات حصر الإرث وتصديق الوصايا عبر الحدود' : (isEs ? 'Sucesiones Multijurisdiccionales y Validación de Testamentos' : '跨国遗产继承与遗嘱检验')) }}</h4>
+              <p>{{ isEn ? 'Navigating probate courts in the US, Canada, Australia, Singapore, and China.' : (isAr ? 'مساعدة الورثة في إجراءات المحاكم وحصر التركات في الصين ومختلف الدول الأجنبية.' : (isEs ? 'Tramitación de juicios sucesorios y legalización de testamentos en diversas jurisdicciones.' : '协助国内继承人办理域外遗嘱检认（Probate），解决不同继承法冲突。')) }}</p>
             </div>
             <div class="sub-item">
-              <h4>{{ isEn ? 'Apostille & Legalization' : '海牙公约认证（Apostille）' }}</h4>
-              <p>{{ isEn ? 'Efficient preparation of kinship affidavits, death certificates, and consular notarizations.' : '高效代办海牙公约附加证明书（Apostille）及亲属关系证明公证。' }}</p>
+              <h4>{{ isEn ? 'Apostille & Legalization' : (isAr ? 'تصديق الوثائق وفق اتفاقية لاهاي (أبوستيل)' : (isEs ? 'Apostilla de La Haya y Legalizaciones' : '海牙公约认证（Apostille）')) }}</h4>
+              <p>{{ isEn ? 'Efficient preparation of kinship affidavits, death certificates, and consular notarizations.' : (isAr ? 'إعداد شهادات إثبات القرابة وشهادات الوفاة وتصديقات الأبوستيل والقنصلية بسرعة وكفاءة.' : (isEs ? 'Preparación ágil de actas notariales de parentesco, defunción y certificados de Apostilla.' : '高效代办海牙公约附加证明书（Apostille）及亲属关系证明公证。')) }}</p>
             </div>
             <div class="sub-item">
-              <h4>{{ isEn ? 'Compliant Fund Repatriation' : '合法继承款项外汇合规汇出' }}</h4>
-              <p>{{ isEn ? 'SAFE approval and compliance filings for foreign nationals inheriting assets in China.' : '协助海外继承人完成中国外汇管理局财产转移税务合规审批与资金合规出境。' }}</p>
+              <h4>{{ isEn ? 'Compliant Fund Repatriation' : (isAr ? 'الامتثال الضريبي وتحويل أموال التركات للخارج' : (isEs ? 'Transferencia y Cumplimiento Fiscal de Fondos Heredados' : '合法继承款项外汇合规汇出')) }}</h4>
+              <p>{{ isEn ? 'SAFE approval and compliance filings for foreign nationals inheriting assets in China.' : (isAr ? 'الحصول على الموافقات الضريبية وتحويل الأموال القانونية للورثة خارج الدولة.' : (isEs ? 'Gestión de autorizaciones fiscales y transferencias bancarias internacionales de bienes heredados.' : '协助海外继承人完成中国外汇管理局财产转移税务合规审批与资金合规出境。')) }}</p>
             </div>
           </div>
 
           <div class="card-action">
-            <NuxtLink :to="isEn ? '/en#intake' : '/#intake'" class="button button-primary">
-              {{ isEn ? 'Consult Inheritance Matters →' : '咨询涉外继承业务 →' }}
+            <NuxtLink :to="intakeRoute" class="button button-primary">
+              {{ isEn ? 'Consult Inheritance Matters →' : (isAr ? 'استشارة في قضايا الميراث الدولي ←' : (isEs ? 'Consultar Sucesiones Internacionales →' : '咨询涉外继承业务 →')) }}
             </NuxtLink>
           </div>
         </article>
@@ -123,37 +139,70 @@
     <!-- Bottom CTA -->
     <section class="cta-band">
       <div class="wrap text-center">
-        <h2>{{ isEn ? 'Need tailored advice on your specific matter?' : '不确定案件涉及哪类法律路径？' }}</h2>
-        <p>{{ isEn ? 'Contact our cross-border team for an initial factual assessment within 24 hours.' : '提交案情概要或微信沟通，我们的涉外执业团队将为您梳理时效、证据与可行方案。' }}</p>
+        <h2>{{ isEn ? 'Need tailored advice on your specific matter?' : (isAr ? 'هل تحتاج مشورة قانونية مخصصة لقضيتك؟' : (isEs ? '¿Necesita asesoramiento específico para su caso?' : '不确定案件涉及哪类法律路径？')) }}</h2>
+        <p>{{ isEn 
+          ? 'Contact our cross-border team for an initial factual assessment within 24 hours.' 
+          : (isAr
+            ? 'أرسل تفاصيل النزاع وسيقوم فريقنا بمراجعة الوقائع والمستندات وتقديم تقييم أولي خلال 24 ساعة.'
+            : (isEs
+              ? 'Envíe los hechos de su caso y nuestro equipo evaluará plazos, pruebas y vías de acción en 24 horas.'
+              : '提交案情概要或微信沟通，我们的涉外执业团队将为您梳理时效、证据与可行方案。')) }}</p>
         <div class="cta-btns">
-          <NuxtLink :to="isEn ? '/en#intake' : '/#intake'" class="button button-primary">
-            {{ isEn ? 'Free Legal Consultation →' : '开始免费法律咨询 →' }}
+          <NuxtLink :to="intakeRoute" class="button button-primary">
+            {{ isEn ? 'Free Legal Consultation →' : (isAr ? 'ابدأ استشارة قانونية مجانية ←' : (isEs ? 'Consulta Legal Gratuita →' : '开始免费法律咨询 →')) }}
           </NuxtLink>
         </div>
       </div>
     </section>
   </div>
 </template>
+
 <script setup lang="ts">
 import { computed } from 'vue'
 
 const route = useRoute()
-const isEn = computed(() => route.path.startsWith('/en'))
+const currentLang = computed<'zh' | 'en' | 'ar' | 'es'>(() => {
+  if (route.path.startsWith('/ar')) return 'ar'
+  if (route.path.startsWith('/es')) return 'es'
+  if (route.path.startsWith('/en')) return 'en'
+  return 'zh'
+})
+const isAr = computed(() => currentLang.value === 'ar')
+const isEs = computed(() => currentLang.value === 'es')
+const isEn = computed(() => currentLang.value === 'en')
+
+const intakeRoute = computed(() => {
+  if (isAr.value) return '/ar#intake'
+  if (isEs.value) return '/es#intake'
+  if (isEn.value) return '/en#intake'
+  return '/#intake'
+})
 
 // ---- SEO --------------------------------------------------------------
 const siteUrl = 'https://shenyuanlegal.com'
-const canonical = computed(() => `${siteUrl}${isEn.value ? '/en/services' : '/services'}`)
+const canonical = computed(() => {
+  if (isAr.value) return `${siteUrl}/ar/services`
+  if (isEs.value) return `${siteUrl}/es/services`
+  if (isEn.value) return `${siteUrl}/en/services`
+  return `${siteUrl}/services`
+})
 
 useSeoMeta({
   title: () => isEn.value
     ? 'Practice Areas | Cross-Border Disputes, Debt Recovery & Inheritance | Shenyuan International'
-    : '服务范围 | 跨境争议、债务追收与继承 | 深远(国际)律师事务所',
+    : (isAr.value
+      ? 'مجالات الممارسة | النزاعات العابرة للحدود، تحصيل الديون والميراث | مكتب شينيوان'
+      : (isEs.value
+        ? 'Áreas de Práctica | Disputas Transfronterizas, Cobro de Deudas y Sucesiones | Shenyuan International'
+        : '服务范围 | 跨境争议、债务追收与继承 | 深远(国际)律师事务所')),
   description: () => isEn.value
     ? 'Three high-frequency cross-border matters we handle: international trade and commercial disputes, cross-border litigation and debt recovery, and multi-jurisdiction inheritance and family assets.'
-    : '围绕中国企业与家庭在出海及跨国经济往来中最常遇到的三类争议：国际贸易争议与跨国合同、诉讼与海外债务追收、继承与家族资产纠纷。',
-  ogTitle: () => isEn.value
-    ? 'Practice Areas | Shenyuan International'
-    : '服务范围 | 深远(国际)律师事务所',
+    : (isAr.value
+      ? 'المجالات الثلاثة الرئيسية التي نعالجها: النزاعات التجارية الدولية، التقاضي وتحصيل الديون العابرة للحدود، وحماية الأصول والميراث العائلي.'
+      : (isEs.value
+        ? 'Tres áreas legales transfronterizas principales: disputas de comercio internacional, litigios y cobro de deudas, y herencias y patrimonios multijurisdiccionales.'
+        : '围绕中国企业与家庭在出海及跨国经济往来中最常遇到的三类争议：国际贸易争议与跨国合同、诉讼与海外债务追收、继承与家族资产纠纷。')),
+  ogTitle: () => isEn.value ? 'Practice Areas | Shenyuan International' : '服务范围 | 深远(国际)律师事务所',
   ogDescription: () => isEn.value
     ? 'Cross-border disputes, debt recovery and inheritance — executed through local counsel.'
     : '跨境争议、债务追收与继承——通过当地合作律所落地执行。',
@@ -171,14 +220,36 @@ useHead({
     { rel: 'canonical', href: () => canonical.value },
     { rel: 'alternate', hreflang: 'zh-CN', href: `${siteUrl}/services` },
     { rel: 'alternate', hreflang: 'en', href: `${siteUrl}/en/services` },
+    { rel: 'alternate', hreflang: 'ar', href: `${siteUrl}/ar/services` },
+    { rel: 'alternate', hreflang: 'es', href: `${siteUrl}/es/services` },
     { rel: 'alternate', hreflang: 'x-default', href: `${siteUrl}/services` },
   ],
 })
 </script>
+
 <style scoped>
 .services-view {
   background: var(--paper);
   color: var(--ink);
+}
+
+/* RTL 镜像适配 */
+.services-view.is-rtl {
+  direction: rtl;
+  text-align: right;
+}
+
+.services-view.is-rtl .eyebrow {
+  flex-direction: row-reverse;
+}
+
+.services-view.is-rtl .eyebrow::before {
+  margin-left: 8px;
+  margin-right: 0;
+}
+
+.services-view.is-rtl .card-header {
+  flex-direction: row-reverse;
 }
 
 .services-hero {
@@ -284,6 +355,10 @@ useHead({
   padding-top: 20px;
   display: flex;
   justify-content: flex-end;
+}
+
+.services-view.is-rtl .card-action {
+  justify-content: flex-start;
 }
 
 .cta-band {

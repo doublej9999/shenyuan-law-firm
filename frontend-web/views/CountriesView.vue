@@ -1,13 +1,17 @@
 <template>
-  <div class="countries-view">
+  <div class="countries-view" :class="{ 'is-rtl': isAr }">
     <section class="countries-hero">
       <div class="wrap">
-        <div class="eyebrow">{{ isEn ? 'Jurisdictions' : '法域覆盖' }}</div>
-        <h1>{{ isEn ? 'Cross-Border Legal Services by Jurisdiction' : '按国家与地区查找跨境法律服务' }}</h1>
+        <div class="eyebrow">{{ isEn ? 'Jurisdictions' : (isAr ? 'الاختصاصات القضائية' : (isEs ? 'Jurisdicciones' : '法域覆盖')) }}</div>
+        <h1>{{ isEn ? 'Cross-Border Legal Services by Jurisdiction' : (isAr ? 'خدمات قانونية عابرة للحدود حسب الدولة والمنطقة' : (isEs ? 'Servicios Legales Transfronterizos por Jurisdicción' : '按国家与地区查找跨境法律服务')) }}</h1>
         <p>
           {{ isEn
             ? 'Trade recovery, judgment enforcement and inheritance each turn on local procedure. Pick a jurisdiction to see the matters we handle there and the practical steps that decide the outcome.'
-            : '货款追收、判决执行与跨境继承，成败往往取决于当地程序细节。选择国家或地区，查看该法域下我们办理的事项类型与实务要点。' }}
+            : (isAr
+              ? 'يعتمد نجاح تحصيل الديون وتنفيذ الأحكام والميراث الدولي على الإجراءات المحلية الدقيقة. اختر الدولة للاطلاع على الخدمات والنقاط الإجرائية الحاسمة.'
+              : (isEs
+                ? 'El éxito en cobro de deudas, ejecución de sentencias y herencias depende de los procedimientos locales. Seleccione una jurisdicción para conocer los asuntos y pasos clave.'
+                : '货款追收、判决执行与跨境继承，成败往往取决于当地程序细节。选择国家或地区，查看该法域下我们办理的事项类型与实务要点。')) }}
         </p>
       </div>
     </section>
@@ -15,24 +19,24 @@
     <section class="section">
       <div class="wrap">
         <div v-if="loading" class="loading-state">
-          {{ isEn ? 'Loading jurisdictions...' : '正在加载法域列表...' }}
+          {{ isEn ? 'Loading jurisdictions...' : (isAr ? 'جارٍ تحميل قائمة الدول...' : (isEs ? 'Cargando lista de jurisdicciones...' : '正在加载法域列表...')) }}
         </div>
 
         <div v-else-if="countries.length === 0" class="loading-state">
-          {{ isEn ? 'Jurisdiction list is temporarily unavailable.' : '法域列表暂时不可用。' }}
+          {{ isEn ? 'Jurisdiction list is temporarily unavailable.' : (isAr ? 'قائمة الدول غير متاحة مؤقتاً.' : (isEs ? 'La lista de jurisdicciones no está disponible temporalmente.' : '法域列表暂时不可用。')) }}
         </div>
 
         <div v-else class="country-grid">
           <NuxtLink
             v-for="c in countries"
             :key="c.slug"
-            :to="isEn ? `/en/countries/${c.slug}` : `/countries/${c.slug}`"
+            :to="isAr ? `/ar/countries/${c.slug}` : (isEs ? `/es/countries/${c.slug}` : (isEn ? `/en/countries/${c.slug}` : `/countries/${c.slug}`))"
             class="country-card"
           >
-            <span class="country-name">{{ isEn ? c.name_en : c.name_zh }}</span>
+            <span class="country-name">{{ isEn ? c.name_en : (isAr && c.translations?.ar?.name ? c.translations.ar.name : (isEs && c.translations?.es?.name ? c.translations.es.name : c.name_zh)) }}</span>
             <span class="country-name-alt">{{ isEn ? c.name_zh : c.name_en }}</span>
-            <h3>{{ isEn ? (c.en_title || c.zh_title) : c.zh_title }}</h3>
-            <span class="read-more">{{ isEn ? 'View details →' : '查看详情 →' }}</span>
+            <h3>{{ isEn ? (c.en_title || c.zh_title) : (isAr && c.translations?.ar?.title ? c.translations.ar.title : (isEs && c.translations?.es?.title ? c.translations.es.title : c.zh_title)) }}</h3>
+            <span class="read-more">{{ isEn ? 'View details →' : (isAr ? 'عرض التفاصيل ←' : (isEs ? 'Ver detalles →' : '查看详情 →')) }}</span>
           </NuxtLink>
         </div>
       </div>
@@ -45,7 +49,15 @@ import { computed } from 'vue'
 import { getApiClient } from '@/api/client'
 
 const route = useRoute()
-const isEn = computed(() => route.path.startsWith('/en'))
+const currentLang = computed<'zh' | 'en' | 'ar' | 'es'>(() => {
+  if (route.path.startsWith('/ar')) return 'ar'
+  if (route.path.startsWith('/es')) return 'es'
+  if (route.path.startsWith('/en')) return 'en'
+  return 'zh'
+})
+const isAr = computed(() => currentLang.value === 'ar')
+const isEs = computed(() => currentLang.value === 'es')
+const isEn = computed(() => currentLang.value === 'en')
 
 const { data, pending: loading } = await useAsyncData(
   'countries-index',
@@ -64,15 +76,28 @@ const countries = computed<any[]>(() => data.value || [])
 
 // ---- SEO --------------------------------------------------------------
 const siteUrl = 'https://shenyuanlegal.com'
-const canonical = computed(() => `${siteUrl}${isEn.value ? '/en/countries' : '/countries'}`)
+const canonical = computed(() => {
+  if (isAr.value) return `${siteUrl}/ar/countries`
+  if (isEs.value) return `${siteUrl}/es/countries`
+  if (isEn.value) return `${siteUrl}/en/countries`
+  return `${siteUrl}/countries`
+})
 
 useSeoMeta({
   title: () => isEn.value
     ? 'Jurisdictions | Cross-Border Legal Services by Country | Shenyuan International'
-    : '法域覆盖 | 按国家与地区查找跨境法律服务 | 深远(国际)律师事务所',
+    : (isAr.value
+      ? 'الاختصاصات القضائية والدول | خدمات قانونية عابرة للحدود | مكتب شينيوان'
+      : (isEs.value
+        ? 'Jurisdicciones | Servicios Legales Transfronterizos por País | Shenyuan International'
+        : '法域覆盖 | 按国家与地区查找跨境法律服务 | 深远(国际)律师事务所')),
   description: () => isEn.value
     ? 'Country-by-country guidance on cross-border trade recovery, judgment enforcement and inheritance, covering the United States, Canada, the UK, Australia, Singapore, Hong Kong and more.'
-    : '覆盖美国、加拿大、英国、澳大利亚、新加坡、香港等 22 个国家与地区的跨境法律服务指南，涵盖货款追收、判决承认执行与跨国继承。',
+    : (isAr.value
+      ? 'دليل قانوني حسب الدول للتقاضي وتحصيل الديون العابرة للحدود وتنفيذ الأحكام والميراث الدولي في أكثر من 22 دولة.'
+      : (isEs.value
+        ? 'Guía país por país sobre cobro de deudas, ejecución de resoluciones y herencias transfronterizas en más de 22 jurisdicciones.'
+        : '覆盖美国、加拿大、英国、澳大利亚、新加坡、香港等 22 个国家与地区的跨境法律服务指南，涵盖货款追收、判决承认执行与跨国继承。')),
   ogTitle: () => isEn.value ? 'Jurisdictions | Shenyuan International' : '法域覆盖 | 深远(国际)律师事务所',
   ogDescription: () => isEn.value
     ? 'Cross-border legal services by jurisdiction.'
@@ -91,6 +116,8 @@ useHead({
     { rel: 'canonical', href: () => canonical.value },
     { rel: 'alternate', hreflang: 'zh-CN', href: `${siteUrl}/countries` },
     { rel: 'alternate', hreflang: 'en', href: `${siteUrl}/en/countries` },
+    { rel: 'alternate', hreflang: 'ar', href: `${siteUrl}/ar/countries` },
+    { rel: 'alternate', hreflang: 'es', href: `${siteUrl}/es/countries` },
     { rel: 'alternate', hreflang: 'x-default', href: `${siteUrl}/countries` },
   ],
 })
@@ -100,6 +127,21 @@ useHead({
 .countries-view {
   background: var(--paper);
   color: var(--ink);
+}
+
+/* RTL 镜像适配 */
+.countries-view.is-rtl {
+  direction: rtl;
+  text-align: right;
+}
+
+.countries-view.is-rtl .eyebrow {
+  flex-direction: row-reverse;
+}
+
+.countries-view.is-rtl .eyebrow::before {
+  margin-left: 8px;
+  margin-right: 0;
 }
 
 .countries-hero {
