@@ -116,16 +116,9 @@
 import { computed } from 'vue'
 import { getApiClient } from '@/api/client'
 
-const route = useRoute()
-const currentLang = computed<'zh' | 'en' | 'ar' | 'es'>(() => {
-  if (route.path.startsWith('/ar')) return 'ar'
-  if (route.path.startsWith('/es')) return 'es'
-  if (route.path.startsWith('/en')) return 'en'
-  return 'zh'
-})
-const isAr = computed(() => currentLang.value === 'ar')
-const isEs = computed(() => currentLang.value === 'es')
-const isEn = computed(() => currentLang.value === 'en')
+import { useCurrentLang } from '@/composables/useCurrentLang'
+
+const { route, currentLang, isAr, isEs, isEn } = useCurrentLang()
 
 // Server-rendered so the copy ships in the initial HTML.
 const { data: country, pending: loading } = await useAsyncData(

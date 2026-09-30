@@ -43,9 +43,11 @@ export const GEO_COUNTRY_MAP: Record<string, GeoCountryMeta> = {
   RU: { code: 'RU', nameZh: '俄罗斯', nameEn: 'Russia', flag: '🇷🇺', dialCode: '+7' },
 }
 
+import { useCurrentLang } from '@/composables/useCurrentLang'
+
 export function useUserGeo() {
   const route = useRoute()
-  const isEn = computed(() => route.path.startsWith('/en'))
+  const { isEn } = useCurrentLang()
 
   // 跨 SSR/客户端持久化状态
   const userGeo = useState<{ country: string; isBot: boolean }>('user-geo-state', () => {

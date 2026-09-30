@@ -228,13 +228,10 @@ import { I18N_DICT, type SupportedLang } from '@/composables/useI18nDict'
 const route = useRoute()
 const router = useRouter()
 
+import { getLangFromPath } from '@/composables/useCurrentLang'
+
 // 语言检测
-const currentLangCode = computed<SupportedLang>(() => {
-  if (route.path.startsWith('/ar')) return 'ar'
-  if (route.path.startsWith('/es')) return 'es'
-  if (route.path.startsWith('/en')) return 'en'
-  return 'zh'
-})
+const currentLangCode = computed<SupportedLang>(() => getLangFromPath(route.path))
 
 // 多语言当前字典
 const i18n = computed(() => I18N_DICT[currentLangCode.value] || I18N_DICT.zh)
