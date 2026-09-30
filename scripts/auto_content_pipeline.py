@@ -18,6 +18,7 @@ import json
 import os
 import re
 import sys
+import time
 import urllib.error
 import urllib.parse
 import urllib.request
@@ -85,10 +86,12 @@ INDEXNOW_KEY_LOCATION = "https://shenyuanlegal.com/4b8f2d93e1074a3f890259bfae674
 
 
 def warmup_edge_cache(slug: str):
-    """边缘节点预热：主动请求新发文章中英文页与 Sitemap，确保爬虫首访极速命中。"""
+    """边缘节点预热：主动请求新发文章四语页与 Sitemap，确保爬虫首访极速命中。"""
     urls = [
         f"https://shenyuanlegal.com/articles/{slug}",
         f"https://shenyuanlegal.com/en/articles/{slug}",
+        f"https://shenyuanlegal.com/ar/articles/{slug}",
+        f"https://shenyuanlegal.com/es/articles/{slug}",
         "https://shenyuanlegal.com/sitemap.xml?refresh=1",
     ]
     print("       -> [边缘预热] 正在预热 Vercel Edge 缓存节点...")
@@ -113,6 +116,8 @@ def notify_indexnow(slug: str):
         urls = [
             f"https://shenyuanlegal.com/articles/{slug}",
             f"https://shenyuanlegal.com/en/articles/{slug}",
+            f"https://shenyuanlegal.com/ar/articles/{slug}",
+            f"https://shenyuanlegal.com/es/articles/{slug}",
         ]
         payload = {
             "host": "shenyuanlegal.com",
@@ -474,6 +479,42 @@ def synthesize_dynamic_topic(existing_titles: set) -> tuple:
     return (f"跨国商事争议维权与涉外法务实战-{int(datetime.now().timestamp())}", "trade")
 
 
+def generate_multilingual_translations(art: dict, art_id: int) -> dict:
+    """自动为新生成的涉外长文生成阿拉伯语 (ar) 与西班牙语 (es) 地道母语版本并写回数据库。"""
+    print("\n[多语言管线] 开始为新发文章自动生成阿语 (ar) 与西语 (es) 地道母语版本...")
+    try:
+        from scripts.batch_translate_multilingual import translate_with_llm
+    except ImportError:
+        import sys
+        sys.path.insert(0, str(ROOT))
+        from scripts.batch_translate_multilingual import translate_with_llm
+
+    trans = art.get("translations") or {}
+
+    for lang in ["ar", "es"]:
+        lang_name = "阿拉伯语" if lang == "ar" else "西班牙语"
+        print(f"       -> 正在调用大模型生成{lang_name} ({lang}) 法律实务译文...")
+        t0 = time.time()
+        try:
+            res = translate_with_llm(art, lang)
+            if res and res.get("title") and res.get("title") != "..." and res.get("body"):
+                trans[lang] = res
+                print(f"          ✓ {lang_name}翻译完成 ({int((time.time()-t0)*1000)}ms): 《{res['title'][:32]}...》")
+            else:
+                print(f"          ! {lang_name}翻译结果为空或不合规")
+        except Exception as e:
+            print(f"          ! {lang_name}生成失败: {e}")
+
+    art["translations"] = trans
+    try:
+        api_request(f"/admin/api/content/{art_id}", data=art, method="PUT")
+        print(f"       ✓ 多语言母语数据已成功持久化至数据库 (ID: {art_id})！")
+    except Exception as e:
+        print(f"       ! 多语言持久化回写异常: {e}")
+
+    return trans
+
+
 def produce_and_publish_new_article(topic: str = "", business: str = "general"):
     """由 AI 创作、自愈优化并自动发布一篇新文章。"""
     if not topic:
@@ -528,10 +569,17 @@ def produce_and_publish_new_article(topic: str = "", business: str = "general"):
     print(f"       -> 中文地址: https://shenyuanlegal.com/articles/{slug}")
     print(f"       -> 英文地址: https://shenyuanlegal.com/en/articles/{slug}")
 
-    # 5. 边缘预热
+    # 4.5. 自动多语言翻译扩展（阿拉伯语 + 西班牙语）
+    repaired["id"] = art_id
+    repaired["status"] = "published"
+    generate_multilingual_translations(repaired, art_id)
+    print(f"       -> 阿语地址: https://shenyuanlegal.com/ar/articles/{slug}")
+    print(f"       -> 西语地址: https://shenyuanlegal.com/es/articles/{slug}")
+
+    # 5. 边缘预热（覆盖中英阿西四语）
     warmup_edge_cache(slug)
 
-    # 6. 推送搜索引擎收录 (Google & IndexNow for Bing/ChatGPT)
+    # 6. 推送搜索引擎收录 (Google & IndexNow for Bing/ChatGPT 覆盖四语)
     print("[收录推送] 正在向 Google Indexing API 与 IndexNow 提交抓取通知...")
     notify_indexing(slug)
     notify_indexnow(slug)
@@ -575,7 +623,12 @@ def repair_and_publish_existing_drafts(limit: int = 1):
                     print("\n" + f"[发布成功] 《{pub_res.get('title_zh')}》已正式发布上线！")
                     published_slug = str(pub_res.get("slug") or "")
                     if published_slug:
-                        print(f"       -> 地址: https://shenyuanlegal.com/articles/{published_slug}")
+                        print(f"       -> 中文地址: https://shenyuanlegal.com/articles/{published_slug}")
+                        repaired["id"] = art_id
+                        repaired["status"] = "published"
+                        generate_multilingual_translations(repaired, art_id)
+                        print(f"       -> 阿语地址: https://shenyuanlegal.com/ar/articles/{published_slug}")
+                        print(f"       -> 西语地址: https://shenyuanlegal.com/es/articles/{published_slug}")
                         warmup_edge_cache(published_slug)
                         notify_indexing(published_slug)
                         notify_indexnow(published_slug)
