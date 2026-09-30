@@ -160,16 +160,9 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 
-const route = useRoute()
-const currentLang = computed<'zh' | 'en' | 'ar' | 'es'>(() => {
-  if (route.path.startsWith('/ar')) return 'ar'
-  if (route.path.startsWith('/es')) return 'es'
-  if (route.path.startsWith('/en')) return 'en'
-  return 'zh'
-})
-const isAr = computed(() => currentLang.value === 'ar')
-const isEs = computed(() => currentLang.value === 'es')
-const isEn = computed(() => currentLang.value === 'en')
+import { useCurrentLang } from '@/composables/useCurrentLang'
+
+const { currentLang, isAr, isEs, isEn } = useCurrentLang()
 
 const intakeRoute = computed(() => {
   if (isAr.value) return '/ar#intake'
