@@ -45,7 +45,7 @@ def get_llm_api_key() -> str:
     return ""
 
 LLM_API_BASE = os.environ.get("LLM_API_BASE", "https://cpa.927900.xyz/v1").rstrip("/")
-LLM_MODEL = os.environ.get("LLM_MODEL", "deepseek-v4-flash").strip()
+LLM_MODEL = os.environ.get("LLM_MODEL", "gemini-3.8-flash-high").strip()
 ADMIN_TOKEN = get_admin_token()
 LLM_KEY = get_llm_api_key()
 
@@ -114,7 +114,7 @@ def translate_with_llm(article: dict, target_lang: str) -> Optional[dict]:
         "max_tokens": 4000,
     }
 
-    models_to_try = [LLM_MODEL, "gemini-3.8-flash", "deepseek-v4-flash"]
+    models_to_try = [LLM_MODEL, "deepseek-v4.1-flash", "gemini-3.8-flash", "deepseek-v4-flash"]
     for m in models_to_try:
         payload["model"] = m
         try:

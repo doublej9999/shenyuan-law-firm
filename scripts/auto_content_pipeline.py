@@ -41,7 +41,7 @@ ADMIN_TOKEN = os.environ.get("ADMIN_TOKEN", "shenyuan-admin-prod-token-2026").st
 
 # AI 大模型配置（优先读取环境变量，其次从 .env 中提取）
 LLM_API_BASE = os.environ.get("LLM_API_BASE", "https://cpa.927900.xyz/v1").rstrip("/")
-LLM_MODEL = os.environ.get("LLM_MODEL", "deepseek-v4.1-flash").strip()
+LLM_MODEL = os.environ.get("LLM_MODEL", "gemini-3.8-flash-high").strip()
 
 
 def get_llm_api_key() -> str:
@@ -211,7 +211,7 @@ def generate_article_with_ai(topic: str, business: str = "general") -> dict:
 【合规红线】
 禁止使用“100%胜诉”、“必胜”、“保证追回全部损失”等承诺胜诉绝对化表述，正文末尾必须保留标准免责声明。"""
 
-    models_to_try = [LLM_MODEL, "deepseek-v4-flash"]
+    models_to_try = [LLM_MODEL, "deepseek-v4.1-flash", "gemini-3.8-flash", "deepseek-v4-flash"]
     seen = set()
     models = [m for m in models_to_try if m and not (m in seen or seen.add(m))]
 
