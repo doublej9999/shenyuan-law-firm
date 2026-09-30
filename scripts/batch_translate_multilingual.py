@@ -114,7 +114,7 @@ def translate_with_llm(article: dict, target_lang: str) -> Optional[dict]:
         "max_tokens": 4000,
     }
 
-    models_to_try = [LLM_MODEL, "deepseek-v4-flash"]
+    models_to_try = [LLM_MODEL, "gemini-3.8-flash", "deepseek-v4-flash"]
     for m in models_to_try:
         payload["model"] = m
         try:
