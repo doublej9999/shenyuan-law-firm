@@ -260,6 +260,9 @@
         <!-- 交互式诉讼时效测算工具 -->
         <StatuteCalculator />
 
+        <!-- 交互式海外欠款追回概率评估工具 -->
+        <DebtRecoveryEstimator />
+
         <div class="cases-grid">
           <article class="case-card">
             <div class="case-tag">{{ t.cases.card1Tag }}</div>
@@ -541,6 +544,7 @@ import { getApiClient, parseApiError } from '@/api/client'
 import { useUserGeo } from '@/composables/useUserGeo'
 import { useHomeTranslation } from '@/composables/useHomeTranslation'
 import StatuteCalculator from '@/components/StatuteCalculator.vue'
+import DebtRecoveryEstimator from '@/components/DebtRecoveryEstimator.vue'
 
 const { currentLang, isAr, isEs, isEn, t } = useHomeTranslation()
 const { countryInfo } = useUserGeo()
