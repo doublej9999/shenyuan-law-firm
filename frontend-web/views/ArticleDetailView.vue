@@ -21,15 +21,16 @@
         </header>
 
         <!-- GEO & Key Takeaways / Executive Summary Card -->
-        <div v-if="keyTakeaways.length" class="geo-takeaways-card">
+        <section v-if="keyTakeaways.length" class="geo-takeaways-card" itemscope itemtype="https://schema.org/Answer">
           <div class="takeaways-header">
             <span class="takeaways-icon">⚡</span>
-            <h4>{{ isEn ? 'Executive Summary & Key Action Points' : (isAr ? 'ملخص تنفيذي وأهم نقاط العمل' : (isEs ? 'Resumen Ejecutivo y Puntos Clave de Acción' : '核心实务要点速读（TL;DR）')) }}</h4>
+            <h4>{{ isEn ? 'GEO Direct Answer & Key Action Points' : (isAr ? 'إجابة مباشرة وأهم نقاط العمل (GEO)' : (isEs ? 'Respuesta Directa y Puntos Clave de Acción (GEO)' : 'GEO 权威实务快览与核心结论（Direct Answer）')) }}</h4>
+            <span class="geo-pill">AI Citation / 核心事实</span>
           </div>
-          <ul class="takeaways-list">
+          <ul class="takeaways-list" itemprop="text">
             <li v-for="(item, idx) in keyTakeaways" :key="idx">{{ item }}</li>
           </ul>
-        </div>
+        </section>
 
         <div class="article-body">
           <div class="content-html" v-html="renderedBody"></div>
@@ -47,14 +48,19 @@
         </div>
 
         <div class="article-disclaimer">
-          <strong>{{ isEn ? 'Legal Disclaimer' : (isAr ? 'إخلاء المسؤولية القانونية' : (isEs ? 'Aviso Legal' : '免责声明')) }}：</strong>
-          <span>{{ isEn 
-            ? 'The content of this article represents academic analysis and practice observations of Shenyuan International and does not constitute formal legal opinion or attorney-client relationship for any specific matter. For actionable counsel, please arrange a formal case review.' 
-            : (isAr
-              ? 'محتوى هذا المقال للأغراض الأكاديمية والاطلاع العام ولا يشكل استشارة قانونية رسمية أو علاقة توكيل. تُحدد الإجراءات حسب ظروف وأدلة كل قضية.'
-              : (isEs
-                ? 'El contenido de este artículo tiene fines puramente informativos y de análisis práctico; no constituye dictamen legal vinculante ni relación abogado-cliente.'
-                : '本文内容仅供涉外法律实务研讨与一般信息参考，不构成针对任何具体案件的正式法律意见或委托关系。具体法律程序须结合案件全部证据、事实及相关管辖区法规一案一议。')) }}</span>
+          <strong>{{ isEn ? 'Legal Disclaimer & Author' : (isAr ? 'إخلاء المسؤولية وفريق العمل' : (isEs ? 'Aviso Legal y Autoría' : '免责声明与团队主笔')) }}：</strong>
+          <span v-if="isAr">
+            أُعدت هذه المادة بواسطة <NuxtLink to="/ar" class="disclaimer-link"><strong>فريق المحامين الدوليين شينيوان</strong></NuxtLink> للأغراض الأكاديمية والاطلاع العام ولا تشكل استشارة قانونية رسمية. يُنصح بالتواصل المباشر مع <NuxtLink to="/ar" class="disclaimer-link"><strong>محامٍ دولي</strong></NuxtLink> متخصص لتقييم ظروف وأدلة كل قضية.
+          </span>
+          <span v-else-if="isEs">
+            Este artículo ha sido elaborado por el equipo de <NuxtLink to="/es" class="disclaimer-link"><strong>abogados internacionales Shenyuan</strong></NuxtLink> con fines informativos y de análisis práctico; no constituye dictamen legal vinculante. Se recomienda consultar a un <NuxtLink to="/es" class="disclaimer-link"><strong>abogado internacional</strong></NuxtLink> colegiado para evaluar las pruebas y plazos de su caso.
+          </span>
+          <span v-else-if="isEn">
+            This guide is prepared by the <NuxtLink to="/en" class="disclaimer-link"><strong>Shenyuan International Lawyers</strong></NuxtLink> team for informational and practice analysis purposes and does not constitute formal legal opinion. For cross-border dispute assessment, please consult a qualified <NuxtLink to="/en" class="disclaimer-link"><strong>international lawyer</strong></NuxtLink>.
+          </span>
+          <span v-else>
+            本文由<NuxtLink to="/" class="disclaimer-link"><strong>深远涉外国际律师团队</strong></NuxtLink>主笔，仅供涉外法律实务研讨与一般信息参考，不构成针对任何具体案件的正式法律意见。具体法律程序须结合案件全部证据、事实及相关管辖区时效一案一议，建议在采取行动前咨询执业<NuxtLink to="/" class="disclaimer-link"><strong>国际律师</strong></NuxtLink>。
+          </span>
         </div>
 
         <!-- Pillar Hubs Interlinking Matrix (Topic Cluster Anchor) -->
@@ -100,17 +106,17 @@
         <!-- Article Bottom Consultation Box -->
         <div class="bottom-consult-box">
           <div class="consult-copy">
-            <h3>{{ isEn ? 'Facing a similar cross-border legal issue?' : (isAr ? 'هل تواجه نزاعاً تجارياً عابراً للحدود أو تحتاج دعماً قانونياً؟' : (isEs ? '¿Enfrenta una disputa transfronteriza similar o requiere asistencia legal?' : '遇到类似跨境纠纷或需要法律协助？')) }}</h3>
+            <h3>{{ isEn ? 'Facing a similar cross-border legal issue?' : (isAr ? 'هل تواجه نزاعاً تجارياً عابراً للحدود أو تحتاج دعماً قانونياً؟' : (isEs ? '¿Enfrenta una disputa transfronteriza similar o requiere asistencia legal?' : '遇到涉外纠纷？预约国际律师一对一专业评估')) }}</h3>
             <p>{{ isEn 
-              ? 'Our bilingual dispute resolution team can provide an initial case review within 24 hours.' 
+              ? 'Our bilingual international lawyers provide strategic cross-border dispute assessment and asset recovery within 24 hours.' 
               : (isAr
-                ? 'فريقنا القانوني المتخصص مستعد لإجراء تقييم أولي لموقفكم القانوني خلال 24 ساعة.'
+                ? 'فريقنا من المحامين الدوليين مستعد لتقييم موقفكم القانوني وتنفيذ إجراءات الحجز والتحصيل العابرة للحدود.'
                 : (isEs
-                  ? 'Nuestro equipo legal internacional puede realizar una evaluación preliminar de su caso en menos de 24 horas.'
-                  : '提交您的案情简述或扫码微信沟通，我们将在 24 小时内为您出具初步分析建议。')) }}</p>
+                  ? 'Nuestro equipo de abogados internacionales evalúa su caso y diseña rutas de embargo y cobro transfronterizo en 24 horas.'
+                  : '深远涉外国际律师团队深度联动全球 30+ 国执业法务网络，24 小时内为您出具诉讼时效、管辖权异议与财产冻结初步策略。')) }}</p>
           </div>
           <NuxtLink :to="isAr ? '/ar#intake' : (isEs ? '/es#intake' : (isEn ? '/en#intake' : '/#intake'))" class="button button-primary">
-            {{ isEn ? 'Free Legal Consultation →' : (isAr ? 'طلب استشارة قانونية أولية ←' : (isEs ? 'Consulta Legal Gratuita →' : '免费法律咨询评估 →')) }}
+            {{ isEn ? 'Consult International Lawyers →' : (isAr ? 'استشارة محامٍ دولي ←' : (isEs ? 'Consultar Abogado Internacional →' : '预约国际律师评估 →')) }}
           </NuxtLink>
         </div>
       </article>
@@ -798,6 +804,14 @@ const articleJsonLd = computed(() => {
     '@type': 'Article',
     'headline': title.value,
     'description': description.value,
+    'abstract': keyTakeaways.value.join('; '),
+    'keywords': isAr.value 
+      ? 'محامي دولي, نزاعات تجارية دولية, تحصيل ديون عابرة للحدود' 
+      : (isEs.value 
+        ? 'abogado internacional, litigio comercial transfronterizo, recobro de deudas' 
+        : (isEn.value 
+          ? 'international lawyer, cross-border disputes, international trade litigation, asset recovery' 
+          : '国际律师, 涉外律师, 跨境争议解决, 海外欠款追收, 涉外商事诉讼')),
     'datePublished': art.published_at || art.created_at,
     'dateModified': art.updated_at || art.published_at,
     'inLanguage': langCode.value,
@@ -1010,6 +1024,30 @@ useHead({
   font-size: 16.5px;
   color: var(--teal-deep);
   margin: 0;
+}
+
+.geo-pill {
+  margin-left: auto;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: var(--teal-deep);
+  background: var(--teal-soft);
+  border: 1px solid rgba(8, 77, 80, 0.2);
+  padding: 2px 8px;
+  border-radius: 999px;
+  text-transform: uppercase;
+}
+
+.disclaimer-link {
+  color: var(--teal-deep);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  transition: color 0.15s ease;
+}
+
+.disclaimer-link:hover {
+  color: var(--gold);
 }
 
 .takeaways-list {
@@ -1482,5 +1520,10 @@ useHead({
   border-left: none;
   border-right: 4px solid var(--teal);
   border-radius: 4px 0 0 4px;
+}
+
+.is-rtl .geo-pill {
+  margin-left: 0;
+  margin-right: auto;
 }
 </style>

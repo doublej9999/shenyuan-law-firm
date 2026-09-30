@@ -177,10 +177,10 @@ export interface HomeTranslation {
 export const HOME_I18N: Record<SupportedLang, HomeTranslation> = {
   zh: {
     hero: {
-      eyebrow: '跨境争议解决与家族资产保护',
+      eyebrow: '涉外律师团队 · 跨境争议解决与国际商事诉讼',
       title1: '跨境争议，',
       titleHighlight: '全球落地执行。',
-      desc: '深远国际律师事务所为中国企业与家庭提供国际贸易争议、跨境债务追收、继承与家族资产法律服务——用中文理解你的处境，用全球合作律所网络在当地落地执行。',
+      desc: '深远涉外国际律师团队专精国际贸易争议、海外欠款与债权追索、跨国诉讼仲裁及涉外遗产继承——资深涉外律师与国际律师深度联动 30+ 国当地法务网络，全球穿透落地执行。',
       ctaPrimary: '免费法律咨询 →',
       ctaSecondary: '查看服务范围',
       noteLang: '中英双语沟通',
