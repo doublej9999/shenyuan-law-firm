@@ -428,7 +428,22 @@ const relatedArticles = computed(() => {
   const current = article.value
   if (!current || !allArticles.value) return []
   return allArticles.value
-    .filter((a: any) => a.slug !== current.slug && (a.business === current.business || !current.business))
+    .filter((a: any) => {
+      if (a.slug === current.slug) return false
+      if (current.business && a.business !== current.business) return false
+      if (isAr.value) {
+        const ar = a.translations?.ar
+        return Boolean(ar && ar.title && ar.title !== '...' && ar.title.trim().length > 3)
+      }
+      if (isEs.value) {
+        const es = a.translations?.es
+        return Boolean(es && es.title && es.title !== '...' && es.title.trim().length > 3)
+      }
+      if (isEn.value) {
+        return Boolean(a.title_en || a.translations?.en?.title)
+      }
+      return true
+    })
     .slice(0, 3)
 })
 
@@ -615,8 +630,20 @@ const siteUrl = 'https://shenyuanlegal.com'
 const title = computed(() => {
   const art: any = article.value
   if (!art) return ''
-  if (isAr.value && arTrans.value?.title) return arTrans.value.title
-  if (isEs.value && esTrans.value?.title) return esTrans.value.title
+  if (isAr.value) {
+    if (arTrans.value?.title && arTrans.value.title !== '...' && arTrans.value.title.trim().length > 3) {
+      return arTrans.value.title
+    }
+    if (art.title_en) return art.title_en
+    return 'دليل الممارسة القانونية والنزاعات الدولية (قيد الترجمة والاعتماد)'
+  }
+  if (isEs.value) {
+    if (esTrans.value?.title && esTrans.value.title !== '...' && esTrans.value.title.trim().length > 3) {
+      return esTrans.value.title
+    }
+    if (art.title_en) return art.title_en
+    return 'Guía de Práctica Jurídica Internacional (En proceso de traducción)'
+  }
   return isEn.value ? (art.title_en || art.title_zh) : art.title_zh
 })
 
