@@ -14,7 +14,7 @@
 
         <header class="article-header">
           <div class="meta-row">
-            <span class="category-tag">{{ article.business }}</span>
+            <span class="category-tag">{{ getBusinessLabel(article.business) }}</span>
             <span class="date">{{ article.published_at ? article.published_at.substring(0, 10) : '' }}</span>
           </div>
           <h1 class="article-title">{{ title }}</h1>
@@ -90,9 +90,9 @@
               :to="isAr ? `/ar/articles/${rel.slug}` : (isEs ? `/es/articles/${rel.slug}` : (isEn ? `/en/articles/${rel.slug}` : `/articles/${rel.slug}`))"
               class="related-card"
             >
-              <span class="rel-badge">{{ rel.business }}</span>
-              <h4 class="rel-title">{{ isEn ? (rel.title_en || rel.title_zh) : rel.title_zh }}</h4>
-              <p class="rel-desc">{{ isEn ? (rel.description_en || rel.description_zh) : rel.description_zh }}</p>
+              <span class="rel-badge">{{ getBusinessLabel(rel.business) }}</span>
+              <h4 class="rel-title">{{ isAr ? (rel.translations?.ar?.title || rel.title_en || rel.title_zh) : (isEs ? (rel.translations?.es?.title || rel.title_en || rel.title_zh) : (isEn ? (rel.title_en || rel.title_zh) : rel.title_zh)) }}</h4>
+              <p class="rel-desc">{{ isAr ? (rel.translations?.ar?.description || rel.description_en || rel.description_zh) : (isEs ? (rel.translations?.es?.description || rel.description_en || rel.description_zh) : (isEn ? (rel.description_en || rel.description_zh) : rel.description_zh)) }}</p>
             </NuxtLink>
           </div>
         </div>
@@ -140,6 +140,32 @@ const isAr = computed(() => currentLang.value === 'ar')
 const isEs = computed(() => currentLang.value === 'es')
 const isEn = computed(() => currentLang.value === 'en')
 
+function getBusinessLabel(b?: string): string {
+  const code = (b || 'trade').toLowerCase()
+  if (code.includes('trade') || code.includes('贸易')) {
+    if (isAr.value) return 'التجارة الدولية'
+    if (isEs.value) return 'Comercio Internacional'
+    if (isEn.value) return 'Trade Disputes'
+    return '国际贸易争议'
+  }
+  if (code.includes('recovery') || code.includes('追收') || code.includes('诉讼') || code.includes('债')) {
+    if (isAr.value) return 'تحصيل الديون'
+    if (isEs.value) return 'Recobro de Deudas'
+    if (isEn.value) return 'Debt Recovery'
+    return '诉讼与债务追收'
+  }
+  if (code.includes('legacy') || code.includes('继承') || code.includes('家事') || code.includes('资产')) {
+    if (isAr.value) return 'الميراث العائلي'
+    if (isEs.value) return 'Herencias Familiares'
+    if (isEn.value) return 'Inheritance'
+    return '继承与家族资产'
+  }
+  if (isAr.value) return 'قانون دولي'
+  if (isEs.value) return 'Práctica Legal'
+  if (isEn.value) return 'Cross-Border'
+  return '涉外法律实务'
+}
+
 // Article bodies are fetched during SSR so crawlers receive the full text,
 // title, canonical, hreflang and JSON-LD in the initial HTML response.
 // Load all articles to derive related recommendations within the same topic cluster
@@ -166,8 +192,51 @@ const { data: allArticles } = await useAsyncData(
 const keyTakeaways = computed(() => {
   const art: any = article.value
   if (!art) return []
-  const desc = isEn.value ? (art.description_en || art.description_zh) : art.description_zh
   const b = art.business || 'trade'
+
+  if (isAr.value) {
+    if (b === 'trade') {
+      return [
+        'تثبيت سلسلة الأدلة التجارية: الاحتفاظ بأصول العقود، الفواتير، بوالص الشحن (B/L)، ومحاضر الفحص الجمركي قبل إرسال أي إنذار رسمي.',
+        'تدقيق مدة التقادم القانوني: تتراوح مدد التقادم في النزاعات التجارية العابرة للحدود بين سنتين و 6 سنوات، مع إمكانية قطع التقادم بالمطالبة الخطية.',
+        'إجراءات الحماية المتدرجة: توجيه إنذار قانوني رسمي يحدد مهلة سداد حتمية، يليه استصدار أوامر قضائية بالحجز التحفظي أو اللجوء للتحكيم الدولي.'
+      ]
+    } else if (b === 'recovery') {
+      return [
+        'التحري المالي وتتبع الأصول: فحص الأصول العقارية والحسابات المصرفية والشركات التابعة للمدين داخل الصين وخارجها قبل تحريك الإجراءات العلنية.',
+        'طلب الحجز التحفظي الفوري: استصدار أوامر تجميد الأصول المصرفية لمنع المدين من تهريب أمواله إلى ولايات قضائية أخرى.',
+        'إنفاذ الأحكام عبر الحدود: تنفيذ قرارات التحكيم الدولي بموجب اتفاقية نيويورك 1958، والاعتراف بالأحكام وفق مبدأ المعاملة بالمثل والاتفاقيات الثنائية.'
+      ]
+    } else {
+      return [
+        'تحديد القانون الواجب التطبيق: تخضع العقارات لقانون موقع العقار (Lex Situs)، وتتطلب التركات العقارية إجراءات حصر إرث قضائية محلية.',
+        'حزمة التوثيق والتصديق الدولي: استخراج شهادات القرابة والوفاة والوصايا وتصديقها بأبوستيل (Apostille) لضمان حجيتها القانونية.',
+        'تسوية الالتزامات والضرائب: إنهاء الإقرارات الضريبية العقارية وتصفية ديون التركة قبل تحويل وتوزيع الحصص الإرثية بين الورثة.'
+      ]
+    }
+  }
+
+  if (isEs.value) {
+    if (b === 'trade') {
+      return [
+        'Aseguramiento de la Cadena Probatoria: Preservar contratos firmados, órdenes de compra, conocimientos de embarque (B/L) y despachos aduaneros antes de intimar al deudor.',
+        'Auditoría de Prescripción Extintiva: Verificar los plazos legales de reclamación (habitualmente entre 2 y 6 años según la ley aplicable del contrato).',
+        'Estrategia Escalonada de Cobro: Emisión de requerimiento notarial/burofax con plazo perentorio; en caso de falta de pago, instar medidas cautelares o arbitraje.'
+      ]
+    } else if (b === 'recovery') {
+      return [
+        'Investigación Patrimonial Previa: Localización forense de inmuebles, participaciones societarias y cuentas bancarias del deudor antes de alertarlo.',
+        'Embargo Preventivo de Activos: Solicitud judicial de medidas cautelares urgentes para congelar bienes y evitar el vaciamiento patrimonial.',
+        'Ejecución Transfronteriza de Resoluciones: Ejecución de laudos bajo la Convención de Nueva York de 1958 y homologación de sentencias foráneas vía exequátur.'
+      ]
+    } else {
+      return [
+        'Régimen Sucesorio de Bienes Inmuebles: Los inmuebles se rigen por la ley de su situación (Lex Rei Sitae); los testamentos foráneos exigen apertura judicial local.',
+        'Cadena Notarial y Apostilla de La Haya: Certificados de defunción, actas de parentesco y poderes deben contar con Apostilla de La Haya para surtir efectos legales.',
+        'Liquidación Fiscal y Reparto Hereditario: Tramitar la declaración del Impuesto sobre Sucesiones y cancelación de cargas antes de adjudicar los bienes.'
+      ]
+    }
+  }
 
   if (isEn.value) {
     if (b === 'trade') {
@@ -216,6 +285,80 @@ const articleFaqs = computed(() => {
   const art: any = article.value
   if (!art) return []
   const b = art.business || 'trade'
+
+  if (isAr.value) {
+    if (b === 'trade') {
+      return [
+        {
+          question: 'ما هي الخطوة الأكثر أهمية عند نشوء نزاع حول سداد قيمة صفقة تجارية دولية؟',
+          answer: 'التثبيت الفوري لكامل سلسلة الأدلة الكتابية والإلكترونية (العقود، بوالص الشحن، مستندات الإفراج الجمركي، إقرارات المطابقة، والمراسلات المؤكدة للمديونية)، والتحقق العاجل من مدة التقادم لتفادي سقوط الحق القانوني.'
+        },
+        {
+          question: 'هل يمكن حل النزاعات التجارية العابرة للحدود دون اللجوء المباشر إلى المحاكم الأجنبية؟',
+          answer: 'نعم. يمكن من خلال توجيه إنذار قانوني رسمي عبر محامٍ معتمد، مدعوماً بنتائج التحري المالي عن أصول المدين وتجميد المعاملات، الضغط بفعالية للتوصل إلى تسوية ودية موثقة قبل التقاضي.'
+        }
+      ]
+    } else if (b === 'recovery') {
+      return [
+        {
+          question: 'هل يمكن تنفيذ أحكام المحاكم وقرارات التحكيم الصادرة في الصين داخل دول الشرق الأوسط؟',
+          answer: 'نعم. تنفذ قرارات التحكيم التجاري بسهولة بموجب اتفاقية نيويورك 1958. كما تنفذ الأحكام القضائية بالاستناد إلى اتفاقيات المساعدة القضائية الثنائية (مثل اتفاقية الصين والإمارات لعام 2004) أو مبدأ المعاملة بالمثل.'
+        },
+        {
+          question: 'ما الإجراء القانوني الواجب اتخاذه إذا شرع المدين في تحويل أو إخفاء أصوله في الخارج؟',
+          answer: 'يجب تقديم طلب عاجل إلى القضاء المختص لاستصدار أمر حجز تحفظي وتجميد حسابات مصرفية لمنع تبديد الأصول بانتظار صدور الحكم النهائي القابل للتنفيذ.'
+        }
+      ]
+    } else {
+      return [
+        {
+          question: 'هل تسري الوصية المحررة في الصين بصورة تلقائية على العقارات والحسابات في الخارج؟',
+          answer: 'لا تسري تلقائياً. تخضع العقارات لقانون موقعها الجغرافي، وغالباً ما تتطلب إجراءات اعتماد قضائية خاصة بالتركات (Probate) والتأكد من مطابقتها للنظام القانوني المحلي.'
+        },
+        {
+          question: 'ما هي المستندات الأساسية المطلوبة لمباشرة إجراءات حصر الإرث للأصول الدولية؟',
+          answer: 'يلزم تقديم شهادات الوفاة، وإثبات صلة القرابة الرسمي، وأصول الوصايا موثقة ومصدقة بخاتم الأبوستيل (Apostille)، وتوكيل محامٍ معتمد لمباشرة الإجراءات أمام محكمة التركات.'
+        }
+      ]
+    }
+  }
+
+  if (isEs.value) {
+    if (b === 'trade') {
+      return [
+        {
+          question: '¿Cuál es el primer paso indispensable ante un impago en operaciones de comercio exterior?',
+          answer: 'Preservar de forma inmediata toda la prueba documental y electrónica (contratos, B/L, facturas comerciales, despachos aduaneros y reconocimientos de deuda) y auditar el plazo de prescripción extintiva de la acción.'
+        },
+        {
+          question: '¿Es obligatorio acudir a juicio en el extranjero para resolver una controversia mercantil?',
+          answer: 'No necesariamente. La remisión de un requerimiento notarial o burofax letrado, combinado con un informe de solvencia patrimonial, permite alcanzar acuerdos transaccionales en un alto porcentaje de reclamaciones de cantidad.'
+        }
+      ]
+    } else if (b === 'recovery') {
+      return [
+        {
+          question: '¿Se puede ejecutar una sentencia o laudo arbitral chino en España o Latinoamérica?',
+          answer: 'Sí. Los laudos arbitrales se ejecutan mediante la Convención de Nueva York de 1958 en más de 160 países. Las sentencias judiciales se homologan mediante procedimiento de exequátur al amparo de tratados bilaterales o reciprocidad.'
+        },
+        {
+          question: '¿Cómo actuar si el deudor transfiere o disimula activos en el extranjero?',
+          answer: 'Debe interponerse con carácter de urgencia una solicitud de medidas cautelares previas de embargo preventivo de cuentas bancarias y bienes inmuebles para salvaguardar la eficacia del cobro.'
+        }
+      ]
+    } else {
+      return [
+        {
+          question: '¿Surte efectos directos un testamento otorgado en China sobre inmuebles radicados en el exterior?',
+          answer: 'No de manera automática. La transmisión de bienes inmuebles se somete al derecho sucesorio del lugar de su situación (Lex Situs), exigiendo la legalización del título sucesorio ante el Notario o Juzgado competente.'
+        },
+        {
+          question: '¿Qué documentación se precisa para tramitar una herencia internacional?',
+          answer: 'Se precisa el certificado de defunción internacional, actas notariales de declaración de herederos debidamente apostilladas bajo el Convenio de La Haya y la representación letrada en la jurisdicción donde radiquen los bienes.'
+        }
+      ]
+    }
+  }
 
   if (b === 'trade') {
     return isEn.value ? [
