@@ -257,6 +257,9 @@
           <h2>{{ t.cases.title }}</h2>
           <p>{{ t.cases.desc }}</p>
         </div>
+        <!-- 交互式诉讼时效测算工具 -->
+        <StatuteCalculator />
+
         <div class="cases-grid">
           <article class="case-card">
             <div class="case-tag">{{ t.cases.card1Tag }}</div>
@@ -537,6 +540,7 @@ import { ref, computed } from 'vue'
 import { getApiClient, parseApiError } from '@/api/client'
 import { useUserGeo } from '@/composables/useUserGeo'
 import { useHomeTranslation } from '@/composables/useHomeTranslation'
+import StatuteCalculator from '@/components/StatuteCalculator.vue'
 
 const { currentLang, isAr, isEs, isEn, t } = useHomeTranslation()
 const { countryInfo } = useUserGeo()
