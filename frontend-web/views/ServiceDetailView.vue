@@ -56,7 +56,7 @@
                   :to="isAr ? `/ar/articles/${art.slug}` : (isEs ? `/es/articles/${art.slug}` : (isEn ? `/en/articles/${art.slug}` : `/articles/${art.slug}`))"
                   class="service-art-card"
                 >
-                  <span class="s-art-badge">{{ art.business }}</span>
+                  <span class="s-art-badge">{{ getBusinessLabel(art.business) }}</span>
                   <h4 class="s-art-title">{{ isAr ? (art.translations?.ar?.title || art.title_en || art.title_zh) : (isEs ? (art.translations?.es?.title || art.title_en || art.title_zh) : (isEn ? (art.title_en || art.title_zh) : art.title_zh)) }}</h4>
                   <p class="s-art-desc">{{ isAr ? (art.translations?.ar?.description || art.description_en || art.description_zh) : (isEs ? (art.translations?.es?.description || art.description_en || art.description_zh) : (isEn ? (art.description_en || art.description_zh) : art.description_zh)) }}</p>
                 </NuxtLink>
@@ -174,13 +174,53 @@ const { data: allArticles } = await useAsyncData(
   }
 )
 
+function getBusinessLabel(code?: string): string {
+  const c = (code || '').toLowerCase()
+  if (isAr.value) {
+    if (c === 'trade') return 'التجارة الدولية'
+    if (c === 'recovery') return 'تحصيل الديون'
+    if (c === 'legacy') return 'الميراث العائلي'
+    return 'رؤى قانونية'
+  }
+  if (isEs.value) {
+    if (c === 'trade') return 'Comercio Internacional'
+    if (c === 'recovery') return 'Recobro de Deudas'
+    if (c === 'legacy') return 'Herencias Familiares'
+    return 'Perspectiva Legal'
+  }
+  if (isEn.value) {
+    if (c === 'trade') return 'International Trade'
+    if (c === 'recovery') return 'Debt Recovery'
+    if (c === 'legacy') return 'Family Legacy'
+    return 'Legal Insight'
+  }
+  if (c === 'trade') return '国际贸易'
+  if (c === 'recovery') return '诉讼追收'
+  if (c === 'legacy') return '家族继承'
+  return code || '法律专栏'
+}
+
 const serviceArticles = computed(() => {
   const s: any = service.value
   if (!s || !allArticles.value) return []
   const currentSlug = String(route.params.slug)
-  // Match articles by service business category
+  // Match articles by service business category, ensuring language consistency
   return allArticles.value
-    .filter((a: any) => a.business === currentSlug)
+    .filter((a: any) => {
+      if (a.business !== currentSlug) return false
+      if (isAr.value) {
+        const ar = a.translations?.ar
+        return Boolean(ar && ar.title && ar.title !== '...' && ar.title.trim().length > 3)
+      }
+      if (isEs.value) {
+        const es = a.translations?.es
+        return Boolean(es && es.title && es.title !== '...' && es.title.trim().length > 3)
+      }
+      if (isEn.value) {
+        return Boolean(a.title_en || a.translations?.en?.title)
+      }
+      return true
+    })
     .slice(0, 4)
 })
 

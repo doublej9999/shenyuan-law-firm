@@ -63,7 +63,7 @@
         <div v-else class="articles-grid">
           <article v-for="item in filteredArticles" :key="item.id" class="article-card">
             <div class="card-meta-top">
-              <span class="category-badge">{{ item.business }}</span>
+              <span class="category-badge">{{ getBusinessLabel(item.business) }}</span>
               <span class="date">{{ item.published_at ? item.published_at.substring(0, 10) : '' }}</span>
             </div>
             <h3>
@@ -103,6 +103,32 @@ const isEn = computed(() => currentLang.value === 'en')
 
 const selectedFilter = ref('ALL')
 
+function getBusinessLabel(code?: string): string {
+  const c = (code || '').toLowerCase()
+  if (isAr.value) {
+    if (c === 'trade') return 'التجارة الدولية'
+    if (c === 'recovery') return 'تحصيل الديون'
+    if (c === 'legacy') return 'الميراث العائلي'
+    return 'رؤى قانونية'
+  }
+  if (isEs.value) {
+    if (c === 'trade') return 'Comercio Internacional'
+    if (c === 'recovery') return 'Recobro de Deudas'
+    if (c === 'legacy') return 'Herencias Familiares'
+    return 'Perspectiva Legal'
+  }
+  if (isEn.value) {
+    if (c === 'trade') return 'International Trade'
+    if (c === 'recovery') return 'Debt Recovery'
+    if (c === 'legacy') return 'Family Legacy'
+    return 'Legal Insight'
+  }
+  if (c === 'trade') return '国际贸易'
+  if (c === 'recovery') return '诉讼追收'
+  if (c === 'legacy') return '家族继承'
+  return code || '法律专栏'
+}
+
 // Fetched during SSR so the article list is present in the initial HTML.
 const { data: articlesData, pending: loading } = await useAsyncData(
   `articles-${currentLang.value}`,
@@ -126,8 +152,25 @@ const { data: articlesData, pending: loading } = await useAsyncData(
 const articles = computed<any[]>(() => articlesData.value || [])
 
 const filteredArticles = computed(() => {
-  if (selectedFilter.value === 'ALL') return articles.value
-  return articles.value.filter(a => {
+  let list = articles.value || []
+
+  // Filter by language availability to prevent foreign language pollution
+  if (isAr.value) {
+    list = list.filter(a => {
+      const ar = a.translations?.ar
+      return Boolean(ar && ar.title && ar.title !== '...' && ar.title.trim().length > 3)
+    })
+  } else if (isEs.value) {
+    list = list.filter(a => {
+      const es = a.translations?.es
+      return Boolean(es && es.title && es.title !== '...' && es.title.trim().length > 3)
+    })
+  } else if (isEn.value) {
+    list = list.filter(a => Boolean(a.title_en || a.translations?.en?.title))
+  }
+
+  if (selectedFilter.value === 'ALL') return list
+  return list.filter(a => {
     const b = (a.business || '').toUpperCase()
     return b.includes(selectedFilter.value)
   })
