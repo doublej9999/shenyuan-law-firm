@@ -139,6 +139,14 @@ const { data: service, pending: loading } = await useAsyncData(
   }
 )
 
+if (!service.value && !loading.value) {
+  throw createError({
+    statusCode: 404,
+    statusMessage: isEn.value ? 'Practice Area Not Found' : (isAr.value ? 'مجال الممارسة غير موجود' : (isEs.value ? 'Área de práctica no encontrada' : '未找到相关业务领域')),
+    fatal: true,
+  })
+}
+
 const items = computed<string[]>(() => {
   const s: any = service.value
   if (!s) return []
