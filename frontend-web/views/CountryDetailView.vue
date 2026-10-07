@@ -134,6 +134,14 @@ const { data: country, pending: loading } = await useAsyncData(
   }
 )
 
+if (!country.value && !loading.value) {
+  throw createError({
+    statusCode: 404,
+    statusMessage: isEn.value ? 'Country Guide Not Found' : (isAr.value ? 'الدليل القانوني للدولة غير موجود' : (isEs.value ? 'Guía del país no encontrada' : '未找到相关国家专页')),
+    fatal: true,
+  })
+}
+
 // Load all articles to find matching articles for this jurisdiction
 const { data: allArticles } = await useAsyncData(
   'country-articles-all',

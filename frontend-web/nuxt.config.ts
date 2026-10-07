@@ -64,6 +64,32 @@ export default defineNuxtConfig({
     // Article detail pages are revalidated at the edge; the copy is CMS-managed.
     '/articles/**': { swr: 300 },
     '/en/articles/**': { swr: 300 },
+
+    // 历史旧路径与已废弃页面 301 永久重定向，保留并传递 Google 权重，根除 GSC 404 错误
+    '/about': { redirect: { to: '/#team', statusCode: 301 } },
+    '/en/about': { redirect: { to: '/en#team', statusCode: 301 } },
+    '/ar/about': { redirect: { to: '/ar#team', statusCode: 301 } },
+    '/es/about': { redirect: { to: '/es#team', statusCode: 301 } },
+
+    '/fees': { redirect: { to: '/#intake', statusCode: 301 } },
+    '/en/fees': { redirect: { to: '/en#intake', statusCode: 301 } },
+    '/ar/fees': { redirect: { to: '/ar#intake', statusCode: 301 } },
+    '/es/fees': { redirect: { to: '/es#intake', statusCode: 301 } },
+
+    '/privacy': { redirect: { to: '/#intake', statusCode: 301 } },
+    '/en/privacy': { redirect: { to: '/en#intake', statusCode: 301 } },
+    '/ar/privacy': { redirect: { to: '/ar#intake', statusCode: 301 } },
+    '/es/privacy': { redirect: { to: '/es#intake', statusCode: 301 } },
+
+    '/cases': { redirect: { to: '/#cases', statusCode: 301 } },
+    '/en/cases': { redirect: { to: '/en#cases', statusCode: 301 } },
+    '/ar/cases': { redirect: { to: '/ar#cases', statusCode: 301 } },
+    '/es/cases': { redirect: { to: '/es#cases', statusCode: 301 } },
+
+    '/faq': { redirect: { to: '/#faq', statusCode: 301 } },
+    '/en/faq': { redirect: { to: '/en#faq', statusCode: 301 } },
+    '/ar/faq': { redirect: { to: '/ar#faq', statusCode: 301 } },
+    '/es/faq': { redirect: { to: '/es#faq', statusCode: 301 } },
   },
 
   typescript: {

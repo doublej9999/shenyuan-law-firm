@@ -466,6 +466,15 @@ const { data: article, pending: loading } = await useAsyncData(
   }
 )
 
+// 当文章不存在时，严格抛出 HTTP 404 响应，彻底杜绝 Google 软 404 (Soft 404) 判定与虚假 Canonical 索引
+if (!article.value && !loading.value) {
+  throw createError({
+    statusCode: 404,
+    statusMessage: isEn.value ? 'Article Not Found' : (isAr.value ? 'المقالة غير موجودة' : (isEs.value ? 'Artículo no encontrado' : '未找到相关文章')),
+    fatal: true,
+  })
+}
+
 // 轻量级安全 Markdown 语义解析器（增强 SEO 语义、表格解析与阅读排版）
 function parseMarkdownToHtml(md: string): string {
   if (!md) return ''
