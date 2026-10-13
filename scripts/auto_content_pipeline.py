@@ -146,6 +146,8 @@ def notify_indexing(slug: str):
         urls = [
             f"https://shenyuanlegal.com/articles/{slug}",
             f"https://shenyuanlegal.com/en/articles/{slug}",
+            f"https://shenyuanlegal.com/ar/articles/{slug}",
+            f"https://shenyuanlegal.com/es/articles/{slug}",
         ]
         cmd = [
             sys.executable,

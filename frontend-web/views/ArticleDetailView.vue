@@ -443,7 +443,7 @@ const relatedArticles = computed(() => {
       }
       return true
     })
-    .slice(0, 3)
+    .slice(0, 6)
 })
 
 const { data: article, pending: loading } = await useAsyncData(
@@ -1391,7 +1391,7 @@ useHead({
 
 .related-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   gap: 16px;
 }
 
