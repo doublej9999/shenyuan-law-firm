@@ -61,9 +61,41 @@ export default defineNuxtConfig({
   routeRules: {
     // 代理所有 /api/** 请求到真实后端 Django 服务，彻底解决跨域与边缘请求失效问题
     '/api/**': { proxy: 'https://shenyuan-backend.vercel.app/api/**' },
-    // Article detail pages are revalidated at the edge; the copy is CMS-managed.
-    '/articles/**': { swr: 300 },
-    '/en/articles/**': { swr: 300 },
+
+    // 方案 A：彻底禁用 Vercel ISR 函数写入，改用纯标准 CDN/Edge Cache-Control 响应头
+    // 消除 Vercel 免费层 200,000 ISR Writes 额度耗尽报警；由 Cloudflare / CDN 免费承载毫秒级缓存与平滑回源
+    '/articles/**': {
+      headers: {
+        'cache-control': 'public, max-age=3600, s-maxage=86400, stale-while-revalidate=604800',
+      },
+    },
+    '/en/articles/**': {
+      headers: {
+        'cache-control': 'public, max-age=3600, s-maxage=86400, stale-while-revalidate=604800',
+      },
+    },
+    '/ar/articles/**': {
+      headers: {
+        'cache-control': 'public, max-age=3600, s-maxage=86400, stale-while-revalidate=604800',
+      },
+    },
+    '/es/articles/**': {
+      headers: {
+        'cache-control': 'public, max-age=3600, s-maxage=86400, stale-while-revalidate=604800',
+      },
+    },
+
+    // 核心业务专区与国别指南同样享受 CDN 缓存加速
+    '/countries/**': {
+      headers: {
+        'cache-control': 'public, max-age=3600, s-maxage=86400, stale-while-revalidate=604800',
+      },
+    },
+    '/services/**': {
+      headers: {
+        'cache-control': 'public, max-age=3600, s-maxage=86400, stale-while-revalidate=604800',
+      },
+    },
 
     // 历史旧路径与已废弃页面 301 永久重定向，保留并传递 Google 权重，根除 GSC 404 错误
     '/about': { redirect: { to: '/#team', statusCode: 301 } },
