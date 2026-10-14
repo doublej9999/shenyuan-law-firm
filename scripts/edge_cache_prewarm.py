@@ -138,5 +138,5 @@ def run_cache_prewarm(max_urls: int = 60, concurrency: int = 5):
 
 
 if __name__ == "__main__":
-    count = int(sys.argv[1]) if len(sys.argv) > 1 else 60
+    count = int(sys.argv[1]) if len(sys.argv) > 1 else 25
     run_cache_prewarm(count)
