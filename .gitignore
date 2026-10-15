@@ -5,6 +5,7 @@ __pycache__/
 data/*.sqlite3
 data/*.sqlite3-*
 data/files/
+data/google_indexing_history.json
 backups/
 .env
 *.log
